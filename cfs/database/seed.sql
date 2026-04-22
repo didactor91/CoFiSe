@@ -17,7 +17,7 @@ DELETE FROM users;
 -- Password: changeme123 (bcrypt hash)
 INSERT INTO users (email, password, role) VALUES (
     'admin@senacom.com',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5aNyF/F6hF6Ka',
+    '$2b$12$LSHxL6kLObvBGTpma7IXMOQe.Pe/pNfxZW0/4OEWTqHeuI62j8CTe',
     'admin'
 );
 
