@@ -39,4 +39,9 @@ export async function buildServer(): Promise<FastifyInstance> {
   return server
 }
 
+// Start server if running directly
+const server = await buildServer()
+await server.listen({ port: 4000, host: '0.0.0.0' })
+console.log('Server running on http://0.0.0.0:4000')
+
 export default buildServer
