@@ -1,0 +1,14 @@
+[Unit]
+Description=CFS GraphQL API Server
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/opt/cfs/server
+ExecStart=/usr/bin/env pnpm start
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

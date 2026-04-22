@@ -1,0 +1,23 @@
+{
+  "name": "cfs-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --parallel -C client dev -C server dev",
+    "build": "pnpm -C client build",
+    "start": "pnpm -C server start",
+    "test": "pnpm -C client test && pnpm -C server test",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "graphql-tag": "^2.12.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
+  }
+}

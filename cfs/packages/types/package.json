@@ -1,0 +1,10 @@
+{
+  "name": "@cfs/types",
+  "version": "1.0.0",
+  "private": true,
+  "main": "generated/graphql.ts",
+  "types": "generated/graphql.ts",
+  "scripts": {
+    "codegen": "cd ../client && npm run codegen"
+  }
+}
