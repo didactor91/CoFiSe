@@ -1,0 +1,7 @@
+seno.didtor.dev {
+    reverse_proxy /api/* localhost:4000
+    reverse_proxy /* localhost:3000
+    tls {
+        issuer_acme_v2
+    }
+}

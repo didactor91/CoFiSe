@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+*.db
+*.db-journal
+.env
+.env.local
+.DS_Store
+coverage/
+.playwright/
+playwright-report/
+test-results/
+*.log

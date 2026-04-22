@@ -1,0 +1,12 @@
+seno.didtor.dev {
+    # GraphQL API
+    reverse_proxy /api/* localhost:4000
+    
+    # SPA (Vite client dev server)
+    reverse_proxy /* localhost:3000
+    
+    # TLS (Let's Encrypt)
+    tls {
+        issuer_acme_v2
+    }
+}

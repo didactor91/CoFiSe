@@ -1,0 +1,14 @@
+[Unit]
+Description=CFS Vite Client Dev Server
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/opt/cfs/client
+ExecStart=/usr/bin/env pnpm dev
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

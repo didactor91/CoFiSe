@@ -11,7 +11,7 @@ context: |
   Types: TypeScript end-to-end con auto-generated types (GraphQL codegen)
   Language: Code/commits/docs in English; Web UI in Spanish
 
-strict_tdd: false
+strict_tdd: true
 
 rules:
   proposal:
@@ -37,5 +37,26 @@ rules:
     - Warn before merging destructive deltas (large removals)
 
 testing:
-  strict_tdd: false
-  note: "No test runner detected — TDD unavailable for this project"
+  strict_tdd: true
+  test_runner: vitest
+  note: "TDD strict mode enabled — Vitest + Playwright"
+
+  frontend:
+    unit: vitest
+    e2e: playwright
+    coverage: pnpm vitest --coverage
+
+  backend:
+    unit: vitest
+    integration: vitest + supertest
+    coverage: pnpm vitest --coverage
+
+  layers:
+    - Unit (frontend + backend resolvers)
+    - Integration (GraphQL mutations, auth flow)
+    - E2E (login, reservation, CRUD flows)
+
+  commands:
+    test: "pnpm test"
+    test:e2e: "pnpm test:e2e"
+    coverage: "pnpm vitest --coverage"
