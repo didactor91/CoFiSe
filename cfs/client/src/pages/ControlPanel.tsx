@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useAllNewsQuery, useProductsQuery, useReservationsQuery, useUsersQuery } from '../graphql/queries'
 import { useCreateUserMutation, useDeleteUserMutation } from '../graphql/mutations'
-import { UserRole, ReservationStatus } from '../../../packages/types/generated/graphql'
+import type { UserRole, ReservationStatus } from '../../../packages/types/generated/graphql'
 
 interface StatCardProps {
   title: string

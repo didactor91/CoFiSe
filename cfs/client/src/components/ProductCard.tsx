@@ -1,4 +1,4 @@
-import { Product } from '../../../packages/types/generated/graphql'
+import type { Product } from '../../../packages/types/generated/graphql'
 
 interface ProductCardProps {
   product: Product

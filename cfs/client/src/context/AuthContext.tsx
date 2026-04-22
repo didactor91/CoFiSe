@@ -3,9 +3,9 @@ import {
   useContext,
   useState,
   useCallback,
-  ReactNode,
 } from 'react'
-import { User } from '../../../packages/types/generated/graphql'
+import type { ReactNode } from 'react'
+import type { User } from '../../../packages/types/generated/graphql'
 import { graphqlClient } from '../graphql/client'
 import { LOGIN_MUTATION } from '../graphql/mutations'
 import { setAuthToken, removeAuthToken } from '../utils/cookies'

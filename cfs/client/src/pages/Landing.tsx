@@ -1,7 +1,7 @@
 import { useNewsQuery, useProductsQuery } from '../graphql/queries'
 import NewsCard from '../components/NewsCard'
 import ProductCard from '../components/ProductCard'
-import { Product } from '../../../packages/types/generated/graphql'
+import type { Product } from '../../../packages/types/generated/graphql'
 
 export default function Landing() {
   const [newsResult] = useNewsQuery()

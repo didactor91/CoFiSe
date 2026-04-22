@@ -1,5 +1,6 @@
-import { useMutation, UseMutationResponse } from 'urql'
-import {
+import { useMutation } from 'urql'
+import type { UseMutationResponse } from 'urql'
+import type {
   AuthPayload,
   CreateReservationInput,
   Reservation,

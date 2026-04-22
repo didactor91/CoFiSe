@@ -1,5 +1,6 @@
-import { useQuery, UseQueryResponse } from 'urql'
-import {
+import { useQuery } from 'urql'
+import type { UseQueryResponse } from 'urql'
+import type {
   News,
   Product,
   Reservation,

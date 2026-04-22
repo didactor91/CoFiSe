@@ -1,4 +1,4 @@
-import { News } from '../../../packages/types/generated/graphql'
+import type { News } from '../../../packages/types/generated/graphql'
 
 interface NewsCardProps {
   news: News
