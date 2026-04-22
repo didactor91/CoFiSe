@@ -215,7 +215,7 @@ export const resolvers = {
       if (!isValid) {
         throw new Error('Invalid credentials')
       }
-      const token = ctx.reply.jwt.sign({ id: user.id, email: user.email, role: user.role.toUpperCase() })
+      const token = await ctx.reply.jwtSign({ id: user.id, email: user.email, role: user.role.toUpperCase() })
       return {
         token,
         user: userFromRow(user)

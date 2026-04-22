@@ -2,6 +2,7 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
 import mercurius from 'mercurius'
+import { makeExecutableSchema } from '@graphql-tools/schema'
 import type { FastifyInstance } from 'fastify'
 import { typeDefs } from './graphql/schema.js'
 import { resolvers } from './graphql/resolvers.js'
@@ -26,11 +27,13 @@ export async function buildServer(): Promise<FastifyInstance> {
   // Health check endpoint
   server.get('/health', async () => ({ status: 'ok' }))
 
+  // Create executable schema for Mercurius
+  const schema = makeExecutableSchema({ typeDefs, resolvers })
+
   // GraphQL endpoint
   await server.register(mercurius, {
-    schema: typeDefs,
-    resolvers,
-    context: (request) => ({ user: request.user })
+    schema,
+    context: (request, reply) => ({ user: request.user, jwt: reply.jwt })
   })
 
   return server
