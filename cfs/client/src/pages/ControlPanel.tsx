@@ -1571,11 +1571,11 @@ const [productFormError, setProductFormError] = useState<string | null>(null)
                     <td
                       style={{
                         padding: theme.spacing.sm,
-                        color: product.stock === 0 ? theme.colors.error : theme.colors.text,
+                        color: !product.limitedStock ? theme.colors.success : (product.stock === 0 ? theme.colors.error : theme.colors.text),
                         fontWeight: product.stock === 0 ? theme.typography.fontWeight.bold : undefined
                       }}
                     >
-                      {product.stock === 0 && '⚠️ '}{product.stock}
+                      {!product.limitedStock ? 'Ilimitado' : (product.stock === 0 ? '⚠️ 0' : product.stock)}
                     </td>
                     <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
                       {canEditProduct && (
