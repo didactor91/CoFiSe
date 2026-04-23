@@ -60,7 +60,7 @@ export default function ControlPanel() {
   // Product management state
   const [showProductForm, setShowProductForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
-  const [productFormError, setProductFormError] = useState<string | null>(null)
+const [productFormError, setProductFormError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [productForm, setProductForm] = useState({
     name: '',
@@ -70,7 +70,8 @@ export default function ControlPanel() {
     imageUrl: '',
     hasOptions: false,         // Whether this product has option selector
     optionLabel: '',           // Label for the option field (e.g., "Talla", "Color")
-    optionValues: [] as { value: string, stock: number | null }[],  // Values with stock
+    optionValues: [] as { value: string; stock: number | null }[],  // Values with stock
+    limitedStock: true,        // Whether stock is limited (true) or infinite (false)
   })
 
   // News management state
@@ -190,6 +191,7 @@ export default function ControlPanel() {
       hasOptions: false,
       optionLabel: '',
       optionValues: [],
+      limitedStock: true,
     })
     setProductFormError(null)
     setShowProductForm(true)
@@ -213,11 +215,12 @@ export default function ControlPanel() {
       name: product.name,
       description: product.description,
       price: product.price.toString(),
-      stock: product.stock.toString(),
+      stock: product.stock !== null ? product.stock.toString() : '',
       imageUrl: product.imageUrl || '',
       hasOptions,
       optionLabel,
       optionValues,
+      limitedStock: product.limitedStock,
     })
     setProductFormError(null)
     setShowProductForm(true)
@@ -317,6 +320,7 @@ export default function ControlPanel() {
             description: productForm.description,
             price,
             stock: productForm.hasOptions ? 0 : stock, // If has options, stock derived from option values
+            limitedStock: productForm.limitedStock,
             imageUrl: productForm.imageUrl || undefined
           }
         })
@@ -363,6 +367,7 @@ export default function ControlPanel() {
             description: productForm.description,
             price,
             stock: productForm.hasOptions ? 0 : stock,
+            limitedStock: productForm.limitedStock,
             imageUrl: productForm.imageUrl || undefined
           }
         })
@@ -408,6 +413,7 @@ export default function ControlPanel() {
         hasOptions: false,
         optionLabel: '',
         optionValues: [],
+        limitedStock: true,
       })
     } catch (err: any) {
       setProductFormError(err.message || 'Error al guardar el producto')
@@ -1247,26 +1253,41 @@ export default function ControlPanel() {
             {/* Stock section - only if no options */}
             {!productForm.hasOptions && (
               <div style={{ marginTop: theme.spacing.md }}>
-                <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
-                  Stock *
-                </label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  min="0"
-                  value={productForm.stock}
-                  onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: theme.spacing.sm,
-                    background: theme.colors.background,
-                    border: `1px solid ${theme.colors.border}`,
-                    borderRadius: theme.borderRadius.sm,
-                    color: theme.colors.text,
-                    fontSize: theme.typography.fontSize.sm,
-                  }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: theme.spacing.xs }}>
+                  <label style={{ color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>
+                    Stock limitado
+                  </label>
+                  <input
+                    type="checkbox"
+                    checked={productForm.limitedStock}
+                    onChange={(e) => setProductForm({ ...productForm, limitedStock: e.target.checked })}
+                    style={{ marginLeft: theme.spacing.sm, width: '16px', height: '16px' }}
+                  />
+                </div>
+                {productForm.limitedStock && (
+                  <input
+                    type="number"
+                    placeholder="0"
+                    min="0"
+                    value={productForm.stock}
+                    onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: theme.spacing.sm,
+                      background: theme.colors.background,
+                      border: `1px solid ${theme.colors.border}`,
+                      borderRadius: theme.borderRadius.sm,
+                      color: theme.colors.text,
+                      fontSize: theme.typography.fontSize.sm,
+                    }}
+                  />
+                )}
+                {!productForm.limitedStock && (
+                  <p style={{ color: theme.colors.success, fontSize: theme.typography.fontSize.xs, fontStyle: 'italic' }}>
+                    Stock infinito (sin límite)
+                  </p>
+                )}
               </div>
             )}
 

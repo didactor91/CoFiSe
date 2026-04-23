@@ -18,6 +18,7 @@ export const typeDefs = gql`
     description: String!
     price: Float!
     stock: Int
+    limitedStock: Boolean!
     imageUrl: String
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -177,6 +178,7 @@ export const typeDefs = gql`
     description: String!
     price: Float!
     stock: Int!
+    limitedStock: Boolean!
     imageUrl: String
   }
 
@@ -185,6 +187,7 @@ export const typeDefs = gql`
     description: String
     price: Float
     stock: Int
+    limitedStock: Boolean
     imageUrl: String
   }
 

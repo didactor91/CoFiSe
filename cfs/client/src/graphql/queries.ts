@@ -36,6 +36,7 @@ export const PRODUCTS_QUERY = `
       description
       price
       stock
+      limitedStock
       imageUrl
       createdAt
       updatedAt

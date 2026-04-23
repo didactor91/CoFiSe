@@ -113,6 +113,7 @@ function productFromRow(row: any) {
     description: row.description,
     price: row.price,
     stock: row.stock,
+    limitedStock: !!row.limited_stock,
     imageUrl: row.image_url,
     createdAt: row.created_at,
     updatedAt: row.updated_at
@@ -637,10 +638,11 @@ export const resolvers = {
       }
       
       const now = new Date().toISOString()
+      const limitedStock = args.input.limitedStock ? 1 : 0
       const result = db.prepare(`
-        INSERT INTO products (name, description, price, stock, image_url, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(name, description, price, stock, imageUrl || null, now, now)
+        INSERT INTO products (name, description, price, stock, limited_stock, image_url, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(name, description, price, stock, limitedStock, imageUrl || null, now, now)
       
       return {
         id: result.lastInsertRowid.toString(),
@@ -648,6 +650,7 @@ export const resolvers = {
         description,
         price,
         stock,
+        limitedStock: !!limitedStock,
         imageUrl: imageUrl || null,
         createdAt: now,
         updatedAt: now
@@ -662,7 +665,7 @@ export const resolvers = {
       }
       
       // Validation
-      const { name, description, price, stock, imageUrl } = args.input
+      const { name, description, price, stock, limitedStock, imageUrl } = args.input
       if (name !== undefined && name.trim() === '') {
         throw new Error('Name is required')
       }
@@ -681,12 +684,13 @@ export const resolvers = {
       const updateDescription = description ?? existing.description
       const updatePrice = price ?? existing.price
       const updateStock = stock ?? existing.stock
+      const updateLimitedStock = limitedStock !== undefined ? (limitedStock ? 1 : 0) : existing.limited_stock
       const updateImageUrl = imageUrl ?? existing.image_url
       
       db.prepare(`
-        UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image_url = ?, updated_at = ?
+        UPDATE products SET name = ?, description = ?, price = ?, stock = ?, limited_stock = ?, image_url = ?, updated_at = ?
         WHERE id = ?
-      `).run(updateName, updateDescription, updatePrice, updateStock, updateImageUrl, now, args.id)
+      `).run(updateName, updateDescription, updatePrice, updateStock, updateLimitedStock, updateImageUrl, now, args.id)
       
       return {
         id: args.id,
@@ -694,6 +698,7 @@ export const resolvers = {
         description: updateDescription,
         price: updatePrice,
         stock: updateStock,
+        limitedStock: !!updateLimitedStock,
         imageUrl: updateImageUrl,
         createdAt: existing.created_at,
         updatedAt: now

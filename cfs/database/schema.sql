@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
     price REAL NOT NULL,
     stock INTEGER DEFAULT 0,
+    limited_stock INTEGER DEFAULT 1,
     image_url TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
