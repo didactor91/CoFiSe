@@ -22,11 +22,14 @@ vi.mock('../../context/AuthContext', () => ({
 vi.mock('../../pages/Landing', () => ({
   default: () => <div data-testid="landing-page">Landing Page</div>,
 }))
-vi.mock('../../pages/ControlPanel', () => ({
-  default: () => <div data-testid="control-panel-page">Control Panel</div>,
-}))
 vi.mock('../../pages/Login', () => ({
   default: () => <div data-testid="login-page">Login Page</div>,
+}))
+vi.mock('../../pages/admin/AdminLayout', () => ({
+  default: () => <div data-testid="admin-layout">Admin Layout</div>,
+}))
+vi.mock('../../pages/admin/Dashboard', () => ({
+  default: () => <div data-testid="dashboard-page">Dashboard</div>,
 }))
 
 import { AppRoutes } from '../../App'
@@ -51,13 +54,13 @@ describe('7.2 Protected Routes', () => {
       renderWithRouter('/admin')
 
       expect(screen.getByTestId('login-page')).toBeInTheDocument()
-      expect(screen.queryByTestId('control-panel-page')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('admin-layout')).not.toBeInTheDocument()
     })
 
-    it('should NOT show ControlPanel when token is null', () => {
+    it('should NOT show admin layout when token is null', () => {
       renderWithRouter('/admin')
 
-      expect(screen.queryByTestId('control-panel-page')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('admin-layout')).not.toBeInTheDocument()
     })
 
     it('should redirect unauthenticated users even if user object exists without token', () => {
@@ -72,13 +75,13 @@ describe('7.2 Protected Routes', () => {
   })
 
   describe('Authenticated access to /admin', () => {
-    it('should show ControlPanel when accessing /admin with valid token', () => {
+    it('should show admin layout with dashboard when accessing /admin with valid token', () => {
       mockToken = 'valid-jwt-token'
       mockUser = { id: '1', email: 'admin@senacom.com', role: 'ADMIN' }
 
       renderWithRouter('/admin')
 
-      expect(screen.getByTestId('control-panel-page')).toBeInTheDocument()
+      expect(screen.getByTestId('admin-layout')).toBeInTheDocument()
       expect(screen.queryByTestId('login-page')).not.toBeInTheDocument()
     })
 
@@ -88,7 +91,7 @@ describe('7.2 Protected Routes', () => {
 
       renderWithRouter('/admin')
 
-      expect(screen.getByTestId('control-panel-page')).toBeInTheDocument()
+      expect(screen.getByTestId('admin-layout')).toBeInTheDocument()
     })
 
     it('should not redirect when both token and user are present', () => {
@@ -97,7 +100,7 @@ describe('7.2 Protected Routes', () => {
 
       renderWithRouter('/admin')
 
-      expect(screen.getByTestId('control-panel-page')).toBeInTheDocument()
+      expect(screen.getByTestId('admin-layout')).toBeInTheDocument()
       expect(screen.queryByTestId('login-page')).not.toBeInTheDocument()
     })
   })
@@ -110,7 +113,7 @@ describe('7.2 Protected Routes', () => {
 
       renderWithRouter('/admin')
 
-      expect(screen.getByTestId('control-panel-page')).toBeInTheDocument()
+      expect(screen.getByTestId('admin-layout')).toBeInTheDocument()
     })
   })
 

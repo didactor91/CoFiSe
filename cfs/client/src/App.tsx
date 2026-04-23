@@ -4,10 +4,15 @@ import { CartProvider } from './context/CartContext'
 import { useAuth } from './hooks/useAuth'
 import Landing from './pages/Landing'
 import Catalog from './pages/Catalog'
-import ControlPanel from './pages/ControlPanel'
 import Login from './pages/Login'
 import Checkout from './pages/Checkout'
 import Verification from './pages/Verification'
+import AdminLayout from './pages/admin/AdminLayout'
+import Dashboard from './pages/admin/Dashboard'
+import ProductsPage from './pages/admin/ProductsPage'
+import NewsPage from './pages/admin/NewsPage'
+import EventsPage from './pages/admin/EventsPage'
+import UsersPage from './pages/admin/UsersPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -36,10 +41,16 @@ export function AppRoutes() {
         path="/admin"
         element={
           <ProtectedRoute>
-            <ControlPanel />
+            <AdminLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="news" element={<NewsPage />} />
+        <Route path="events" element={<EventsPage />} />
+        <Route path="users" element={<UsersPage />} />
+      </Route>
     </Routes>
   )
 }

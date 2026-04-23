@@ -145,47 +145,50 @@ The system MUST enforce that product mutations are only accessible to STAFF and 
 
 ### Requirement: Admin UI — Product Management Section
 
-The system SHALL provide a product management section within the ControlPanel accessible to STAFF and ADMIN users.
+The system SHALL provide a Products page at `/admin/products` accessible to STAFF and ADMIN users. The page MUST display a product list table and a product form modal. Product management behavior (validation, mutations) remains unchanged from the original ControlPanel implementation.
 
 #### Scenario: Product list display
 
-- GIVEN an authenticated staff/admin user viewing the ControlPanel
-- WHEN the product management section is loaded
+- GIVEN an authenticated staff/admin user viewing the Products page at `/admin/products`
+- WHEN the page loads
 - THEN a table displays all products with columns: Name, Price, Stock, Actions
-- AND each row shows Edit and Delete buttons
+- AND each row shows Edit and Delete buttons based on permissions
 
 #### Scenario: Create product form
 
-- GIVEN an authenticated staff/admin user
-- WHEN the user clicks "Add Product" in the ControlPanel
-- THEN a form appears with fields: Name (text), Description (textarea), Price (number), Stock (number), Image URL (text, optional)
-- AND a "Save" button to submit
+- GIVEN an authenticated staff/admin user on the Products page
+- WHEN the user clicks "Añadir Producto"
+- THEN a form appears with fields: Name (text, required, max 500 chars), Description (textarea, required), Price (number, required, > 0), Stock (number, >= 0), Image URL (text, optional), Product options (toggle + label + values)
+- AND a "Guardar" button to submit
 
 #### Scenario: Edit product flow
 
-- GIVEN an authenticated staff/admin user
+- GIVEN an authenticated staff/admin user on the Products page
 - WHEN the user clicks "Edit" on a product row
 - THEN the same form as create pre-fills with existing values
-- AND "Save" updates the product via `updateProduct` mutation
+- AND "Guardar" updates the product via `updateProduct` mutation
 
 #### Scenario: Delete product confirmation
 
-- GIVEN an authenticated staff/admin user
+- GIVEN an authenticated staff/admin user on the Products page
 - WHEN the user clicks "Delete" on a product row
-- THEN a confirmation dialog appears: "Delete product '{name}'? This cannot be undone."
+- THEN a confirmation dialog appears: "¿Eliminar producto '{name}'? Esta acción no se puede deshacer."
 - AND on confirm, `deleteProduct` mutation is called
 
 #### Scenario: Empty product list
 
-- GIVEN an authenticated staff/admin user
-- WHEN the product list is empty (no products in database)
-- THEN the table shows: "No products yet. Click 'Add Product' to create one."
+- GIVEN an authenticated staff/admin user on the Products page with no products
+- THEN the table shows: "No hay productos. Haz clic en 'Añadir Producto' para crear uno."
 
 #### Scenario: Zero stock display
 
 - GIVEN a product with `stock = 0`
 - WHEN the product list is displayed
 - THEN the Stock column shows "0" with a visual indicator (e.g., red text or "Out of stock" badge)
+
+## Requirements (from control-panel-restructuring change, archived 2026-04-24)
+
+Routing updated: Products page now accessible at `/admin/products` (previously part of monolithic ControlPanel)
 
 ## GraphQL Schema Additions
 
