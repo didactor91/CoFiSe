@@ -3,7 +3,7 @@
  * 
  * Permissions follow the format: resource.action
  * 
- * Resources: news, product, reservation, user
+ * Resources: news, product, reservation, user, event
  * Actions: create, read, update, delete, manage (all permissions)
  */
 
@@ -33,6 +33,13 @@ export type Permission =
   | 'user.create'
   | 'user.delete'
   | 'user.manage'
+  
+  // Event permissions
+  | 'event.read'
+  | 'event.create'
+  | 'event.update'
+  | 'event.delete'
+  | 'event.manage'
 
 // Role definition with assigned permissions
 export interface Role {
@@ -69,6 +76,13 @@ export const roles: Record<'ADMIN' | 'STAFF', Role> = {
       'user.create',
       'user.delete',
       'user.manage',
+
+      // All events (full management)
+      'event.read',
+      'event.create',
+      'event.update',
+      'event.delete',
+      'event.manage',
     ]
   },
   STAFF: {
@@ -93,6 +107,12 @@ export const roles: Record<'ADMIN' | 'STAFF', Role> = {
       // Users - read only (view user list)
       'user.read',
       // NO user.create, user.delete, user.manage
+
+      // Events (CRUD except delete - ADMIN only)
+      'event.read',
+      'event.create',
+      'event.update',
+      // NO event.delete, event.manage - ADMIN only
     ]
   }
 }

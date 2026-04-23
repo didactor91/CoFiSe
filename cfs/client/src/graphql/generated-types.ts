@@ -53,6 +53,17 @@ export interface User {
   createdAt: DateTime;
 }
 
+export interface Event {
+  id: string;
+  name: string;
+  description?: string | null;
+  location: string;
+  startTime: DateTime;
+  endTime: DateTime;
+  createdAt: DateTime;
+  updatedAt: DateTime;
+}
+
 export interface AuthPayload {
   token: string;
   refreshToken: string;
@@ -100,6 +111,22 @@ export interface CreateUserInput {
   email: string;
   password: string;
   role: UserRole;
+}
+
+export interface CreateEventInput {
+  name: string;
+  description?: string;
+  location: string;
+  startTime: DateTime;
+  endTime: DateTime;
+}
+
+export interface UpdateEventInput {
+  name?: string;
+  description?: string;
+  location?: string;
+  startTime?: DateTime;
+  endTime?: DateTime;
 }
 
 export interface CreateReservationMutationResult {
@@ -184,4 +211,16 @@ export interface ReservationQueryResult {
 
 export interface UsersQueryResult {
   users: User[];
+}
+
+export interface EventsQueryResult {
+  events: Event[];
+}
+
+export interface EventQueryResult {
+  event: Event | null;
+}
+
+export interface AllEventsQueryResult {
+  allEvents: Event[];
 }

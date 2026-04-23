@@ -161,6 +161,20 @@ function reservationFromRow(row: any, includeProduct = true) {
   return reservation
 }
 
+// Helper to convert DB row to Event type
+function eventFromRow(row: any) {
+  return {
+    id: row.id.toString(),
+    name: row.name,
+    description: row.description,
+    location: row.location,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }
+}
+
 export const resolvers = {
   DateTime: dateTimeScalar,
 
@@ -186,6 +200,17 @@ export const resolvers = {
       return row ? productFromRow(row) : null
     },
 
+    // Public event queries
+    events: () => {
+      const rows = db.prepare(`SELECT * FROM events WHERE start_time >= datetime('now') ORDER BY start_time ASC`).all()
+      return rows.map(eventFromRow)
+    },
+
+    event: (_: any, args: { id: string }) => {
+      const row = db.prepare(`SELECT * FROM events WHERE id = ?`).get(args.id)
+      return row ? eventFromRow(row) : null
+    },
+
     // Authenticated queries
     me: (_: any, __: any, ctx: Context) => {
       const user = requireAuth(ctx)
@@ -198,6 +223,13 @@ export const resolvers = {
       requirePermission(ctx, 'news.read')
       const rows = db.prepare(`SELECT * FROM news ORDER BY created_at DESC`).all()
       return rows.map(newsFromRow)
+    },
+
+    // Staff+ event queries
+    allEvents: (_: any, __: any, ctx: Context) => {
+      requirePermission(ctx, 'event.read')
+      const rows = db.prepare(`SELECT * FROM events ORDER BY start_time ASC`).all()
+      return rows.map(eventFromRow)
     },
 
     reservations: (_: any, args: { status?: string }, ctx: Context) => {
@@ -394,6 +426,118 @@ export const resolvers = {
         throw new Error('News not found')
       }
       db.prepare(`DELETE FROM news WHERE id = ?`).run(args.id)
+      return true
+    },
+
+    // Event mutations (Staff+)
+    createEvent: (_: any, args: { input: any }, ctx: Context) => {
+      requirePermission(ctx, 'event.create')
+      const { name, description, location, startTime, endTime } = args.input
+
+      // Validation
+      if (!name || name.trim() === '') {
+        throw new Error('Name is required')
+      }
+      if (name.length > 200) {
+        throw new Error('Name must be 200 characters or less')
+      }
+      if (!location || location.trim() === '') {
+        throw new Error('Location is required')
+      }
+      if (location.length > 300) {
+        throw new Error('Location must be 300 characters or less')
+      }
+      if (!startTime) {
+        throw new Error('Start time is required')
+      }
+      if (!endTime) {
+        throw new Error('End time is required')
+      }
+      if (new Date(endTime) <= new Date(startTime)) {
+        throw new Error('End time must be after start time')
+      }
+
+      const now = new Date().toISOString()
+      const result = db.prepare(`
+        INSERT INTO events (name, description, location, start_time, end_time, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(name, description || null, location, startTime, endTime, now, now)
+
+      return {
+        id: result.lastInsertRowid.toString(),
+        name,
+        description: description || null,
+        location,
+        startTime,
+        endTime,
+        createdAt: now,
+        updatedAt: now
+      }
+    },
+
+    updateEvent: (_: any, args: { id: string; input: any }, ctx: Context) => {
+      requirePermission(ctx, 'event.update')
+      const existing = db.prepare(`SELECT * FROM events WHERE id = ?`).get(args.id) as any
+      if (!existing) {
+        throw new Error('Event not found')
+      }
+
+      const { name, description, location, startTime, endTime } = args.input
+
+      // Validation
+      if (name !== undefined) {
+        if (name.trim() === '') {
+          throw new Error('Name is required')
+        }
+        if (name.length > 200) {
+          throw new Error('Name must be 200 characters or less')
+        }
+      }
+      if (location !== undefined) {
+        if (location.trim() === '') {
+          throw new Error('Location is required')
+        }
+        if (location.length > 300) {
+          throw new Error('Location must be 300 characters or less')
+        }
+      }
+      if (startTime !== undefined && endTime !== undefined) {
+        if (new Date(endTime) <= new Date(startTime)) {
+          throw new Error('End time must be after start time')
+        }
+      }
+
+      const now = new Date().toISOString()
+      const updateName = name ?? existing.name
+      const updateDescription = description ?? existing.description
+      const updateLocation = location ?? existing.location
+      const updateStartTime = startTime ?? existing.start_time
+      const updateEndTime = endTime ?? existing.end_time
+
+      db.prepare(`
+        UPDATE events SET name = ?, description = ?, location = ?, start_time = ?, end_time = ?, updated_at = ?
+        WHERE id = ?
+      `).run(updateName, updateDescription, updateLocation, updateStartTime, updateEndTime, now, args.id)
+
+      return {
+        id: args.id,
+        name: updateName,
+        description: updateDescription,
+        location: updateLocation,
+        startTime: updateStartTime,
+        endTime: updateEndTime,
+        createdAt: existing.created_at,
+        updatedAt: now
+      }
+    },
+
+    deleteEvent: (_: any, args: { id: string }, ctx: Context) => {
+      requirePermission(ctx, 'event.delete')
+      const existing = db.prepare(`SELECT * FROM events WHERE id = ?`).get(args.id)
+      if (!existing) {
+        throw new Error('Event not found')
+      }
+      db.prepare(`DELETE FROM events WHERE id = ?`).run(args.id)
       return true
     },
 
