@@ -92,6 +92,11 @@ export const typeDefs = gql`
     updateNews(id: ID!, input: UpdateNewsInput!): News!
     deleteNews(id: ID!): Boolean!
 
+    # Products (Staff or Admin)
+    createProduct(input: CreateProductInput!): Product!
+    updateProduct(id: ID!, input: UpdateProductInput!): Product!
+    deleteProduct(id: ID!): Boolean!
+
     # Reservations (Staff or Admin)
     updateReservationStatus(id: ID!, status: ReservationStatus!): Reservation!
 
@@ -118,6 +123,22 @@ export const typeDefs = gql`
   input UpdateNewsInput {
     title: String
     content: String
+    imageUrl: String
+  }
+
+  input CreateProductInput {
+    name: String!
+    description: String!
+    price: Float!
+    stock: Int!
+    imageUrl: String
+  }
+
+  input UpdateProductInput {
+    name: String
+    description: String
+    price: Float
+    stock: Int
     imageUrl: String
   }
 

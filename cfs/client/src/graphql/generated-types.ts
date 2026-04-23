@@ -79,6 +79,22 @@ export interface UpdateNewsInput {
   imageUrl?: string;
 }
 
+export interface CreateProductInput {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  imageUrl?: string;
+}
+
+export interface UpdateProductInput {
+  name?: string;
+  description?: string;
+  price?: number;
+  stock?: number;
+  imageUrl?: string;
+}
+
 export interface CreateUserInput {
   email: string;
   password: string;
@@ -103,6 +119,18 @@ export interface UpdateNewsMutationResult {
 
 export interface DeleteNewsMutationResult {
   deleteNews: boolean;
+}
+
+export interface CreateProductMutationResult {
+  createProduct: Product;
+}
+
+export interface UpdateProductMutationResult {
+  updateProduct: Product;
+}
+
+export interface DeleteProductMutationResult {
+  deleteProduct: boolean;
 }
 
 export interface UpdateReservationStatusMutationResult {

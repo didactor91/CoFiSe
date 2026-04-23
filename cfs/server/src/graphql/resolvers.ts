@@ -308,6 +308,99 @@ export const resolvers = {
       return true
     },
 
+    // Product mutations (Staff+)
+    createProduct: (_: any, args: { input: any }, ctx: Context) => {
+      requireStaff(ctx)
+      const { name, description, price, stock, imageUrl } = args.input
+      
+      // Validation
+      if (!name || name.trim() === '') {
+        throw new Error('Name is required')
+      }
+      if (name.length > 500) {
+        throw new Error('Name must be 500 characters or less')
+      }
+      if (price <= 0) {
+        throw new Error('Price must be greater than 0')
+      }
+      if (stock < 0) {
+        throw new Error('Stock must be 0 or greater')
+      }
+      
+      const now = new Date().toISOString()
+      const result = db.prepare(`
+        INSERT INTO products (name, description, price, stock, image_url, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(name, description, price, stock, imageUrl || null, now, now)
+      
+      return {
+        id: result.lastInsertRowid.toString(),
+        name,
+        description,
+        price,
+        stock,
+        imageUrl: imageUrl || null,
+        createdAt: now,
+        updatedAt: now
+      }
+    },
+
+    updateProduct: (_: any, args: { id: string; input: any }, ctx: Context) => {
+      requireStaff(ctx)
+      const existing = db.prepare(`SELECT * FROM products WHERE id = ?`).get(args.id) as any
+      if (!existing) {
+        throw new Error('Product not found')
+      }
+      
+      // Validation
+      const { name, description, price, stock, imageUrl } = args.input
+      if (name !== undefined && name.trim() === '') {
+        throw new Error('Name is required')
+      }
+      if (name && name.length > 500) {
+        throw new Error('Name must be 500 characters or less')
+      }
+      if (price !== undefined && price <= 0) {
+        throw new Error('Price must be greater than 0')
+      }
+      if (stock !== undefined && stock < 0) {
+        throw new Error('Stock must be 0 or greater')
+      }
+      
+      const now = new Date().toISOString()
+      const updateName = name ?? existing.name
+      const updateDescription = description ?? existing.description
+      const updatePrice = price ?? existing.price
+      const updateStock = stock ?? existing.stock
+      const updateImageUrl = imageUrl ?? existing.image_url
+      
+      db.prepare(`
+        UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image_url = ?, updated_at = ?
+        WHERE id = ?
+      `).run(updateName, updateDescription, updatePrice, updateStock, updateImageUrl, now, args.id)
+      
+      return {
+        id: args.id,
+        name: updateName,
+        description: updateDescription,
+        price: updatePrice,
+        stock: updateStock,
+        imageUrl: updateImageUrl,
+        createdAt: existing.created_at,
+        updatedAt: now
+      }
+    },
+
+    deleteProduct: (_: any, args: { id: string }, ctx: Context) => {
+      requireStaff(ctx)
+      const existing = db.prepare(`SELECT * FROM products WHERE id = ?`).get(args.id)
+      if (!existing) {
+        throw new Error('Product not found')
+      }
+      db.prepare(`DELETE FROM products WHERE id = ?`).run(args.id)
+      return true
+    },
+
     // Reservation mutations (Staff+)
     updateReservationStatus: (_: any, args: { id: string; status: string }, ctx: Context) => {
       requireStaff(ctx)

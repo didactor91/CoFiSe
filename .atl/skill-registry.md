@@ -22,9 +22,19 @@
 
 ## Notes
 
-- Strict TDD Mode: disabled (no test runner)
-- Artifact Store: hybrid (openspec files + engram backup)
+- Strict TDD Mode: ✅ enabled (Vitest active on both client + server)
+- Artifact Store: openspec + engram backup
 - Language: Spanish (user writes in Spanish)
+
+## Testing Capabilities
+
+| Layer | Tool | Location |
+|-------|------|----------|
+| Unit | Vitest | cfs/client/src/__tests__/ (17 files) |
+| Integration | Vitest + GraphQL | cfs/server/src/__tests__/ (11 files) |
+| E2E | Playwright | cfs/e2e/ (login.spec.ts, fixtures/) |
+
+Commands: `pnpm test` (unit), `pnpm test:e2e` (E2E), `vitest --coverage` (coverage)
 
 ## Architecture Decisions
 

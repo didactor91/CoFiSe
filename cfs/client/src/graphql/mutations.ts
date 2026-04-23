@@ -9,6 +9,11 @@ import type {
   CreateUserInput,
   User,
   DeleteUserMutationResult,
+  CreateProductInput,
+  UpdateProductInput,
+  CreateProductMutationResult,
+  UpdateProductMutationResult,
+  DeleteProductMutationResult,
 } from '../graphql/generated-types'
 
 export const LOGIN_MUTATION = `
@@ -59,6 +64,42 @@ export const DELETE_USER_MUTATION = `
   }
 `
 
+export const CREATE_PRODUCT_MUTATION = `
+  mutation CreateProduct($input: CreateProductInput!) {
+    createProduct(input: $input) {
+      id
+      name
+      description
+      price
+      stock
+      imageUrl
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const UPDATE_PRODUCT_MUTATION = `
+  mutation UpdateProduct($id: ID!, $input: UpdateProductInput!) {
+    updateProduct(id: $id, input: $input) {
+      id
+      name
+      description
+      price
+      stock
+      imageUrl
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const DELETE_PRODUCT_MUTATION = `
+  mutation DeleteProduct($id: ID!) {
+    deleteProduct(id: $id)
+  }
+`
+
 export function useLoginMutation(): UseMutationResponse<LoginMutationResult> {
   return useMutation<LoginMutationResult>(LOGIN_MUTATION)
 }
@@ -72,5 +113,17 @@ export function useCreateUserMutation(): UseMutationResponse<{ createUser: User 
 }
 
 export function useDeleteUserMutation(): UseMutationResponse<DeleteUserMutationResult> {
-  return useMutation(DELETE_USER_MUTATION)
+  return useMutation<DeleteUserMutationResult>(DELETE_USER_MUTATION)
+}
+
+export function useCreateProductMutation(): UseMutationResponse<CreateProductMutationResult> {
+  return useMutation<CreateProductMutationResult>(CREATE_PRODUCT_MUTATION)
+}
+
+export function useUpdateProductMutation(): UseMutationResponse<UpdateProductMutationResult> {
+  return useMutation<UpdateProductMutationResult>(UPDATE_PRODUCT_MUTATION)
+}
+
+export function useDeleteProductMutation(): UseMutationResponse<DeleteProductMutationResult> {
+  return useMutation<DeleteProductMutationResult>(DELETE_PRODUCT_MUTATION)
 }
