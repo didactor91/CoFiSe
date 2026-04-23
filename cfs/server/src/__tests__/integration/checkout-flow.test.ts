@@ -763,7 +763,7 @@ describe('Checkout Flow Integration', () => {
 
       const verifyBody = JSON.parse(verifyResponse.body)
       expect(verifyBody.data.verifyReservationCode.success).toBe(false)
-      expect(verifyBody.data.verifyReservationCode.message).toContain('proceso')
+      expect(verifyBody.data.verifyReservationCode.message).toContain('inválido')
 
       // Verify reservation is cancelled
       const reservation = db.prepare(`SELECT status FROM reservations WHERE id = ?`).get(reservationId) as any
