@@ -17,7 +17,7 @@ export const typeDefs = gql`
     name: String!
     description: String!
     price: Float!
-    stock: Int!
+    stock: Int
     imageUrl: String
     createdAt: DateTime!
     updatedAt: DateTime!

@@ -71,7 +71,9 @@ CREATE TABLE IF NOT EXISTS product_options (
     name TEXT NOT NULL,
     type TEXT NOT NULL CHECK(type IN ('SIZE', 'COLOR')),
     required INTEGER DEFAULT 0,
-    position INTEGER DEFAULT 0
+    position INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Option Values with stock (NULL = infinite)
@@ -80,7 +82,9 @@ CREATE TABLE IF NOT EXISTS option_values (
     option_id INTEGER REFERENCES product_options(id),
     value TEXT NOT NULL,
     stock INTEGER,
-    position INTEGER DEFAULT 0
+    position INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Carts (session-based, anonymous)

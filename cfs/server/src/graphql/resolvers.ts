@@ -306,7 +306,7 @@ export const resolvers = {
     }
   },
 
-  // Product type resolver with options
+  // Product type resolver with options and computed stock
   Product: {
     options: (parent: any) => {
       const rows = db.prepare(`SELECT * FROM product_options WHERE product_id = ? ORDER BY position`).all(parent.id)
@@ -315,6 +315,28 @@ export const resolvers = {
         ...opt,
         values: db.prepare(`SELECT * FROM option_values WHERE option_id = ? ORDER BY position`).all(opt.id).map(optionValueFromRow)
       }))
+    },
+    // Compute stock: if product has options, sum the stock of all option values
+    // If any option value has NULL stock, the total is infinite (null)
+    stock: (parent: any) => {
+      const optionRows = db.prepare(`SELECT * FROM product_options WHERE product_id = ?`).all(parent.id)
+      if (optionRows.length === 0) {
+        // No options - return product's own stock
+        return parent.stock
+      }
+      // Sum option values' stock
+      let totalStock = 0
+      for (const opt of optionRows) {
+        const valueRows = db.prepare(`SELECT stock FROM option_values WHERE option_id = ?`).all(opt.id)
+        for (const val of valueRows) {
+          if (val.stock === null) {
+            // Infinite stock found
+            return null
+          }
+          totalStock += val.stock
+        }
+      }
+      return totalStock
     }
   },
 
