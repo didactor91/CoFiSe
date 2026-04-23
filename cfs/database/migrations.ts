@@ -31,6 +31,133 @@ const migrations: Migration[] = [
       DROP TABLE IF EXISTS news;
       DROP TABLE IF EXISTS users;
     `
+  },
+  {
+    version: 2,
+    name: 'product_options_cart_anti_fraud',
+    up: `
+      -- Product Options (single selector per product: SIZE or COLOR)
+      CREATE TABLE IF NOT EXISTS product_options (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          product_id INTEGER REFERENCES products(id),
+          name TEXT NOT NULL,
+          type TEXT NOT NULL CHECK(type IN ('SIZE', 'COLOR')),
+          required INTEGER DEFAULT 0,
+          position INTEGER DEFAULT 0
+      );
+
+      -- Option Values with stock (NULL = infinite)
+      CREATE TABLE IF NOT EXISTS option_values (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          option_id INTEGER REFERENCES product_options(id),
+          value TEXT NOT NULL,
+          stock INTEGER,
+          position INTEGER DEFAULT 0
+      );
+
+      -- Carts (session-based, anonymous)
+      CREATE TABLE IF NOT EXISTS carts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          session_id TEXT UNIQUE NOT NULL,
+          status TEXT DEFAULT 'active' CHECK(status IN ('active', 'submitted', 'expired')),
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          expires_at DATETIME
+      );
+
+      -- Cart Items
+      CREATE TABLE IF NOT EXISTS cart_items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          cart_id INTEGER REFERENCES carts(id),
+          product_id INTEGER REFERENCES products(id),
+          option_value_id INTEGER REFERENCES option_values(id),
+          quantity INTEGER DEFAULT 1,
+          UNIQUE(cart_id, product_id, option_value_id)
+      );
+
+      -- Verification Codes (4-digit codes for anti-fraud)
+      CREATE TABLE IF NOT EXISTS verification_codes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          reservation_id INTEGER REFERENCES reservations(id),
+          code TEXT NOT NULL,
+          expires_at DATETIME NOT NULL,
+          used INTEGER DEFAULT 0,
+          attempts INTEGER DEFAULT 0
+      );
+
+      -- Reservation Items (replaces single product_id reservation)
+      CREATE TABLE IF NOT EXISTS reservation_items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          reservation_id INTEGER REFERENCES reservations(id),
+          product_id INTEGER REFERENCES products(id),
+          option_value_id INTEGER REFERENCES option_values(id),
+          quantity INTEGER NOT NULL,
+          unit_price REAL NOT NULL
+      );
+
+      -- Add new columns to reservations (SQLite limitation: must recreate table to change CHECK)
+      CREATE TABLE IF NOT EXISTS reservations_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          product_id INTEGER REFERENCES products(id),
+          quantity INTEGER NOT NULL,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT NOT NULL,
+          notes TEXT,
+          status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'pending_unverified', 'confirmed', 'cancelled', 'completed')),
+          cart_id INTEGER,
+          verified_at DATETIME,
+          ip_address TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      INSERT INTO reservations_new SELECT id, product_id, quantity, name, email, phone, notes, status, NULL, NULL, NULL, created_at, updated_at FROM reservations;
+      DROP TABLE reservations;
+      ALTER TABLE reservations_new RENAME TO reservations;
+
+      -- Create indexes
+      CREATE INDEX IF NOT EXISTS idx_product_options_product ON product_options(product_id);
+      CREATE INDEX IF NOT EXISTS idx_option_values_option ON option_values(option_id);
+      CREATE INDEX IF NOT EXISTS idx_carts_session ON carts(session_id);
+      CREATE INDEX IF NOT EXISTS idx_cart_items_cart ON cart_items(cart_id);
+      CREATE INDEX IF NOT EXISTS idx_verification_codes_reservation ON verification_codes(reservation_id);
+      CREATE INDEX IF NOT EXISTS idx_reservation_items_reservation ON reservation_items(reservation_id);
+      CREATE INDEX IF NOT EXISTS idx_reservations_ip_created ON reservations(ip_address, created_at);
+    `,
+    down: `
+      -- Drop new tables
+      DROP TABLE IF EXISTS product_options;
+      DROP TABLE IF EXISTS option_values;
+      DROP TABLE IF EXISTS carts;
+      DROP TABLE IF EXISTS cart_items;
+      DROP TABLE IF EXISTS verification_codes;
+      DROP TABLE IF EXISTS reservation_items;
+
+      -- Restore original reservations table (SQLite limitation: must recreate)
+      CREATE TABLE IF NOT EXISTS reservations_original (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          product_id INTEGER REFERENCES products(id),
+          quantity INTEGER NOT NULL,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT NOT NULL,
+          notes TEXT,
+          status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'confirmed', 'cancelled')),
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      INSERT INTO reservations_original SELECT id, product_id, quantity, name, email, phone, notes, status, created_at, updated_at FROM reservations;
+      DROP TABLE reservations;
+      ALTER TABLE reservations_original RENAME TO reservations;
+
+      -- Drop indexes
+      DROP INDEX IF EXISTS idx_product_options_product;
+      DROP INDEX IF EXISTS idx_option_values_option;
+      DROP INDEX IF EXISTS idx_carts_session;
+      DROP INDEX IF EXISTS idx_cart_items_cart;
+      DROP INDEX IF EXISTS idx_verification_codes_reservation;
+      DROP INDEX IF EXISTS idx_reservation_items_reservation;
+      DROP INDEX IF EXISTS idx_reservations_ip_created;
+    `
   }
 ]
 
@@ -168,8 +295,15 @@ export class MigrationManager {
     console.log('Resetting database...')
     
     const transaction = this.db.transaction(() => {
-      // Drop all tables
+      // Drop all tables (order matters for FK constraints)
       this.db.exec(`
+        DROP TABLE IF EXISTS reservation_items;
+        DROP TABLE IF EXISTS verification_codes;
+        DROP TABLE IF EXISTS cart_items;
+        DROP TABLE IF EXISTS carts;
+        DROP TABLE IF EXISTS option_values;
+        DROP TABLE IF EXISTS product_options;
+        DROP TABLE IF EXISTS events;
         DROP TABLE IF EXISTS reservations;
         DROP TABLE IF EXISTS products;
         DROP TABLE IF EXISTS news;

@@ -10,6 +10,11 @@ export enum UserRole {
   Staff = 'STAFF',
 }
 
+export enum OptionType {
+  Size = 'SIZE',
+  Color = 'COLOR',
+}
+
 export type DateTime = string;
 
 export interface News {
@@ -30,6 +35,23 @@ export interface Product {
   imageUrl?: string | null;
   createdAt: DateTime;
   updatedAt: DateTime;
+  options: ProductOption[];
+}
+
+export interface ProductOption {
+  id: string;
+  productId: string;
+  name: string;
+  type: OptionType;
+  required: boolean;
+  values: OptionValue[];
+}
+
+export interface OptionValue {
+  id: string;
+  optionId: string;
+  value: string;
+  stock?: number | null;
 }
 
 export interface Reservation {
@@ -223,4 +245,50 @@ export interface EventQueryResult {
 
 export interface AllEventsQueryResult {
   allEvents: Event[];
+}
+
+export interface ProductOptionsQueryResult {
+  productOptions: ProductOption[];
+}
+
+export interface CreateProductOptionInput {
+  productId: string;
+  name: string;
+  type: OptionType;
+  required: boolean;
+}
+
+export interface UpdateProductOptionInput {
+  name?: string;
+  type?: OptionType;
+  required?: boolean;
+}
+
+export interface OptionValueInput {
+  value: string;
+  stock?: number | null;
+}
+
+export interface CreateProductOptionMutationResult {
+  createProductOption: ProductOption;
+}
+
+export interface UpdateProductOptionMutationResult {
+  updateProductOption: ProductOption;
+}
+
+export interface DeleteProductOptionMutationResult {
+  deleteProductOption: boolean;
+}
+
+export interface AddOptionValuesMutationResult {
+  addOptionValues: ProductOption;
+}
+
+export interface UpdateOptionValueMutationResult {
+  updateOptionValue: OptionValue;
+}
+
+export interface DeleteOptionValueMutationResult {
+  deleteOptionValue: boolean;
 }

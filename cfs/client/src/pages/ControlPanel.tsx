@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useAllNewsQuery, useProductsQuery, useReservationsQuery, useUsersQuery, useAllEventsQuery } from '../graphql/queries'
-import { useCreateUserMutation, useDeleteUserMutation, useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation, useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation, useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from '../graphql/mutations'
+import { useCreateUserMutation, useDeleteUserMutation, useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation, useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation, useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation, useCreateProductOptionMutation, useAddOptionValuesMutation, useUpdateOptionValueMutation, useDeleteProductOptionMutation, useDeleteOptionValueMutation } from '../graphql/mutations'
 import { UserRole, ReservationStatus } from '../graphql/generated-types'
 import theme from '../theme'
 import type { Permission } from '../auth/permissions'
@@ -103,6 +103,11 @@ export default function ControlPanel() {
   const [, createEventMutation] = useCreateEventMutation()
   const [, updateEventMutation] = useUpdateEventMutation()
   const [, deleteEventMutation] = useDeleteEventMutation()
+  const [, createProductOptionMutation] = useCreateProductOptionMutation()
+  const [, addOptionValuesMutation] = useAddOptionValuesMutation()
+  const [, updateOptionValueMutation] = useUpdateOptionValueMutation()
+  const [, deleteProductOptionMutation] = useDeleteProductOptionMutation()
+  const [, deleteOptionValueMutation] = useDeleteOptionValueMutation()
 
   const news = newsResult.data?.allNews ?? []
   const events = eventsResult.data?.allEvents ?? []
@@ -275,6 +280,86 @@ export default function ControlPanel() {
 
   const handleCancelDelete = () => {
     setDeleteConfirm(null)
+  }
+
+  // Product Option management handlers
+  const handleAddSizeOption = async (productId: string) => {
+    try {
+      const result = await createProductOptionMutation({
+        input: {
+          productId,
+          name: 'Talla',
+          type: 'SIZE' as const,
+          required: true,
+        }
+      })
+      if (result.error) {
+        alert('Error al crear opción: ' + result.error.message)
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    }
+  }
+
+  const handleAddColorOption = async (productId: string) => {
+    try {
+      const result = await createProductOptionMutation({
+        input: {
+          productId,
+          name: 'Color',
+          type: 'COLOR' as const,
+          required: true,
+        }
+      })
+      if (result.error) {
+        alert('Error al crear opción: ' + result.error.message)
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    }
+  }
+
+  const handleDeleteProductOption = async (optionId: string) => {
+    if (!confirm('¿Eliminar esta opción y todos sus valores?')) return
+    try {
+      const result = await deleteProductOptionMutation({ id: optionId })
+      if (result.error) {
+        alert('Error: ' + result.error.message)
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    }
+  }
+
+  const handleAddOptionValue = async (optionId: string) => {
+    const value = prompt('Valor (ej: M, L, XL, Rojo, Verde):')
+    if (!value) return
+    const stockStr = prompt('Stock (número o deja vacío para infinito):')
+    const stock = stockStr ? parseInt(stockStr, 10) : null
+    
+    try {
+      const result = await addOptionValuesMutation({
+        optionId,
+        values: [{ value, stock }]
+      })
+      if (result.error) {
+        alert('Error: ' + result.error.message)
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    }
+  }
+
+  const handleDeleteOptionValue = async (valueId: string) => {
+    if (!confirm('¿Eliminar este valor?')) return
+    try {
+      const result = await deleteOptionValueMutation({ id: valueId })
+      if (result.error) {
+        alert('Error: ' + result.error.message)
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    }
   }
 
   // News management handlers
@@ -1201,6 +1286,183 @@ export default function ControlPanel() {
             </table>
           )}
         </div>
+      </section>
+
+      {/* Product Options Section - Staff+ */}
+      <section data-testid="product-options-section" style={{ marginTop: theme.spacing['2xl'] }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
+          <h2
+            style={{
+              color: theme.colors.text,
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.semibold,
+            }}
+          >
+            Opciones de Productos
+          </h2>
+        </div>
+
+        {products.filter(p => !p.options || p.options.length === 0).length === 0 ? (
+          <p style={{ color: theme.colors.textSecondary, fontStyle: 'italic', padding: theme.spacing.lg, textAlign: 'center' }}>
+            Todos los productos ya tienen opciones configuradas
+          </p>
+        ) : (
+          <div style={{ background: theme.colors.surface, borderRadius: theme.borderRadius.md, border: `1px solid ${theme.colors.border}`, padding: theme.spacing.lg }}>
+            <p style={{ color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.sm, marginBottom: theme.spacing.md }}>
+              Selecciona un producto para añadirle opciones (talla o color)
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: theme.spacing.md }}>
+              {products.filter(p => !p.options || p.options.length === 0).map(product => (
+                <div
+                  key={product.id}
+                  style={{
+                    background: theme.colors.background,
+                    borderRadius: theme.borderRadius.sm,
+                    border: `1px solid ${theme.colors.border}`,
+                    padding: theme.spacing.md,
+                  }}
+                >
+                  <h4 style={{ color: theme.colors.text, margin: `0 0 ${theme.spacing.xs} 0`, fontSize: theme.typography.fontSize.sm }}>
+                    {product.name}
+                  </h4>
+                  <p style={{ color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, margin: `0 0 ${theme.spacing.sm} 0` }}>
+                    {product.price.toFixed(2)}€
+                  </p>
+                  <div style={{ display: 'flex', gap: theme.spacing.xs }}>
+                    <button
+                      onClick={() => handleAddSizeOption(product.id)}
+                      style={{
+                        flex: 1,
+                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                        background: theme.colors.border,
+                        color: theme.colors.text,
+                        border: 'none',
+                        borderRadius: theme.borderRadius.sm,
+                        cursor: 'pointer',
+                        fontSize: theme.typography.fontSize.xs,
+                      }}
+                    >
+                      + Talla
+                    </button>
+                    <button
+                      onClick={() => handleAddColorOption(product.id)}
+                      style={{
+                        flex: 1,
+                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                        background: theme.colors.border,
+                        color: theme.colors.text,
+                        border: 'none',
+                        borderRadius: theme.borderRadius.sm,
+                        cursor: 'pointer',
+                        fontSize: theme.typography.fontSize.xs,
+                      }}
+                    >
+                      + Color
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Products with options */}
+        {products.filter(p => p.options && p.options.length > 0).length > 0 && (
+          <div style={{ marginTop: theme.spacing.lg }}>
+            <h3 style={{ color: theme.colors.text, fontSize: theme.typography.fontSize.base, marginBottom: theme.spacing.md }}>
+              Productos con opciones configuradas
+            </h3>
+            {products.filter(p => p.options && p.options.length > 0).map(product => (
+              <div
+                key={product.id}
+                style={{
+                  background: theme.colors.surface,
+                  borderRadius: theme.borderRadius.md,
+                  border: `1px solid ${theme.colors.border}`,
+                  padding: theme.spacing.lg,
+                  marginBottom: theme.spacing.md,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: theme.spacing.sm }}>
+                  <div>
+                    <h4 style={{ color: theme.colors.text, margin: 0, fontSize: theme.typography.fontSize.base }}>
+                      {product.name}
+                    </h4>
+                    <p style={{ color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, margin: `${theme.spacing.xs} 0 0 0` }}>
+                      Tipo: {product.options[0].type === 'SIZE' ? 'Talla' : 'Color'} | {product.options[0].required ? 'Obligatorio' : 'Opcional'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteProductOption(product.options[0].id)}
+                    style={{
+                      padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                      background: theme.colors.error,
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: theme.borderRadius.sm,
+                      cursor: 'pointer',
+                      fontSize: theme.typography.fontSize.xs,
+                    }}
+                  >
+                    Eliminar opciones
+                  </button>
+                </div>
+                
+                {/* Option Values */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing.sm, marginTop: theme.spacing.md }}>
+                  {product.options[0].values.map(value => (
+                    <div
+                      key={value.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: theme.spacing.xs,
+                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                        background: theme.colors.background,
+                        borderRadius: theme.borderRadius.sm,
+                        border: `1px solid ${theme.colors.border}`,
+                      }}
+                    >
+                      <span style={{ color: theme.colors.text, fontSize: theme.typography.fontSize.sm }}>
+                        {value.value}
+                      </span>
+                      <span style={{ color: value.stock === null ? theme.colors.success : theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>
+                        ({value.stock === null ? '∞' : value.stock})
+                      </span>
+                      <button
+                        onClick={() => handleDeleteOptionValue(value.id)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: theme.colors.error,
+                          cursor: 'pointer',
+                          fontSize: theme.typography.fontSize.xs,
+                          padding: 0,
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => handleAddOptionValue(product.options[0].id)}
+                    style={{
+                      padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                      background: 'transparent',
+                      border: `1px dashed ${theme.colors.border}`,
+                      borderRadius: theme.borderRadius.sm,
+                      color: theme.colors.textSecondary,
+                      cursor: 'pointer',
+                      fontSize: theme.typography.fontSize.xs,
+                    }}
+                  >
+                    + Añadir valor
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* News Management Section - Staff+ */}
