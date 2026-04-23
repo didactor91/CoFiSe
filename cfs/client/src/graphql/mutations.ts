@@ -25,6 +25,22 @@ export const LOGIN_MUTATION = `
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
       token
+      refreshToken
+      user {
+        id
+        email
+        role
+        createdAt
+      }
+    }
+  }
+`
+
+export const REFRESH_TOKEN_MUTATION = `
+  mutation RefreshToken($refreshToken: String!) {
+    refreshToken(refreshToken: $refreshToken) {
+      token
+      refreshToken
       user {
         id
         email

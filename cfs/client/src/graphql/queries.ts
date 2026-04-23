@@ -12,6 +12,7 @@ import type {
   AllNewsQueryResult,
   ReservationsQueryResult,
   UsersQueryResult,
+  MeQueryResult,
 } from '../graphql/generated-types'
 
 export const NEWS_QUERY = `
@@ -106,6 +107,17 @@ export const USERS_QUERY = `
   }
 `
 
+export const ME_QUERY = `
+  query Me {
+    me {
+      id
+      email
+      role
+      createdAt
+    }
+  }
+`
+
 export function useNewsQuery(): UseQueryResponse<NewsQueryResult> {
   return useQuery<NewsQueryResult>({ query: NEWS_QUERY })
 }
@@ -133,4 +145,8 @@ export function useReservationsQuery(options?: {
 
 export function useUsersQuery(): UseQueryResponse<UsersQueryResult> {
   return useQuery<UsersQueryResult>({ query: USERS_QUERY })
+}
+
+export function useMeQuery(): UseQueryResponse<MeQueryResult> {
+  return useQuery<MeQueryResult>({ query: ME_QUERY })
 }

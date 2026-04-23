@@ -55,6 +55,7 @@ export interface User {
 
 export interface AuthPayload {
   token: string;
+  refreshToken: string;
   user: User;
 }
 
@@ -107,6 +108,10 @@ export interface CreateReservationMutationResult {
 
 export interface LoginMutationResult {
   login: AuthPayload;
+}
+
+export interface RefreshTokenMutationResult {
+  refreshToken: AuthPayload;
 }
 
 export interface CreateNewsMutationResult {

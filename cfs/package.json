@@ -8,10 +8,10 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "pnpm --parallel -C client dev -C server dev",
-    "build": "pnpm -C client build",
-    "start": "pnpm -C server start",
-    "test": "pnpm -C client test && pnpm -C server test",
+    "dev": "pnpm --filter client dev & pnpm --filter server dev",
+    "build": "pnpm --filter client build",
+    "start": "pnpm --filter server start",
+    "test": "pnpm --filter client test && pnpm --filter server test",
     "test:e2e": "playwright test"
   },
   "dependencies": {

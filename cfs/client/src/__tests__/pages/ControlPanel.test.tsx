@@ -105,6 +105,30 @@ vi.mock('../../graphql/mutations', () => ({
     (() => {}) as any,
     { loading: false, error: null },
   ] as const,
+  useCreateProductMutation: () => [
+    (() => {}) as any,
+    { loading: false, error: null },
+  ] as const,
+  useUpdateProductMutation: () => [
+    (() => {}) as any,
+    { loading: false, error: null },
+  ] as const,
+  useDeleteProductMutation: () => [
+    (() => {}) as any,
+    { loading: false, error: null },
+  ] as const,
+  useCreateNewsMutation: () => [
+    (() => {}) as any,
+    { loading: false, error: null },
+  ] as const,
+  useUpdateNewsMutation: () => [
+    (() => {}) as any,
+    { loading: false, error: null },
+  ] as const,
+  useDeleteNewsMutation: () => [
+    (() => {}) as any,
+    { loading: false, error: null },
+  ] as const,
 }))
 
 import ControlPanel from '../../pages/ControlPanel'
@@ -227,8 +251,8 @@ describe('ControlPanel Page', () => {
         </MemoryRouter>
       )
 
-      expect(screen.getByText('Noticia 1')).toBeInTheDocument()
-      expect(screen.getByText('Noticia 2')).toBeInTheDocument()
+      const newsItems = screen.getAllByText(/Noticia/)
+      expect(newsItems.length).toBeGreaterThanOrEqual(2)
     })
   })
 

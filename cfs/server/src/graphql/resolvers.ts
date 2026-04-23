@@ -3,6 +3,15 @@ import bcrypt from 'bcrypt'
 import { db } from '../db/index.js'
 import type { AuthUser } from '../auth/middleware.js'
 
+// Refresh token payload interface
+interface RefreshTokenPayload {
+  id: number
+  type: 'refresh'
+}
+
+// In-memory refresh token store (in production, use Redis or similar)
+const refreshTokens = new Map<string, { userId: number; expiresAt: Date }>()
+
 // DateTime scalar implementation
 const dateTimeScalar = new GraphQLScalarType({
   name: 'DateTime',
@@ -96,7 +105,7 @@ function userFromRow(row: any) {
 
 // Helper to convert DB row to Reservation type
 function reservationFromRow(row: any, includeProduct = true) {
-  const reservation = {
+  const reservation: any = {
     id: row.id.toString(),
     productId: row.product_id.toString(),
     quantity: row.quantity,
@@ -106,7 +115,8 @@ function reservationFromRow(row: any, includeProduct = true) {
     notes: row.notes,
     status: row.status.toUpperCase(),
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
+    product: undefined
   }
   
   if (includeProduct && row.product_name) {
@@ -209,15 +219,76 @@ export const resolvers = {
     login: async (_: any, args: { email: string; password: string }, ctx: Context) => {
       const user = db.prepare(`SELECT * FROM users WHERE email = ?`).get(args.email) as any
       if (!user) {
-        throw new Error('Invalid credentials')
+        throw new Error('Credenciales inválidas')
       }
       const isValid = await bcrypt.compare(args.password, user.password)
       if (!isValid) {
-        throw new Error('Invalid credentials')
+        throw new Error('Credenciales inválidas')
       }
+      
       const token = await ctx.reply.jwtSign({ id: user.id, email: user.email, role: user.role.toUpperCase() })
+      
+      // Generate refresh token (30 day expiry)
+      const refreshToken = await ctx.reply.jwtSign(
+        { id: user.id, type: 'refresh' },
+        { expiresIn: '30d' }
+      )
+      
+      // Store refresh token with expiry
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+      refreshTokens.set(refreshToken, { userId: user.id, expiresAt })
+      
       return {
         token,
+        refreshToken,
+        user: userFromRow(user)
+      }
+    },
+
+    refreshToken: async (_: any, args: { refreshToken: string }, ctx: Context) => {
+      // Verify refresh token
+      let payload: RefreshTokenPayload
+      try {
+        payload = await ctx.reply.jwtVerify(args.refreshToken) as RefreshTokenPayload
+      } catch (err) {
+        throw new Error('Invalid or expired refresh token')
+      }
+      
+      // Ensure this is a refresh token
+      if (payload.type !== 'refresh') {
+        throw new Error('Invalid token type')
+      }
+      
+      // Check if refresh token exists and is not expired
+      const storedData = refreshTokens.get(args.refreshToken)
+      if (!storedData || storedData.expiresAt < new Date()) {
+        refreshTokens.delete(args.refreshToken)
+        throw new Error('Refresh token has expired')
+      }
+      
+      // Get user from database
+      const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(payload.id) as any
+      if (!user) {
+        throw new Error('User not found')
+      }
+      
+      // Generate new access token
+      const token = await ctx.reply.jwtSign({ id: user.id, email: user.email, role: user.role.toUpperCase() })
+      
+      // Generate new refresh token (rotation)
+      const newRefreshToken = await ctx.reply.jwtSign(
+        { id: user.id, type: 'refresh' },
+        { expiresIn: '30d' }
+      )
+      
+      // Remove old refresh token and store new one
+      refreshTokens.delete(args.refreshToken)
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      refreshTokens.set(newRefreshToken, { userId: user.id, expiresAt })
+      
+      return {
+        token,
+        refreshToken: newRefreshToken,
         user: userFromRow(user)
       }
     },

@@ -58,6 +58,7 @@ export const typeDefs = gql`
 
   type AuthPayload {
     token: String!
+    refreshToken: String!
     user: User!
   }
 
@@ -86,6 +87,7 @@ export const typeDefs = gql`
     # Public
     createReservation(input: CreateReservationInput!): Reservation!
     login(email: String!, password: String!): AuthPayload!
+    refreshToken(refreshToken: String!): AuthPayload!
 
     # News (Staff or Admin)
     createNews(input: CreateNewsInput!): News!

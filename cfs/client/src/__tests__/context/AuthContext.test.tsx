@@ -5,8 +5,12 @@ import { AuthProvider, useAuth } from '../../context/AuthContext'
 // Mock the cookie functions
 vi.mock('../../utils/cookies', () => ({
   getAuthToken: vi.fn(() => null),
+  getRefreshToken: vi.fn(() => null),
   setAuthToken: vi.fn(),
+  setRefreshToken: vi.fn(),
   removeAuthToken: vi.fn(),
+  removeRefreshToken: vi.fn(),
+  removeAllAuthTokens: vi.fn(),
 }))
 
 // Mock the graphql client with proper URQL mutation mock structure
@@ -17,6 +21,7 @@ vi.mock('../../graphql/client', () => ({
         data: {
           login: {
             token: 'fake-token',
+            refreshToken: 'fake-refresh-token',
             user: {
               id: '1',
               email: 'admin@senacom.com',

@@ -47,6 +47,30 @@ vi.mock('../../graphql/mutations', () => ({
     vi.fn(),
     { fetching: false, error: null },
   ],
+  useCreateProductMutation: () => [
+    vi.fn(),
+    { fetching: false, error: null },
+  ],
+  useUpdateProductMutation: () => [
+    vi.fn(),
+    { fetching: false, error: null },
+  ],
+  useDeleteProductMutation: () => [
+    vi.fn(),
+    { fetching: false, error: null },
+  ],
+  useCreateNewsMutation: () => [
+    vi.fn(),
+    { fetching: false, error: null },
+  ],
+  useUpdateNewsMutation: () => [
+    vi.fn(),
+    { fetching: false, error: null },
+  ],
+  useDeleteNewsMutation: () => [
+    vi.fn(),
+    { fetching: false, error: null },
+  ],
 }))
 
 import ControlPanel from '../../pages/ControlPanel'

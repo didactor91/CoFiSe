@@ -21,6 +21,14 @@ INSERT INTO users (email, password, role) VALUES (
     'admin'
 );
 
+-- Seed Staff User
+-- Password: changeme123 (same bcrypt hash)
+INSERT INTO users (email, password, role) VALUES (
+    'staff@senacom.com',
+    '$2b$12$LSHxL6kLObvBGTpma7IXMOQe.Pe/pNfxZW0/4OEWTqHeuI62j8CTe',
+    'staff'
+);
+
 -- Seed Sample Products (6 items for catalog preview)
 INSERT INTO products (name, description, price, stock, image_url) VALUES
     ('Paella Valenciana', 'Traditional paella with saffron rice, chicken, rabbit, and green beans', 45.00, 20, '/images/products/paella.jpg'),

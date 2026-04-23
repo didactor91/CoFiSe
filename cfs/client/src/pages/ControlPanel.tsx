@@ -46,7 +46,7 @@ function StatCard({ title, value, testId }: StatCardProps) {
 }
 
 export default function ControlPanel() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | null>(null)
   
   // User management state
@@ -363,6 +363,23 @@ export default function ControlPanel() {
         }}
       >
         Panel de Control
+        <button
+          data-testid="logout-button"
+          onClick={logout}
+          style={{
+            marginLeft: theme.spacing.lg,
+            padding: `${theme.spacing.xs} ${theme.spacing.md}`,
+            background: theme.colors.border,
+            color: theme.colors.text,
+            border: 'none',
+            borderRadius: theme.borderRadius.sm,
+            cursor: 'pointer',
+            fontSize: theme.typography.fontSize.sm,
+            fontWeight: theme.typography.fontWeight.medium,
+          }}
+        >
+          Cerrar Sesión
+        </button>
       </h1>
 
       {/* Stats Dashboard */}

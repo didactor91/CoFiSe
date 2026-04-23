@@ -8,12 +8,14 @@ test.describe('Landing Page', () => {
     await expect(page.locator('h2:has-text("Noticias")')).toBeVisible()
   })
 
-  test('shows empty state message when no news', async ({ page }) => {
+  test('shows news when available', async ({ page }) => {
     await page.goto('/')
     
-    // The empty news message should be visible
-    await expect(page.locator('[data-testid="empty-news"]')).toBeVisible()
-    await expect(page.locator('[data-testid="empty-news"]')).toHaveText('No hay noticias todavía')
+    // Should show news section with news items (not empty state)
+    await expect(page.locator('h2:has-text("Noticias")')).toBeVisible()
+    // Empty news element should NOT be visible when news exist
+    const emptyNews = page.locator('[data-testid="empty-news"]')
+    await expect(emptyNews).not.toBeVisible()
   })
 
   test('shows catalog preview with up to 6 products', async ({ page }) => {

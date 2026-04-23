@@ -3,6 +3,7 @@ import { test, expect } from './fixtures'
 test.describe('Catalog', () => {
   test('catalog page accessible without auth', async ({ page }) => {
     await page.goto('/catalog')
+    await page.waitForLoadState('networkidle')
     
     // Catalog should be publicly accessible
     await expect(page.locator('[data-testid="catalog-page"]')).toBeVisible()
@@ -11,10 +12,13 @@ test.describe('Catalog', () => {
 
   test('shows products list', async ({ page }) => {
     await page.goto('/catalog')
+    await page.waitForLoadState('networkidle')
     
-    // Should show products (or empty state)
-    const productCards = page.locator('[data-testid*="product"]')
+    // Wait for products or empty state to appear
+    await page.waitForSelector('[data-testid*="product-card"], text=No hay productos disponibles', { timeout: 10000 }).catch(() => null)
+    
     // Either products are shown or empty state
+    const productCards = page.locator('[data-testid*="product-card"]')
     const hasProducts = await productCards.count() > 0
     const hasEmptyState = await page.locator('text=No hay productos disponibles').isVisible()
     
@@ -23,6 +27,7 @@ test.describe('Catalog', () => {
 
   test('click on product shows reservation form with stock', async ({ page }) => {
     await page.goto('/catalog')
+    await page.waitForLoadState('networkidle')
     
     // Wait for products to load
     await page.waitForSelector('[data-testid*="product-card"]', { timeout: 5000 }).catch(() => null)
