@@ -26,8 +26,8 @@
 
 ## Phase 3: Testing
 
-- [x] 3.1 Add news CRUD integration tests in `client/src/__tests__/graphql/mutations.test.ts` (5 tests added for news mutation hooks)
-- [ ] 3.2 Add E2E news management tests in `client/e2e/admin.spec.ts` covering: create news form, edit news flow, delete confirmation dialog, empty state display
+- [x] 3.1 Add news CRUD resolver tests in `server/src/__tests__/graphql/mutations/news.test.ts` (5 behavioral tests: create, update, delete, error handling)
+- [x] 3.2 Add E2E news management tests in `e2e/news.spec.ts` covering: create news form, edit news flow, delete confirmation dialog, empty state display
 
 ## Implementation Order
 
