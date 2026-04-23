@@ -75,13 +75,16 @@ export const typeDefs = gql`
   type User {
     id: ID!
     email: String!
-    role: UserRole!
+    role: String!
     createdAt: DateTime!
   }
 
-  enum UserRole {
-    ADMIN
-    STAFF
+  type Role {
+    id: ID!
+    name: String!
+    permissions: [String!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type AuthPayload {
@@ -112,6 +115,7 @@ export const typeDefs = gql`
 
     # Admin only
     users: [User!]!
+    roles: [Role!]!
   }
 
   # Mutations
@@ -149,7 +153,11 @@ export const typeDefs = gql`
 
     # Admin only
     createUser(input: CreateUserInput!): User!
+    updateUser(id: ID!, input: UpdateUserInput!): User!
     deleteUser(id: ID!): Boolean!
+    createRole(input: CreateRoleInput!): Role!
+    updateRole(id: ID!, input: UpdateRoleInput!): Role!
+    deleteRole(id: ID!): Boolean!
   }
 
   input CreateReservationInput {
@@ -194,7 +202,22 @@ export const typeDefs = gql`
   input CreateUserInput {
     email: String!
     password: String!
-    role: UserRole!
+    role: String!
+  }
+
+  input UpdateUserInput {
+    email: String
+    role: String
+  }
+
+  input CreateRoleInput {
+    name: String!
+    permissions: [String!]!
+  }
+
+  input UpdateRoleInput {
+    name: String
+    permissions: [String!]
   }
 
   input CreateEventInput {

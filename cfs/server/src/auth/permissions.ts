@@ -14,7 +14,7 @@ export type Permission =
   | 'news.create'
   | 'news.update'
   | 'news.delete'
-  | 'news.manage' // All news permissions
+  | 'news.manage'
   
   // Product permissions
   | 'product.read'
@@ -40,6 +40,13 @@ export type Permission =
   | 'event.update'
   | 'event.delete'
   | 'event.manage'
+
+  // Role permissions (admin only)
+  | 'role.read'
+  | 'role.create'
+  | 'role.update'
+  | 'role.delete'
+  | 'role.manage'
 
 // Role definition with assigned permissions
 export interface Role {
@@ -83,6 +90,13 @@ export const roles: Record<'ADMIN' | 'STAFF', Role> = {
       'event.update',
       'event.delete',
       'event.manage',
+
+      // All roles (full management)
+      'role.read',
+      'role.create',
+      'role.update',
+      'role.delete',
+      'role.manage',
     ]
   },
   STAFF: {
