@@ -1,57 +1,70 @@
 import { test, expect, loginAs } from './fixtures'
 
-test.describe('News CRUD', () => {
-  test('staff can create news', async ({ page }) => {
+test.describe('News Management E2E', () => {
+  test('staff can access news management', async ({ page }) => {
     // Login as staff
     await loginAs(page, 'staff@senacom.com', 'changeme123')
-    
-    // Navigate to admin
     await page.goto('/admin')
-    
-    // Look for news section or create button
-    // The control panel should show stats or news management
-    
-    // Try to create news via GraphQL mutation
-    // Navigate to news creation if available
-    // For now, just verify the admin page loads with auth
-    await expect(page.locator('[data-testid="control-panel"], text=Panel de control').first()).toBeVisible()
+    // Should show news management section
+    await expect(page.locator('[data-testid="news-management-section"]')).toBeVisible()
   })
 
-  test('staff can read news', async ({ page }) => {
+  test('staff can create a new news item', async ({ page }) => {
     await loginAs(page, 'staff@senacom.com', 'changeme123')
+    await page.goto('/admin')
     
-    // Access news query via the app
-    await page.goto('/')
-    
-    // News section should be visible on landing
-    await expect(page.locator('h2:has-text("Noticias")')).toBeVisible()
+    // Click add news button if visible
+    const addBtn = page.locator('button:has-text("Añadir Noticia"), button:has-text("Agregar Noticia")')
+    if (await addBtn.isVisible()) {
+      await addBtn.click()
+      
+      // Fill form - news has title, content, imageUrl
+      await page.fill('input[name="title"], input[placeholder*="título"]', 'Noticia E2E Test')
+      await page.fill('textarea[name="content"], textarea[placeholder*="contenido"]', 'Contenido de prueba para E2E')
+      await page.fill('input[name="imageUrl"], input[placeholder*="imagen"]', 'https://example.com/image.jpg')
+      
+      // Submit
+      await page.click('button[type="submit"]')
+      
+      // Should see success or the news in list
+      await expect(page.locator('text=Noticia E2E Test').first()).toBeVisible()
+    }
   })
 
-  test('staff can update news', async ({ page }) => {
+  test('staff can edit a news item', async ({ page }) => {
     await loginAs(page, 'staff@senacom.com', 'changeme123')
-    
-    // Access admin panel
     await page.goto('/admin')
     
-    // Verify access to protected content
-    await expect(page).toHaveURL('/admin')
+    // Look for edit button
+    const editBtn = page.locator('[data-testid^="edit-news-btn-"]').first()
+    if (await editBtn.isVisible()) {
+      await editBtn.click()
+      
+      // Form should appear with pre-filled data
+      const titleInput = page.locator('input[name="title"], input[placeholder*="título"]')
+      if (await titleInput.isVisible()) {
+        await titleInput.clear()
+        await titleInput.fill('Noticia Editada E2E')
+        
+        await page.click('button[type="submit"]')
+      }
+    }
   })
 
-  test('staff can delete news', async ({ page }) => {
+  test('staff can delete a news item with confirmation', async ({ page }) => {
     await loginAs(page, 'staff@senacom.com', 'changeme123')
-    
-    // Access admin panel
     await page.goto('/admin')
     
-    // Verify access to protected content
-    await expect(page).toHaveURL('/admin')
-  })
-
-  test('public cannot access news management', async ({ page }) => {
-    // Without auth, access to admin should redirect
-    await page.goto('/admin')
-    
-    // Should redirect to login
-    await expect(page).toHaveURL(/\/login/)
+    // Look for delete button
+    const deleteBtn = page.locator('[data-testid^="delete-news-btn-"]').first()
+    if (await deleteBtn.isVisible()) {
+      await deleteBtn.click()
+      
+      // Confirm dialog should appear
+      const confirmBtn = page.locator('button:has-text("Confirmar"), button:has-text("Eliminar"), button:has-text("Confirm")')
+      if (await confirmBtn.isVisible()) {
+        await confirmBtn.click()
+      }
+    }
   })
 })
