@@ -128,41 +128,40 @@ The system MUST enforce that news mutations are only accessible to STAFF and ADM
 
 ### Requirement: Admin UI — News Management Section
 
-The system SHALL provide a news management section within the ControlPanel accessible to STAFF and ADMIN users.
+The system SHALL provide a News page at `/admin/news` accessible to STAFF and ADMIN users. The page MUST display a news list table and a news form modal. News management behavior (validation, mutations) remains unchanged from the original ControlPanel implementation.
 
 #### Scenario: News list display
 
-- GIVEN an authenticated staff/admin user viewing the ControlPanel
-- WHEN the news management section is loaded
+- GIVEN an authenticated staff/admin user viewing the News page at `/admin/news`
+- WHEN the page loads
 - THEN a table displays all news items with columns: Title, Content preview, Image, Actions
-- AND each row shows Edit and Delete buttons
+- AND each row shows Edit and Delete buttons based on permissions
 
 #### Scenario: Create news form
 
-- GIVEN an authenticated staff/admin user
-- WHEN the user clicks "Add News" in the ControlPanel
-- THEN a form appears with fields: Title (text), Content (textarea), Image URL (text, optional)
-- AND a "Save" button to submit
+- GIVEN an authenticated staff/admin user on the News page
+- WHEN the user clicks "Añadir Noticia"
+- THEN a form appears with fields: Title (text, required), Content (textarea, required), Image URL (text, optional)
+- AND a "Guardar" button to submit
 
 #### Scenario: Edit news flow
 
-- GIVEN an authenticated staff/admin user
+- GIVEN an authenticated staff/admin user on the News page
 - WHEN the user clicks "Edit" on a news row
 - THEN the same form as create pre-fills with existing values
-- AND "Save" updates the news via `updateNews` mutation
+- AND "Guardar" updates the news via `updateNews` mutation
 
 #### Scenario: Delete news confirmation
 
-- GIVEN an authenticated staff/admin user
+- GIVEN an authenticated staff/admin user on the News page
 - WHEN the user clicks "Delete" on a news row
-- THEN a confirmation dialog appears: "Delete news '{title}'? This cannot be undone."
+- THEN a confirmation dialog appears: "¿Eliminar noticia '{title}'? Esta acción no se puede deshacer."
 - AND on confirm, `deleteNews` mutation is called
 
 #### Scenario: Empty news list
 
-- GIVEN an authenticated staff/admin user
-- WHEN the news list is empty (no news in database)
-- THEN the table shows: "No news yet. Click 'Add News' to create one."
+- GIVEN an authenticated staff/admin user on the News page with no news
+- THEN the table shows: "No hay noticias. Haz clic en 'Añadir Noticia' para crear una."
 
 #### Scenario: Content preview in list
 
@@ -170,6 +169,10 @@ The system SHALL provide a news management section within the ControlPanel acces
 - WHEN the news list is displayed
 - THEN only the first 100 characters of content are shown followed by "..."
 - AND the full content is preserved in the database
+
+## Requirements (from control-panel-restructuring change, archived 2026-04-24)
+
+Routing updated: News page now accessible at `/admin/news` (previously part of monolithic ControlPanel)
 
 ### Requirement: Client Mutation Hooks
 

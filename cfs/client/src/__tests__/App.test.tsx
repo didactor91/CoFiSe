@@ -22,11 +22,11 @@ vi.mock('../pages/Landing', () => ({
 vi.mock('../pages/Catalog', () => ({
   default: () => <div data-testid="catalog-page">Catalog Page</div>,
 }))
-vi.mock('../pages/ControlPanel', () => ({
-  default: () => <div data-testid="control-panel-page">Control Panel</div>,
-}))
 vi.mock('../pages/Login', () => ({
   default: () => <div data-testid="login-page">Login Page</div>,
+}))
+vi.mock('../pages/admin/AdminLayout', () => ({
+  default: () => <div data-testid="admin-layout">Admin Layout</div>,
 }))
 
 const renderWithRouter = (initialRoute: string) => {

@@ -16,6 +16,7 @@ vi.mock('../../context/AuthContext', () => ({
     isAuthenticated: !!mockToken && !!mockUser,
     logout: mockLogout,
     login: vi.fn(),
+    can: () => true,
   }),
 }))
 
@@ -25,6 +26,9 @@ vi.mock('../../pages/Landing', () => ({
 }))
 vi.mock('../../pages/ControlPanel', () => ({
   default: () => <div data-testid="control-panel-page">Control Panel</div>,
+}))
+vi.mock('../../pages/admin/AdminLayout', () => ({
+  default: () => <div data-testid="admin-layout-nav">Admin Layout</div>,
 }))
 vi.mock('../../pages/Login', () => ({
   default: () => <div data-testid="login-page">Login Page</div>,

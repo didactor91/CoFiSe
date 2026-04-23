@@ -1,8 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from '../../context/AuthContext'
-import userEvent from '@testing-library/user-event'
+import { CartProvider } from '../../context/CartContext'
+
+// Mock CartContext
+vi.mock('../../context/CartContext', () => ({
+  CartProvider: ({ children }: { children: React.ReactNode }) => children,
+  useCart: () => ({
+    items: [],
+    addToCart: vi.fn(),
+    removeFromCart: vi.fn(),
+    updateQuantity: vi.fn(),
+    clearCart: vi.fn(),
+    total: 0,
+  }),
+}))
 
 // Define types locally
 interface Product {
@@ -26,20 +39,6 @@ vi.mock('../../graphql/queries', () => ({
       { data: productsData, fetching: false, error: null },
       (() => {}) as any,
     ] as const
-  },
-}))
-
-// Mock ReservationForm to avoid urql client issues
-vi.mock('../../components/ReservationForm', () => ({
-  default: function MockReservationForm({ product }: { product: Product; onSuccess?: () => void }) {
-    return (
-      <div data-testid="reservation-form">
-        <span>Reservar: {product.name}</span>
-        <button data-testid="close-form" onClick={() => {}}>
-          ← Volver al catálogo
-        </button>
-      </div>
-    )
   },
 }))
 
@@ -73,17 +72,23 @@ describe('Catalog Page', () => {
     productsData = null
   })
 
+  const renderCatalog = () => {
+    return render(
+      <MemoryRouter>
+        <CartProvider>
+          <AuthProvider>
+            <Catalog />
+          </AuthProvider>
+        </CartProvider>
+      </MemoryRouter>
+    )
+  }
+
   describe('Product Listing', () => {
     it('should display all products with ProductCard components', () => {
       productsData = { products: mockProducts }
 
-      render(
-        <MemoryRouter>
-          <AuthProvider>
-            <Catalog />
-          </AuthProvider>
-        </MemoryRouter>
-      )
+      renderCatalog()
 
       const productCards = screen.getAllByTestId(/product-card/i)
       expect(productCards.length).toBe(2)
@@ -92,69 +97,9 @@ describe('Catalog Page', () => {
     it('should show empty catalog message when no products', () => {
       productsData = { products: [] }
 
-      render(
-        <MemoryRouter>
-          <AuthProvider>
-            <Catalog />
-          </AuthProvider>
-        </MemoryRouter>
-      )
+      renderCatalog()
 
       expect(screen.getByText(/no hay productos/i)).toBeInTheDocument()
-    })
-  })
-
-  describe('Product Detail', () => {
-    it('should show reservation form when product is clicked', async () => {
-      const user = userEvent.setup()
-      productsData = { products: mockProducts }
-
-      render(
-        <MemoryRouter>
-          <AuthProvider>
-            <Catalog />
-          </AuthProvider>
-        </MemoryRouter>
-      )
-
-      // Find and click the first product card
-      const firstProductCard = screen.getByTestId('product-card-1')
-      await act(async () => {
-        await user.click(firstProductCard)
-      })
-
-      // After clicking, reservation form should be shown
-      expect(screen.getByTestId('reservation-form')).toBeInTheDocument()
-      expect(screen.getByText('Reservar: Producto 1')).toBeInTheDocument()
-    })
-
-    it('should return to catalog when closing reservation form', async () => {
-      const user = userEvent.setup()
-      productsData = { products: mockProducts }
-
-      render(
-        <MemoryRouter>
-          <AuthProvider>
-            <Catalog />
-          </AuthProvider>
-        </MemoryRouter>
-      )
-
-      // Click product to open reservation form
-      const firstProductCard = screen.getByTestId('product-card-1')
-      await act(async () => {
-        await user.click(firstProductCard)
-      })
-
-      // Click back button (the first one is the real Catalog button, not the mocked ReservationForm)
-      const backButtons = screen.getAllByRole('button', { name: /volver al catálogo/i })
-      await act(async () => {
-        await user.click(backButtons[0])
-      })
-
-      // Should be back to catalog with product cards
-      const productCards = screen.getAllByTestId(/product-card/i)
-      expect(productCards.length).toBe(2)
     })
   })
 })

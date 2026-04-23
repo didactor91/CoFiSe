@@ -87,7 +87,7 @@ describe('CartContext', () => {
   describe('addToCart()', () => {
     it('should add a new item when product+option combination does not exist', async () => {
       // Mock returning valid products so item isn't removed as stale
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p1' }] },
         error: undefined,
       })
@@ -121,7 +121,7 @@ describe('CartContext', () => {
     })
 
     it('should merge quantities when adding same product+option again', async () => {
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p2' }] },
         error: undefined,
       })
@@ -164,7 +164,7 @@ describe('CartContext', () => {
     })
 
     it('should add as separate items when same product has different options', async () => {
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p2' }] },
         error: undefined,
       })
@@ -205,7 +205,7 @@ describe('CartContext', () => {
     })
 
     it('should persist cart to localStorage after adding item', async () => {
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p1' }] },
         error: undefined,
       })
@@ -236,7 +236,7 @@ describe('CartContext', () => {
 
   describe('updateQuantity()', () => {
     it('should update the quantity of an existing item', async () => {
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p1' }] },
         error: undefined,
       })
@@ -268,7 +268,7 @@ describe('CartContext', () => {
     })
 
     it('should remove item when quantity is set to zero', async () => {
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p1' }] },
         error: undefined,
       })
@@ -302,7 +302,7 @@ describe('CartContext', () => {
 
   describe('removeItem()', () => {
     it('should remove an item from the cart', async () => {
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p1' }] },
         error: undefined,
       })
@@ -336,7 +336,7 @@ describe('CartContext', () => {
 
   describe('clearCart()', () => {
     it('should remove all items from the cart', async () => {
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p1' }, { id: 'p2' }] },
         error: undefined,
       })
@@ -379,7 +379,7 @@ describe('CartContext', () => {
 
   describe('totalItems', () => {
     it('should return the sum of all item quantities', async () => {
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p1' }, { id: 'p2' }] },
         error: undefined,
       })
@@ -418,7 +418,7 @@ describe('CartContext', () => {
 
   describe('localStorage persistence', () => {
     it('should persist full cart state to localStorage', async () => {
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p1' }] },
         error: undefined,
       })
@@ -472,7 +472,7 @@ describe('CartContext', () => {
       })
 
       // Mock returning that p1 exists
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: { products: [{ id: 'p1' }] },
         error: undefined,
       })
@@ -521,7 +521,7 @@ describe('CartContext', () => {
       })
 
       // Mock graphql client to return only p1 as existing
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: {
           products: [
             { id: 'p1' },
@@ -570,7 +570,7 @@ describe('CartContext', () => {
         'senocom_cart_session': 'test-session',
       })
 
-      mockQuery.mockResolvedValue({
+      mockToPromise.mockResolvedValue({
         data: {
           products: [
             { id: 'p1' },
@@ -611,15 +611,12 @@ describe('CartContext', () => {
         'senocom_cart_session': 'test-session',
       })
 
-      // Mock GraphQL query to fail
-      mockQuery.mockResolvedValue({
-        data: null,
-        error: { message: 'Network error' },
-      })
+      // Mock GraphQL query to throw an error (simulating network failure)
+      mockToPromise.mockRejectedValue(new Error('Network error'))
 
       const { result } = renderHook(() => useCart(), { wrapper })
 
-      // When query fails, we keep all items (fail open)
+      // When query throws, we keep all items (fail open)
       await waitFor(() => {
         expect(result.current.items).toHaveLength(1)
       })

@@ -236,7 +236,6 @@ export function useUpdateEventMutation() {
 
 export function useDeleteEventMutation() {
   return useMutation(DELETE_EVENT_MUTATION)
-<<<<<<< HEAD
 }
 
 // Product Option mutations
@@ -246,7 +245,6 @@ export const CREATE_PRODUCT_OPTION_MUTATION = `
       id
       productId
       name
-      type
       required
       values {
         id
@@ -264,7 +262,6 @@ export const UPDATE_PRODUCT_OPTION_MUTATION = `
       id
       productId
       name
-      type
       required
     }
   }
@@ -282,7 +279,6 @@ export const ADD_OPTION_VALUES_MUTATION = `
       id
       productId
       name
-      type
       required
       values {
         id
@@ -334,4 +330,62 @@ export function useUpdateOptionValueMutation() {
 export function useDeleteOptionValueMutation() {
   return useMutation(DELETE_OPTION_VALUE_MUTATION)
 }
+
+// Role mutations
+export const CREATE_ROLE_MUTATION = `
+  mutation CreateRole($input: CreateRoleInput!) {
+    createRole(input: $input) {
+      id
+      name
+      permissions
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const UPDATE_ROLE_MUTATION = `
+  mutation UpdateRole($id: ID!, $input: UpdateRoleInput!) {
+    updateRole(id: $id, input: $input) {
+      id
+      name
+      permissions
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const DELETE_ROLE_MUTATION = `
+  mutation DeleteRole($id: ID!) {
+    deleteRole(id: $id)
+  }
+`
+
+export function useCreateRoleMutation() {
+  return useMutation(CREATE_ROLE_MUTATION)
+}
+
+export function useUpdateRoleMutation() {
+  return useMutation(UPDATE_ROLE_MUTATION)
+}
+
+export function useDeleteRoleMutation() {
+  return useMutation(DELETE_ROLE_MUTATION)
+}
+
+// Update user mutation
+export const UPDATE_USER_MUTATION = `
+  mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+    updateUser(id: $id, input: $input) {
+      id
+      email
+      role
+      createdAt
+    }
+  }
+`
+
+export function useUpdateUserMutation() {
+  return useMutation(UPDATE_USER_MUTATION)
 }

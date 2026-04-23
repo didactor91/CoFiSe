@@ -17,10 +17,27 @@ export const typeDefs = gql`
     name: String!
     description: String!
     price: Float!
-    stock: Int!
+    stock: Int
+    limitedStock: Boolean!
     imageUrl: String
     createdAt: DateTime!
     updatedAt: DateTime!
+    options: [ProductOption!]!
+  }
+
+  type ProductOption {
+    id: ID!
+    productId: ID!
+    name: String!
+    required: Boolean!
+    values: [OptionValue!]!
+  }
+
+  type OptionValue {
+    id: ID!
+    optionId: ID!
+    value: String!
+    stock: Int
   }
 
   type Event {
@@ -58,13 +75,16 @@ export const typeDefs = gql`
   type User {
     id: ID!
     email: String!
-    role: UserRole!
+    role: String!
     createdAt: DateTime!
   }
 
-  enum UserRole {
-    ADMIN
-    STAFF
+  type Role {
+    id: ID!
+    name: String!
+    permissions: [String!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type AuthPayload {
@@ -91,9 +111,11 @@ export const typeDefs = gql`
     allEvents: [Event!]!
     reservations(status: ReservationStatus): [Reservation!]!
     reservation(id: ID!): Reservation
+    productOptions(productId: ID!): [ProductOption!]!
 
     # Admin only
     users: [User!]!
+    roles: [Role!]!
   }
 
   # Mutations
@@ -118,12 +140,24 @@ export const typeDefs = gql`
     updateProduct(id: ID!, input: UpdateProductInput!): Product!
     deleteProduct(id: ID!): Boolean!
 
+    # Product Options (Staff or Admin)
+    createProductOption(input: CreateProductOptionInput!): ProductOption!
+    updateProductOption(id: ID!, input: UpdateProductOptionInput!): ProductOption!
+    deleteProductOption(id: ID!): Boolean!
+    addOptionValues(optionId: ID!, values: [OptionValueInput!]!): ProductOption!
+    updateOptionValue(id: ID!, value: String, stock: Int): OptionValue!
+    deleteOptionValue(id: ID!): Boolean!
+
     # Reservations (Staff or Admin)
     updateReservationStatus(id: ID!, status: ReservationStatus!): Reservation!
 
     # Admin only
     createUser(input: CreateUserInput!): User!
+    updateUser(id: ID!, input: UpdateUserInput!): User!
     deleteUser(id: ID!): Boolean!
+    createRole(input: CreateRoleInput!): Role!
+    updateRole(id: ID!, input: UpdateRoleInput!): Role!
+    deleteRole(id: ID!): Boolean!
   }
 
   input CreateReservationInput {
@@ -152,6 +186,7 @@ export const typeDefs = gql`
     description: String!
     price: Float!
     stock: Int!
+    limitedStock: Boolean!
     imageUrl: String
   }
 
@@ -160,13 +195,29 @@ export const typeDefs = gql`
     description: String
     price: Float
     stock: Int
+    limitedStock: Boolean
     imageUrl: String
   }
 
   input CreateUserInput {
     email: String!
     password: String!
-    role: UserRole!
+    role: String!
+  }
+
+  input UpdateUserInput {
+    email: String
+    role: String
+  }
+
+  input CreateRoleInput {
+    name: String!
+    permissions: [String!]!
+  }
+
+  input UpdateRoleInput {
+    name: String
+    permissions: [String!]
   }
 
   input CreateEventInput {
@@ -183,6 +234,22 @@ export const typeDefs = gql`
     location: String
     startTime: DateTime
     endTime: DateTime
+  }
+
+  input CreateProductOptionInput {
+    productId: ID!
+    name: String!
+    required: Boolean!
+  }
+
+  input UpdateProductOptionInput {
+    name: String
+    required: Boolean
+  }
+
+  input OptionValueInput {
+    value: String!
+    stock: Int
   }
 `
 

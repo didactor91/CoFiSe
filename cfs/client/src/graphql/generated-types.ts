@@ -31,7 +31,8 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  stock: number;
+  stock: number | null;
+  limitedStock: boolean;
   imageUrl?: string | null;
   createdAt: DateTime;
   updatedAt: DateTime;

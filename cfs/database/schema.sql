@@ -9,9 +9,22 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    role TEXT NOT NULL CHECK(role IN ('admin', 'staff')),
+    role TEXT NOT NULL,  -- 'ADMIN', 'STAFF', or custom role name
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Roles table (custom roles with permissions)
+CREATE TABLE IF NOT EXISTS roles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    permissions TEXT NOT NULL,  -- JSON array of permission strings
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default roles
+INSERT OR IGNORE INTO roles (id, name, permissions) VALUES (1, 'ADMIN', '["news.read","news.create","news.update","news.delete","news.manage","product.read","product.create","product.update","product.delete","product.manage","reservation.read","reservation.update","reservation.manage","user.read","user.create","user.delete","user.manage","event.read","event.create","event.update","event.delete","event.manage"]');
+INSERT OR IGNORE INTO roles (id, name, permissions) VALUES (2, 'STAFF', '["news.read","news.create","news.update","news.delete","product.read","product.create","product.update","product.delete","reservation.read","reservation.update","user.read","event.read","event.create","event.update"]');
 
 -- News table (announcements and updates)
 CREATE TABLE IF NOT EXISTS news (
@@ -30,6 +43,7 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
     price REAL NOT NULL,
     stock INTEGER DEFAULT 0,
+    limited_stock INTEGER DEFAULT 1,
     image_url TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -71,7 +85,9 @@ CREATE TABLE IF NOT EXISTS product_options (
     name TEXT NOT NULL,
     type TEXT NOT NULL CHECK(type IN ('SIZE', 'COLOR')),
     required INTEGER DEFAULT 0,
-    position INTEGER DEFAULT 0
+    position INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Option Values with stock (NULL = infinite)
@@ -80,7 +96,9 @@ CREATE TABLE IF NOT EXISTS option_values (
     option_id INTEGER REFERENCES product_options(id),
     value TEXT NOT NULL,
     stock INTEGER,
-    position INTEGER DEFAULT 0
+    position INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Carts (session-based, anonymous)

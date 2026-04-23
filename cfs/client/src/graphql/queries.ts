@@ -36,6 +36,7 @@ export const PRODUCTS_QUERY = `
       description
       price
       stock
+      limitedStock
       imageUrl
       createdAt
       updatedAt
@@ -43,7 +44,6 @@ export const PRODUCTS_QUERY = `
         id
         productId
         name
-        type
         required
         values {
           id
@@ -163,6 +163,18 @@ export const USERS_QUERY = `
   }
 `
 
+export const ROLES_QUERY = `
+  query Roles {
+    roles {
+      id
+      name
+      permissions
+      createdAt
+      updatedAt
+    }
+  }
+`
+
 export const ME_QUERY = `
   query Me {
     me {
@@ -201,6 +213,10 @@ export function useReservationsQuery(options?: {
 
 export function useUsersQuery(): UseQueryResponse<UsersQueryResult> {
   return useQuery<UsersQueryResult>({ query: USERS_QUERY })
+}
+
+export function useRolesQuery() {
+  return useQuery({ query: ROLES_QUERY })
 }
 
 export function useMeQuery(): UseQueryResponse<MeQueryResult> {

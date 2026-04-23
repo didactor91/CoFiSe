@@ -125,3 +125,48 @@ The system SHALL validate:
 - GIVEN the authenticated user has event.create permission
 - WHEN the user submits an event with malformed start_time
 - THEN the system rejects with invalid datetime format error
+
+### Requirement: Admin UI — Event Management Section
+
+The system SHALL provide an Events page at `/admin/events` accessible to STAFF and ADMIN users. The page MUST display an events list and event form. Event management behavior (validation, create, update, delete by ADMIN only) remains unchanged.
+
+#### Scenario: Events list display
+
+- GIVEN an authenticated staff/admin user viewing the Events page at `/admin/events`
+- WHEN the page loads
+- THEN a list displays all events with name, location, start/end times, and action buttons
+- AND only ADMIN users see Delete buttons
+
+#### Scenario: Create event flow
+
+- GIVEN an authenticated staff/admin user on the Events page
+- WHEN the user clicks "Añadir Evento"
+- THEN an event form appears with fields: Name (required, max 200 chars), Description (optional), Location (required, max 300 chars), Start Time (required), End Time (required, must be after start time)
+- AND "Guardar" calls `createEvent` mutation
+
+#### Scenario: Edit event flow
+
+- GIVEN an authenticated staff/admin user on the Events page
+- WHEN the user clicks "Edit" on an event row
+- THEN the event form pre-fills with existing values
+- AND "Guardar" calls `updateEvent` mutation
+
+#### Scenario: Delete event (ADMIN only)
+
+- GIVEN an authenticated ADMIN user on the Events page
+- WHEN the user clicks "Delete" on an event row
+- THEN a confirmation dialog appears
+- AND on confirm, `deleteEvent` mutation is called
+
+- GIVEN an authenticated STAFF user on the Events page
+- WHEN the page renders
+- THEN no Delete buttons are displayed for any events
+
+#### Scenario: Empty events list
+
+- GIVEN an authenticated staff/admin user on the Events page with no events
+- THEN the page shows: "No hay eventos. Haz clic en 'Añadir Evento' para crear uno."
+
+## Requirements (from control-panel-restructuring change, archived 2026-04-24)
+
+Admin UI updated: Events page now accessible at `/admin/events` via page-based structure (previously part of monolithic ControlPanel)

@@ -27,10 +27,12 @@ interface Product {
 // Mutable state for mocking
 let newsData: { news: News[] } | null = null
 let productsData: { products: Product[] } | null = null
+let eventsData: { events: any[] } | null = null
 
 vi.mock('../../graphql/queries', () => ({
   NEWS_QUERY: '',
   PRODUCTS_QUERY: '',
+  EVENTS_QUERY: '',
   useNewsQuery: () => {
     return [
       { data: newsData, fetching: false, error: null },
@@ -40,6 +42,12 @@ vi.mock('../../graphql/queries', () => ({
   useProductsQuery: () => {
     return [
       { data: productsData, fetching: false, error: null },
+      (() => {}) as any,
+    ] as const
+  },
+  useEventsQuery: () => {
+    return [
+      { data: eventsData, fetching: false, error: null },
       (() => {}) as any,
     ] as const
   },
@@ -94,6 +102,7 @@ describe('Landing Page', () => {
     // Reset mock state before each test
     newsData = null
     productsData = null
+    eventsData = { events: [] }
   })
 
   describe('News Feed', () => {
@@ -173,9 +182,10 @@ describe('Landing Page', () => {
         </MemoryRouter>
       )
 
-      // Should only show 6 products
-      const productCards = screen.getAllByTestId(/product-card/i)
-      expect(productCards.length).toBe(6)
+      // Should only show 6 products (check by product names)
+      expect(screen.getByText('Producto 1')).toBeInTheDocument()
+      expect(screen.getByText('Producto 6')).toBeInTheDocument()
+      expect(screen.queryByText('Producto 7')).not.toBeInTheDocument()
     })
   })
 })

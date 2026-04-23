@@ -113,6 +113,7 @@ function productFromRow(row: any) {
     description: row.description,
     price: row.price,
     stock: row.stock,
+    limitedStock: !!row.limited_stock,
     imageUrl: row.image_url,
     createdAt: row.created_at,
     updatedAt: row.updated_at
@@ -175,6 +176,33 @@ function eventFromRow(row: any) {
   }
 }
 
+// Helper to convert DB row to ProductOption type
+function productOptionFromRow(row: any) {
+  return {
+    id: row.id.toString(),
+    productId: row.product_id.toString(),
+    name: row.name,
+    required: !!row.required
+  }
+}
+
+// Helper: compute type from name (for backward compatibility with DB)
+function productOptionTypeFromName(name: string): string {
+  const lower = name.toLowerCase()
+  if (lower.includes('color') || lower.includes('colour')) return 'COLOR'
+  return 'SIZE'
+}
+
+// Helper to convert DB row to OptionValue type
+function optionValueFromRow(row: any) {
+  return {
+    id: row.id.toString(),
+    optionId: row.option_id.toString(),
+    value: row.value,
+    stock: row.stock
+  }
+}
+
 export const resolvers = {
   DateTime: dateTimeScalar,
 
@@ -209,6 +237,13 @@ export const resolvers = {
     event: (_: any, args: { id: string }) => {
       const row = db.prepare(`SELECT * FROM events WHERE id = ?`).get(args.id)
       return row ? eventFromRow(row) : null
+    },
+
+    // Product options query (Staff+)
+    productOptions: (_: any, args: { productId: string }, ctx: Context) => {
+      requireStaff(ctx)
+      const rows = db.prepare(`SELECT * FROM product_options WHERE product_id = ? ORDER BY position`).all(args.productId)
+      return rows.map(productOptionFromRow)
     },
 
     // Authenticated queries
@@ -269,6 +304,70 @@ export const resolvers = {
       requirePermission(ctx, 'user.read')
       const rows = db.prepare(`SELECT * FROM users ORDER BY created_at DESC`).all()
       return rows.map(userFromRow)
+    },
+
+    roles: (_: any, __: any, ctx: Context) => {
+      requirePermission(ctx, 'role.read')
+      const rows = db.prepare(`SELECT * FROM roles ORDER BY id ASC`).all()
+      return rows.map((row: any) => ({
+        id: row.id.toString(),
+        name: row.name,
+        permissions: JSON.parse(row.permissions),
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }))
+    }
+  },
+
+  // Product type resolver with options and computed stock
+  Product: {
+    options: (parent: any) => {
+      const rows = db.prepare(`SELECT * FROM product_options WHERE product_id = ? ORDER BY position`).all(parent.id)
+      const options = rows.map(productOptionFromRow)
+      return options.map((opt: any) => ({
+        ...opt,
+        values: db.prepare(`SELECT * FROM option_values WHERE option_id = ? ORDER BY position`).all(opt.id).map(optionValueFromRow)
+      }))
+    },
+    // Compute stock: if product has options, sum the stock of all option values
+    // If any option value has NULL stock, the total is infinite (null)
+    stock: (parent: any) => {
+      const optionRows = db.prepare(`SELECT * FROM product_options WHERE product_id = ?`).all(parent.id)
+      if (optionRows.length === 0) {
+        // No options - return product's own stock
+        return parent.stock
+      }
+      // Sum option values' stock
+      let totalStock = 0
+      for (const opt of optionRows) {
+        const valueRows = db.prepare(`SELECT stock FROM option_values WHERE option_id = ?`).all(opt.id)
+        for (const val of valueRows) {
+          if (val.stock === null) {
+            // Infinite stock found
+            return null
+          }
+          totalStock += val.stock
+        }
+      }
+      return totalStock
+    }
+  },
+
+  // ProductOption type resolver with values
+  ProductOption: {
+    values: (parent: any) => {
+      const rows = db.prepare(`SELECT * FROM option_values WHERE option_id = ? ORDER BY position`).all(parent.id)
+      return rows.map(optionValueFromRow)
+    }
+  },
+
+  // Role type resolver
+  Role: {
+    permissions: (parent: any) => {
+      if (typeof parent.permissions === 'string') {
+        return JSON.parse(parent.permissions)
+      }
+      return parent.permissions
     }
   },
 
@@ -561,10 +660,11 @@ export const resolvers = {
       }
       
       const now = new Date().toISOString()
+      const limitedStock = args.input.limitedStock ? 1 : 0
       const result = db.prepare(`
-        INSERT INTO products (name, description, price, stock, image_url, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(name, description, price, stock, imageUrl || null, now, now)
+        INSERT INTO products (name, description, price, stock, limited_stock, image_url, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(name, description, price, stock, limitedStock, imageUrl || null, now, now)
       
       return {
         id: result.lastInsertRowid.toString(),
@@ -572,6 +672,7 @@ export const resolvers = {
         description,
         price,
         stock,
+        limitedStock: !!limitedStock,
         imageUrl: imageUrl || null,
         createdAt: now,
         updatedAt: now
@@ -586,7 +687,7 @@ export const resolvers = {
       }
       
       // Validation
-      const { name, description, price, stock, imageUrl } = args.input
+      const { name, description, price, stock, limitedStock, imageUrl } = args.input
       if (name !== undefined && name.trim() === '') {
         throw new Error('Name is required')
       }
@@ -605,12 +706,13 @@ export const resolvers = {
       const updateDescription = description ?? existing.description
       const updatePrice = price ?? existing.price
       const updateStock = stock ?? existing.stock
+      const updateLimitedStock = limitedStock !== undefined ? (limitedStock ? 1 : 0) : existing.limited_stock
       const updateImageUrl = imageUrl ?? existing.image_url
       
       db.prepare(`
-        UPDATE products SET name = ?, description = ?, price = ?, stock = ?, image_url = ?, updated_at = ?
+        UPDATE products SET name = ?, description = ?, price = ?, stock = ?, limited_stock = ?, image_url = ?, updated_at = ?
         WHERE id = ?
-      `).run(updateName, updateDescription, updatePrice, updateStock, updateImageUrl, now, args.id)
+      `).run(updateName, updateDescription, updatePrice, updateStock, updateLimitedStock, updateImageUrl, now, args.id)
       
       return {
         id: args.id,
@@ -618,6 +720,7 @@ export const resolvers = {
         description: updateDescription,
         price: updatePrice,
         stock: updateStock,
+        limitedStock: !!updateLimitedStock,
         imageUrl: updateImageUrl,
         createdAt: existing.created_at,
         updatedAt: now
@@ -631,6 +734,105 @@ export const resolvers = {
         throw new Error('Product not found')
       }
       db.prepare(`DELETE FROM products WHERE id = ?`).run(args.id)
+      return true
+    },
+
+    // Product Option mutations (Staff+)
+    createProductOption: (_: any, args: { input: any }, ctx: Context) => {
+      requirePermission(ctx, 'product.update')
+      const product = db.prepare(`SELECT id FROM products WHERE id = ?`).get(args.input.productId)
+      if (!product) {
+        throw new Error('Product not found')
+      }
+      const existingOption = db.prepare(`SELECT id FROM product_options WHERE product_id = ?`).get(args.input.productId)
+      if (existingOption) {
+        throw new Error('Product already has an option selector. Delete existing option first.')
+      }
+      // Infer type from name for DB storage (compatibility)
+      const type = productOptionTypeFromName(args.input.name)
+      const now = new Date().toISOString()
+      const result = db.prepare(`
+        INSERT INTO product_options (product_id, name, type, required, position, created_at, updated_at)
+        VALUES (?, ?, ?, ?, 0, ?, ?)
+      `).run(args.input.productId, args.input.name, type, args.input.required ? 1 : 0, now, now)
+      return {
+        id: result.lastInsertRowid.toString(),
+        productId: args.input.productId,
+        name: args.input.name,
+        required: args.input.required,
+        values: []
+      }
+    },
+
+    updateProductOption: (_: any, args: { id: string; input: any }, ctx: Context) => {
+      requirePermission(ctx, 'product.update')
+      const existing = db.prepare(`SELECT * FROM product_options WHERE id = ?`).get(args.id) as any
+      if (!existing) {
+        throw new Error('Product option not found')
+      }
+      const now = new Date().toISOString()
+      const name = args.input.name ?? existing.name
+      // If name changed, infer new type from name; otherwise keep existing
+      const type = args.input.name ? productOptionTypeFromName(args.input.name) : existing.type
+      const required = args.input.required !== undefined ? (args.input.required ? 1 : 0) : existing.required
+      db.prepare(`UPDATE product_options SET name = ?, type = ?, required = ?, updated_at = ? WHERE id = ?`)
+        .run(name, type, required, now, args.id)
+      return {
+        id: args.id,
+        productId: existing.product_id.toString(),
+        name,
+        required: !!required,
+        values: []
+      }
+    },
+
+    deleteProductOption: (_: any, args: { id: string }, ctx: Context) => {
+      requirePermission(ctx, 'product.delete')
+      const existing = db.prepare(`SELECT id FROM product_options WHERE id = ?`).get(args.id)
+      if (!existing) {
+        throw new Error('Product option not found')
+      }
+      db.prepare(`DELETE FROM option_values WHERE option_id = ?`).run(args.id)
+      db.prepare(`DELETE FROM product_options WHERE id = ?`).run(args.id)
+      return true
+    },
+
+    addOptionValues: (_: any, args: { optionId: string; values: any[] }, ctx: Context) => {
+      requirePermission(ctx, 'product.update')
+      const option = db.prepare(`SELECT * FROM product_options WHERE id = ?`).get(args.optionId) as any
+      if (!option) {
+        throw new Error('Product option not found')
+      }
+      const now = new Date().toISOString()
+      const insertedValues = []
+      for (const val of args.values) {
+        const result = db.prepare(`INSERT INTO option_values (option_id, value, stock, position, created_at, updated_at) VALUES (?, ?, ?, 0, ?, ?)`)
+          .run(args.optionId, val.value, val.stock ?? null, now, now)
+        insertedValues.push({ id: result.lastInsertRowid.toString(), optionId: args.optionId, value: val.value, stock: val.stock ?? null })
+      }
+      return { id: option.id.toString(), productId: option.product_id.toString(), name: option.name, type: option.type.toUpperCase(), required: !!option.required, values: insertedValues }
+    },
+
+    updateOptionValue: (_: any, args: { id: string; value?: string; stock?: number }, ctx: Context) => {
+      requirePermission(ctx, 'product.update')
+      const existing = db.prepare(`SELECT * FROM option_values WHERE id = ?`).get(args.id) as any
+      if (!existing) {
+        throw new Error('Option value not found')
+      }
+      const now = new Date().toISOString()
+      const newValue = args.value ?? existing.value
+      const newStock = args.stock !== undefined ? args.stock : existing.stock
+      db.prepare(`UPDATE option_values SET value = ?, stock = ?, updated_at = ? WHERE id = ?`).run(newValue, newStock, now, args.id)
+      return { id: args.id, optionId: existing.option_id.toString(), value: newValue, stock: newStock }
+    },
+
+    deleteOptionValue: (_: any, args: { id: string }, ctx: Context) => {
+      requirePermission(ctx, 'product.delete')
+      const existing = db.prepare(`SELECT id FROM option_values WHERE id = ?`).get(args.id)
+      if (!existing) {
+        throw new Error('Option value not found')
+      }
+      db.prepare(`DELETE FROM option_values WHERE id = ?`).run(args.id)
       return true
     },
 
@@ -716,6 +918,74 @@ export const resolvers = {
         throw new Error('No puedes eliminarte a ti mismo')
       }
       db.prepare(`DELETE FROM users WHERE id = ?`).run(args.id)
+      return true
+    },
+
+    // Role mutations (Admin only)
+    createRole: (_: any, args: { input: any }, ctx: Context) => {
+      requirePermission(ctx, 'role.create')
+      const existing = db.prepare(`SELECT * FROM roles WHERE name = ?`).get(args.input.name)
+      if (existing) {
+        throw new Error('Role name already exists')
+      }
+      const now = new Date().toISOString()
+      const permissionsJson = JSON.stringify(args.input.permissions)
+      const result = db.prepare(`
+        INSERT INTO roles (name, permissions, created_at, updated_at)
+        VALUES (?, ?, ?, ?)
+      `).run(args.input.name, permissionsJson, now, now)
+      
+      return {
+        id: result.lastInsertRowid.toString(),
+        name: args.input.name,
+        permissions: args.input.permissions,
+        createdAt: now,
+        updatedAt: now
+      }
+    },
+
+    updateRole: (_: any, args: { id: string; input: any }, ctx: Context) => {
+      requirePermission(ctx, 'role.update')
+      const existing = db.prepare(`SELECT * FROM roles WHERE id = ?`).get(args.id) as any
+      if (!existing) {
+        throw new Error('Role not found')
+      }
+      // Prevent modifying system roles
+      if (existing.name === 'ADMIN' || existing.name === 'STAFF') {
+        throw new Error('Cannot modify system roles')
+      }
+      const now = new Date().toISOString()
+      const name = args.input.name ?? existing.name
+      const permissions = args.input.permissions ? JSON.stringify(args.input.permissions) : existing.permissions
+      
+      db.prepare(`UPDATE roles SET name = ?, permissions = ?, updated_at = ? WHERE id = ?`)
+        .run(name, permissions, now, args.id)
+      
+      return {
+        id: args.id,
+        name: name,
+        permissions: args.input.permissions ? args.input.permissions : JSON.parse(existing.permissions),
+        createdAt: existing.created_at,
+        updatedAt: now
+      }
+    },
+
+    deleteRole: (_: any, args: { id: string }, ctx: Context) => {
+      requirePermission(ctx, 'role.delete')
+      const existing = db.prepare(`SELECT * FROM roles WHERE id = ?`).get(args.id) as any
+      if (!existing) {
+        throw new Error('Role not found')
+      }
+      // Prevent deleting system roles
+      if (existing.name === 'ADMIN' || existing.name === 'STAFF') {
+        throw new Error('Cannot delete system roles')
+      }
+      // Check if any users are using this role
+      const usersWithRole = db.prepare(`SELECT COUNT(*) as count FROM users WHERE role = ?`).get(existing.name) as any
+      if (usersWithRole.count > 0) {
+        throw new Error(`Cannot delete role: ${usersWithRole.count} user(s) are using this role`)
+      }
+      db.prepare(`DELETE FROM roles WHERE id = ?`).run(args.id)
       return true
     }
   }
