@@ -39,6 +39,13 @@ export type Permission =
   | 'event.delete'
   | 'event.manage'
 
+// Role permissions
+  | 'role.read'
+  | 'role.create'
+  | 'role.update'
+  | 'role.delete'
+  | 'role.manage'
+
 // Role-Permission mapping (must match server)
 export const rolePermissions: Record<'ADMIN' | 'STAFF', Permission[]> = {
   ADMIN: [
@@ -64,6 +71,11 @@ export const rolePermissions: Record<'ADMIN' | 'STAFF', Permission[]> = {
     'event.update',
     'event.delete',
     'event.manage',
+    'role.read',
+    'role.create',
+    'role.update',
+    'role.delete',
+    'role.manage',
   ],
   STAFF: [
     'news.read',
@@ -81,6 +93,8 @@ export const rolePermissions: Record<'ADMIN' | 'STAFF', Permission[]> = {
     'event.create',
     'event.update',
     // NO event.delete - ADMIN only
+    'role.read',
+    // NO role.create, role.update, role.delete, role.manage - ADMIN only
   ]
 }
 
