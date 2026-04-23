@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginForm from '../components/LoginForm'
 import { useAuth } from '../hooks/useAuth'
@@ -10,11 +11,12 @@ export default function Login() {
     navigate('/admin')
   }
 
-  // If already authenticated, redirect to admin
-  if (isAuthenticated) {
-    navigate('/admin', { replace: true })
-    return null
-  }
+  // If already authenticated, redirect to admin (useEffect to avoid setState during render)
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/admin', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   return (
     <div
