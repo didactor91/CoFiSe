@@ -23,6 +23,17 @@ export const typeDefs = gql`
     updatedAt: DateTime!
   }
 
+  type Event {
+    id: ID!
+    name: String!
+    description: String
+    location: String!
+    startTime: DateTime!
+    endTime: DateTime!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
   type Reservation {
     id: ID!
     product: Product!
@@ -69,12 +80,15 @@ export const typeDefs = gql`
     newsItem(id: ID!): News
     products: [Product!]!
     product(id: ID!): Product
+    events: [Event!]!
+    event(id: ID!): Event
 
     # Authenticated
     me: User
 
     # Staff or Admin
     allNews: [News!]!
+    allEvents: [Event!]!
     reservations(status: ReservationStatus): [Reservation!]!
     reservation(id: ID!): Reservation
 
@@ -93,6 +107,11 @@ export const typeDefs = gql`
     createNews(input: CreateNewsInput!): News!
     updateNews(id: ID!, input: UpdateNewsInput!): News!
     deleteNews(id: ID!): Boolean!
+
+    # Events (Staff or Admin)
+    createEvent(input: CreateEventInput!): Event!
+    updateEvent(id: ID!, input: UpdateEventInput!): Event!
+    deleteEvent(id: ID!): Boolean!
 
     # Products (Staff or Admin)
     createProduct(input: CreateProductInput!): Product!
@@ -148,6 +167,22 @@ export const typeDefs = gql`
     email: String!
     password: String!
     role: UserRole!
+  }
+
+  input CreateEventInput {
+    name: String!
+    description: String
+    location: String!
+    startTime: DateTime!
+    endTime: DateTime!
+  }
+
+  input UpdateEventInput {
+    name: String
+    description: String
+    location: String
+    startTime: DateTime
+    endTime: DateTime
   }
 `
 
