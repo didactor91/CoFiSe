@@ -237,3 +237,99 @@ export function useUpdateEventMutation() {
 export function useDeleteEventMutation() {
   return useMutation(DELETE_EVENT_MUTATION)
 }
+
+// Product Option mutations
+export const CREATE_PRODUCT_OPTION_MUTATION = `
+  mutation CreateProductOption($input: CreateProductOptionInput!) {
+    createProductOption(input: $input) {
+      id
+      productId
+      name
+      type
+      required
+      values {
+        id
+        optionId
+        value
+        stock
+      }
+    }
+  }
+`
+
+export const UPDATE_PRODUCT_OPTION_MUTATION = `
+  mutation UpdateProductOption($id: ID!, $input: UpdateProductOptionInput!) {
+    updateProductOption(id: $id, input: $input) {
+      id
+      productId
+      name
+      type
+      required
+    }
+  }
+`
+
+export const DELETE_PRODUCT_OPTION_MUTATION = `
+  mutation DeleteProductOption($id: ID!) {
+    deleteProductOption(id: $id)
+  }
+`
+
+export const ADD_OPTION_VALUES_MUTATION = `
+  mutation AddOptionValues($optionId: ID!, $values: [OptionValueInput!]!) {
+    addOptionValues(optionId: $optionId, values: $values) {
+      id
+      productId
+      name
+      type
+      required
+      values {
+        id
+        optionId
+        value
+        stock
+      }
+    }
+  }
+`
+
+export const UPDATE_OPTION_VALUE_MUTATION = `
+  mutation UpdateOptionValue($id: ID!, $value: String, $stock: Int) {
+    updateOptionValue(id: $id, value: $value, stock: $stock) {
+      id
+      optionId
+      value
+      stock
+    }
+  }
+`
+
+export const DELETE_OPTION_VALUE_MUTATION = `
+  mutation DeleteOptionValue($id: ID!) {
+    deleteOptionValue(id: $id)
+  }
+`
+
+export function useCreateProductOptionMutation() {
+  return useMutation(CREATE_PRODUCT_OPTION_MUTATION)
+}
+
+export function useUpdateProductOptionMutation() {
+  return useMutation(UPDATE_PRODUCT_OPTION_MUTATION)
+}
+
+export function useDeleteProductOptionMutation() {
+  return useMutation(DELETE_PRODUCT_OPTION_MUTATION)
+}
+
+export function useAddOptionValuesMutation() {
+  return useMutation(ADD_OPTION_VALUES_MUTATION)
+}
+
+export function useUpdateOptionValueMutation() {
+  return useMutation(UPDATE_OPTION_VALUE_MUTATION)
+}
+
+export function useDeleteOptionValueMutation() {
+  return useMutation(DELETE_OPTION_VALUE_MUTATION)
+}

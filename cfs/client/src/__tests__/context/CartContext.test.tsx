@@ -25,12 +25,24 @@ Object.defineProperty(globalThis, 'crypto', {
 })
 
 // Mock graphql client - will be configured per test
+// graphqlClient.query() returns an object with toPromise() method
 const mockQuery = vi.fn()
+const mockToPromise = vi.fn()
 vi.mock('../../graphql/client', () => ({
   graphqlClient: {
-    query: (...args: unknown[]) => mockQuery(...args),
+    query: vi.fn().mockImplementation(() => ({
+      toPromise: mockToPromise,
+    })),
   },
 }))
+
+// Helper to set up GraphQL mock with specific product data
+const setupProductsMock = (products: Array<{ id: string }>) => {
+  mockToPromise.mockResolvedValue({
+    data: { products },
+    error: undefined,
+  })
+}
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <CartProvider>{children}</CartProvider>
@@ -41,12 +53,9 @@ describe('CartContext', () => {
     localStorageMock.clear()
     localStorageMock.setStore({})
     randomUUIDMock.mockReturnValue('test-uuid-1234')
-    mockQuery.mockReset()
-    // Default: no products (will cause stale cleanup to remove all items)
-    mockQuery.mockResolvedValue({
-      data: { products: [] },
-      error: undefined,
-    })
+    mockToPromise.mockReset()
+    // Default: return empty products (stale cleanup removes all items)
+    setupProductsMock([])
   })
 
   describe('Initial State', () => {

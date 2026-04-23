@@ -39,6 +39,19 @@ export const PRODUCTS_QUERY = `
       imageUrl
       createdAt
       updatedAt
+      options {
+        id
+        productId
+        name
+        type
+        required
+        values {
+          id
+          optionId
+          value
+          stock
+        }
+      }
     }
   }
 `

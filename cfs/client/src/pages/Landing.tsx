@@ -1,10 +1,11 @@
+import { useNavigate } from 'react-router-dom'
 import { useNewsQuery, useProductsQuery, useEventsQuery } from '../graphql/queries'
 import NewsCard from '../components/NewsCard'
-import ProductCard from '../components/ProductCard'
 import type { Product } from '../graphql/generated-types'
 import theme from '../theme'
 
 export default function Landing() {
+  const navigate = useNavigate()
   const [newsResult] = useNewsQuery()
   const [productsResult] = useProductsQuery()
   const [eventsResult] = useEventsQuery()
@@ -161,17 +162,33 @@ export default function Landing() {
 
       {/* Catalog Preview Section */}
       <section>
-        <h2
-          style={{
-            color: theme.colors.accent,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.semibold,
-            marginBottom: theme.spacing.lg,
-            fontFamily: theme.typography.fontFamily,
-          }}
-        >
-          Catálogo
-        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.lg }}>
+          <h2
+            style={{
+              color: theme.colors.accent,
+              fontSize: theme.typography.fontSize.xl,
+              fontWeight: theme.typography.fontWeight.semibold,
+              fontFamily: theme.typography.fontFamily,
+              margin: 0,
+            }}
+          >
+            Catálogo
+          </h2>
+          <button
+            onClick={() => navigate('/catalog')}
+            style={{
+              background: 'transparent',
+              border: `1px solid ${theme.colors.accent}`,
+              borderRadius: theme.borderRadius.md,
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              color: theme.colors.accent,
+              cursor: 'pointer',
+              fontSize: theme.typography.fontSize.sm,
+            }}
+          >
+            Ver todo →
+          </button>
+        </div>
 
         {catalogPreview.length === 0 ? (
           <p
@@ -194,7 +211,80 @@ export default function Landing() {
             }}
           >
             {catalogPreview.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <div
+                key={product.id}
+                onClick={() => navigate('/catalog')}
+                style={{
+                  background: theme.colors.surface,
+                  borderRadius: theme.borderRadius.md,
+                  padding: theme.spacing.md,
+                  border: `1px solid ${theme.colors.border}`,
+                  cursor: 'pointer',
+                  transition: 'border-color 0.2s',
+                }}
+              >
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    style={{
+                      width: '100%',
+                      height: '150px',
+                      objectFit: 'cover',
+                      borderRadius: theme.borderRadius.sm,
+                      marginBottom: theme.spacing.sm,
+                    }}
+                  />
+                )}
+                <h3
+                  style={{
+                    color: theme.colors.text,
+                    fontSize: theme.typography.fontSize.base,
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    margin: 0,
+                  }}
+                >
+                  {product.name}
+                </h3>
+                <p
+                  style={{
+                    color: theme.colors.textSecondary,
+                    fontSize: theme.typography.fontSize.sm,
+                    margin: `${theme.spacing.xs} 0`,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {product.description}
+                </p>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: theme.spacing.sm,
+                  }}
+                >
+                  <span
+                    style={{
+                      color: theme.colors.accent,
+                      fontSize: theme.typography.fontSize.lg,
+                      fontWeight: theme.typography.fontWeight.bold,
+                    }}
+                  >
+                    {product.price.toFixed(2)}€
+                  </span>
+                  <span
+                    style={{
+                      color: product.stock > 0 ? theme.colors.success : theme.colors.error,
+                      fontSize: theme.typography.fontSize.xs,
+                    }}
+                  >
+                    {product.stock > 0 ? 'En stock' : 'Sin stock'}
+                  </span>
+                </div>
+              </div>
             ))}
           </div>
         )}
