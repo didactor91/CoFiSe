@@ -10,9 +10,6 @@ interface RefreshTokenPayload {
   type: 'refresh'
 }
 
-// In-memory refresh token store (in production, use Redis or similar)
-const refreshTokens = new Map<string, { userId: number; expiresAt: Date }>()
-
 // DateTime scalar implementation
 const dateTimeScalar = new GraphQLScalarType({
   name: 'DateTime',
@@ -257,15 +254,11 @@ export const resolvers = {
       
       const token = await ctx.reply.jwtSign({ id: user.id, email: user.email, role: user.role.toUpperCase() })
       
-      // Generate refresh token (30 day expiry)
+      // Generate refresh token (30 day expiry embedded in JWT)
       const refreshToken = await ctx.reply.jwtSign(
         { id: user.id, type: 'refresh' },
         { expiresIn: '30d' }
       )
-      
-      // Store refresh token with expiry
-      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
-      refreshTokens.set(refreshToken, { userId: user.id, expiresAt })
       
       return {
         token,
@@ -275,7 +268,7 @@ export const resolvers = {
     },
 
     refreshToken: async (_: any, args: { refreshToken: string }, ctx: Context) => {
-      // Verify refresh token
+      // Verify refresh token JWT (contains expiry in payload)
       let payload: RefreshTokenPayload
       try {
         payload = await ctx.reply.jwtVerify(args.refreshToken) as RefreshTokenPayload
@@ -288,12 +281,10 @@ export const resolvers = {
         throw new Error('Invalid token type')
       }
       
-      // Check if refresh token exists and is not expired
-      const storedData = refreshTokens.get(args.refreshToken)
-      if (!storedData || storedData.expiresAt < new Date()) {
-        refreshTokens.delete(args.refreshToken)
-        throw new Error('Refresh token has expired')
-      }
+      // Note: We don't check any in-memory store because:
+      // 1. The JWT already contains expiry (30d from issue time)
+      // 2. On server restart, in-memory store is cleared but tokens remain valid
+      // 3. This allows session persistence across server restarts
       
       // Get user from database
       const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(payload.id) as any
@@ -309,11 +300,6 @@ export const resolvers = {
         { id: user.id, type: 'refresh' },
         { expiresIn: '30d' }
       )
-      
-      // Remove old refresh token and store new one
-      refreshTokens.delete(args.refreshToken)
-      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      refreshTokens.set(newRefreshToken, { userId: user.id, expiresAt })
       
       return {
         token,

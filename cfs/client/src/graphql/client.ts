@@ -1,7 +1,7 @@
 import { Client, cacheExchange, fetchExchange } from 'urql'
 import { getAuthToken } from '../utils/cookies'
 
-// Note: fetchOptions is called per-request by urql
+// Note: fetchOptions is called per-request by urql, so token is read dynamically
 export const graphqlClient = new Client({
   url: '/api/graphql',
   exchanges: [cacheExchange, fetchExchange],
@@ -9,7 +9,6 @@ export const graphqlClient = new Client({
     const token = getAuthToken()
     return {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
-      credentials: 'include', // Important: send cookies on cross-origin requests
     }
   },
 })

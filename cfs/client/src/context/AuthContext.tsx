@@ -30,23 +30,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Initialize auth state from cookies on mount
+  // Initialize auth state from localStorage on mount
   useEffect(() => {
     const storedToken = getAuthToken()
     const storedRefreshToken = getRefreshToken()
 
     if (storedToken) {
       setToken(storedToken)
-    }
-
-    if (storedToken && storedRefreshToken) {
-      // Both tokens exist - use refresh to get fresh tokens + user
-      refreshAccessToken(storedRefreshToken)
-    } else if (storedToken) {
-      // Only access token - validate with me query
-      validateTokenAndFetchUser(storedToken)
+      if (storedRefreshToken) {
+        refreshAccessToken(storedRefreshToken)
+      } else {
+        validateTokenAndFetchUser(storedToken)
+      }
     } else if (storedRefreshToken) {
-      // Only refresh token - use it to get everything
       refreshAccessToken(storedRefreshToken)
     } else {
       setIsLoading(false)
@@ -57,8 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = await graphqlClient.query(ME_QUERY, {}).toPromise()
 
-      if (result.error) {
-        // Token might be expired - try refresh token
+      if (result.error || !result.data?.me) {
         const storedRefreshToken = getRefreshToken()
         if (storedRefreshToken) {
           refreshAccessToken(storedRefreshToken)
@@ -71,25 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      if (!result.data?.me) {
-        // Token invalid or user not found - try refresh token
-        const storedRefreshToken = getRefreshToken()
-        if (storedRefreshToken) {
-          refreshAccessToken(storedRefreshToken)
-        } else {
-          removeAllAuthTokens()
-          setUser(null)
-          setToken(null)
-          setIsLoading(false)
-        }
-        return
-      }
-
-      // Token valid, user fetched
       setUser(result.data.me)
       setIsLoading(false)
     } catch (err) {
-      // Network error or other failure - try refresh
       const storedRefreshToken = getRefreshToken()
       if (storedRefreshToken) {
         refreshAccessToken(storedRefreshToken)
@@ -120,12 +99,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newUser)
         setAuthToken(newToken)
         setRefreshToken(newRefreshToken)
+      } else {
+        removeAllAuthTokens()
+        setUser(null)
+        setToken(null)
       }
     } catch (err) {
       removeAllAuthTokens()
       setUser(null)
       setToken(null)
+    } finally {
       setIsLoading(false)
+    }
+  }
+        return
+      }
+
+      console.log('[Auth] User validated:', result.data.me.email)
+      setUser(result.data.me)
+      setIsLoading(false)
+    } catch (err) {
+      console.log('[Auth] ME exception:', err)
+      const storedRefreshToken = getRefreshToken()
+      if (storedRefreshToken) {
+        refreshAccessToken(storedRefreshToken)
+      } else {
+        removeAllAuthTokens()
+        setUser(null)
+        setToken(null)
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const refreshAccessToken = async (refreshToken: string) => {
+    try {
+      const result = await graphqlClient.mutation(REFRESH_TOKEN_MUTATION, { refreshToken }).toPromise()
+      
+      if (result.error) {
+        console.warn('[Auth] Refresh mutation error:', result.error.message)
+        removeAllAuthTokens()
+        setUser(null)
+        setToken(null)
+        setIsLoading(false)
+        return
+      }
+      
+      if (result.data?.refreshToken) {
+        const { token: newToken, refreshToken: newRefreshToken, user: newUser } = result.data.refreshToken
+        setToken(newToken)
+        setUser(newUser)
+        setAuthToken(newToken)
+        setRefreshToken(newRefreshToken)
+      } else {
+        console.warn('[Auth] Refresh returned no data, clearing auth')
+        removeAllAuthTokens()
+        setUser(null)
+        setToken(null)
+      }
+    } catch (err) {
+      console.warn('[Auth] Refresh exception:', err)
+      removeAllAuthTokens()
+      setUser(null)
+      setToken(null)
     } finally {
       setIsLoading(false)
     }
