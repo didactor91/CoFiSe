@@ -99,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newUser)
         setAuthToken(newToken)
         setRefreshToken(newRefreshToken)
+        setIsLoading(false)
       } else {
         removeAllAuthTokens()
         setUser(null)
