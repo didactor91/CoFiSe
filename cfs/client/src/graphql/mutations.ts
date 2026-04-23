@@ -236,6 +236,7 @@ export function useUpdateEventMutation() {
 
 export function useDeleteEventMutation() {
   return useMutation(DELETE_EVENT_MUTATION)
+<<<<<<< HEAD
 }
 
 // Product Option mutations
@@ -332,4 +333,5 @@ export function useUpdateOptionValueMutation() {
 
 export function useDeleteOptionValueMutation() {
   return useMutation(DELETE_OPTION_VALUE_MUTATION)
+}
 }

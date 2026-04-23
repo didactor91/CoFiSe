@@ -162,6 +162,102 @@ export default function Landing() {
 
       {/* Catalog Preview Section */}
       <section>
+>>>>>>> origin/main
+        <h2
+          style={{
+            color: theme.colors.accent,
+            fontSize: theme.typography.fontSize.xl,
+            fontWeight: theme.typography.fontWeight.semibold,
+            marginBottom: theme.spacing.lg,
+            fontFamily: theme.typography.fontFamily,
+          }}
+        >
+          Próximos Eventos
+        </h2>
+
+        {events.length === 0 ? (
+          <p
+            style={{
+              color: theme.colors.textSecondary,
+              fontSize: theme.typography.fontSize.base,
+              fontStyle: 'italic',
+              textAlign: 'center',
+              padding: theme.spacing.xl,
+            }}
+          >
+            No hay eventos programados
+          </p>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: theme.spacing.lg,
+            }}
+          >
+            {events.map((event) => (
+              <div
+                key={event.id}
+                style={{
+                  background: theme.colors.surface,
+                  borderRadius: theme.borderRadius.md,
+                  padding: theme.spacing.lg,
+                  border: `1px solid ${theme.colors.border}`,
+                }}
+              >
+                <h3
+                  style={{
+                    color: theme.colors.text,
+                    fontSize: theme.typography.fontSize.lg,
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    marginBottom: theme.spacing.sm,
+                  }}
+                >
+                  {event.name}
+                </h3>
+                <p
+                  style={{
+                    color: theme.colors.textSecondary,
+                    fontSize: theme.typography.fontSize.sm,
+                    marginBottom: theme.spacing.xs,
+                  }}
+                >
+                  📍 {event.location}
+                </p>
+                <p
+                  style={{
+                    color: theme.colors.accent,
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: theme.typography.fontWeight.medium,
+                  }}
+                >
+                  🗓 {new Date(event.startTime).toLocaleString('es-ES', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  })}
+                </p>
+                {event.description && (
+                  <p
+                    style={{
+                      color: theme.colors.textSecondary,
+                      fontSize: theme.typography.fontSize.base,
+                      marginTop: theme.spacing.md,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {event.description.length > 120
+                      ? `${event.description.substring(0, 120)}...`
+                      : event.description}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Catalog Preview Section */}
+      <section>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.lg }}>
           <h2
             style={{

@@ -21,28 +21,6 @@ export const typeDefs = gql`
     imageUrl: String
     createdAt: DateTime!
     updatedAt: DateTime!
-    options: [ProductOption!]!
-  }
-
-  enum OptionType {
-    SIZE
-    COLOR
-  }
-
-  type ProductOption {
-    id: ID!
-    productId: ID!
-    name: String!
-    type: OptionType!
-    required: Boolean!
-    values: [OptionValue!]!
-  }
-
-  type OptionValue {
-    id: ID!
-    optionId: ID!
-    value: String!
-    stock: Int
   }
 
   type Event {
@@ -113,7 +91,6 @@ export const typeDefs = gql`
     allEvents: [Event!]!
     reservations(status: ReservationStatus): [Reservation!]!
     reservation(id: ID!): Reservation
-    productOptions(productId: ID!): [ProductOption!]!
 
     # Admin only
     users: [User!]!
@@ -140,14 +117,6 @@ export const typeDefs = gql`
     createProduct(input: CreateProductInput!): Product!
     updateProduct(id: ID!, input: UpdateProductInput!): Product!
     deleteProduct(id: ID!): Boolean!
-
-    # Product Options (Staff or Admin)
-    createProductOption(input: CreateProductOptionInput!): ProductOption!
-    updateProductOption(id: ID!, input: UpdateProductOptionInput!): ProductOption!
-    deleteProductOption(id: ID!): Boolean!
-    addOptionValues(optionId: ID!, values: [OptionValueInput!]!): ProductOption!
-    updateOptionValue(id: ID!, value: String, stock: Int): OptionValue!
-    deleteOptionValue(id: ID!): Boolean!
 
     # Reservations (Staff or Admin)
     updateReservationStatus(id: ID!, status: ReservationStatus!): Reservation!
@@ -214,24 +183,6 @@ export const typeDefs = gql`
     location: String
     startTime: DateTime
     endTime: DateTime
-  }
-
-  input CreateProductOptionInput {
-    productId: ID!
-    name: String!
-    type: OptionType!
-    required: Boolean!
-  }
-
-  input UpdateProductOptionInput {
-    name: String
-    type: OptionType
-    required: Boolean
-  }
-
-  input OptionValueInput {
-    value: String!
-    stock: Int
   }
 `
 
