@@ -1,50 +1,34 @@
-const AUTH_COOKIE_NAME = 'auth_token'
-const REFRESH_COOKIE_NAME = 'refresh_token'
+const AUTH_TOKEN_KEY = 'auth_token'
+const REFRESH_TOKEN_KEY = 'refresh_token'
 
 export function getAuthToken(): string | null {
   if (typeof document === 'undefined') return null
-  const cookies = document.cookie.split(';')
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=')
-    if (name === AUTH_COOKIE_NAME) {
-      return decodeURIComponent(value)
-    }
-  }
-  return null
+  return localStorage.getItem(AUTH_TOKEN_KEY)
 }
 
 export function getRefreshToken(): string | null {
   if (typeof document === 'undefined') return null
-  const cookies = document.cookie.split(';')
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=')
-    if (name === REFRESH_COOKIE_NAME) {
-      return decodeURIComponent(value)
-    }
-  }
-  return null
+  return localStorage.getItem(REFRESH_TOKEN_KEY)
 }
 
 export function setAuthToken(token: string): void {
   if (typeof document === 'undefined') return
-  const maxAge = 60 * 60 * 24 // 24 hours in seconds
-  document.cookie = `${AUTH_COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${maxAge}; SameSite=Strict`
+  localStorage.setItem(AUTH_TOKEN_KEY, token)
 }
 
 export function setRefreshToken(token: string): void {
   if (typeof document === 'undefined') return
-  const maxAge = 60 * 60 * 24 * 30 // 30 days in seconds
-  document.cookie = `${REFRESH_COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${maxAge}; SameSite=Strict`
+  localStorage.setItem(REFRESH_TOKEN_KEY, token)
 }
 
 export function removeAuthToken(): void {
   if (typeof document === 'undefined') return
-  document.cookie = `${AUTH_COOKIE_NAME}=; path=/; max-age=0`
+  localStorage.removeItem(AUTH_TOKEN_KEY)
 }
 
 export function removeRefreshToken(): void {
   if (typeof document === 'undefined') return
-  document.cookie = `${REFRESH_COOKIE_NAME}=; path=/; max-age=0`
+  localStorage.removeItem(REFRESH_TOKEN_KEY)
 }
 
 export function removeAllAuthTokens(): void {

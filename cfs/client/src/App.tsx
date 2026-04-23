@@ -7,7 +7,12 @@ import ControlPanel from './pages/ControlPanel'
 import Login from './pages/Login'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
+  
+  if (isLoading) {
+    // During auth initialization, don't redirect - wait for result
+    return null
+  }
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />

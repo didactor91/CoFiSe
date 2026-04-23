@@ -57,8 +57,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = await graphqlClient.query(ME_QUERY, {}).toPromise()
 
-      if (result.error || !result.data?.me) {
-        // Token invalid - try refresh token if available
+      if (result.error) {
+        // Token might be expired - try refresh token
+        const storedRefreshToken = getRefreshToken()
+        if (storedRefreshToken) {
+          refreshAccessToken(storedRefreshToken)
+        } else {
+          removeAllAuthTokens()
+          setUser(null)
+          setToken(null)
+          setIsLoading(false)
+        }
+        return
+      }
+
+      if (!result.data?.me) {
+        // Token invalid or user not found - try refresh token
         const storedRefreshToken = getRefreshToken()
         if (storedRefreshToken) {
           refreshAccessToken(storedRefreshToken)
@@ -96,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         removeAllAuthTokens()
         setUser(null)
         setToken(null)
+        setIsLoading(false)
         return
       }
       
@@ -110,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       removeAllAuthTokens()
       setUser(null)
       setToken(null)
+      setIsLoading(false)
     } finally {
       setIsLoading(false)
     }
