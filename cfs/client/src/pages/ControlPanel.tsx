@@ -67,7 +67,10 @@ export default function ControlPanel() {
     description: '',
     price: '',
     stock: '',
-    imageUrl: ''
+    imageUrl: '',
+    hasOptions: false,         // Whether this product has option selector
+    optionLabel: '',           // Label for the option field (e.g., "Talla", "Color")
+    optionValues: [] as { value: string, stock: number | null }[],  // Values with stock
   })
 
   // News management state
@@ -178,22 +181,88 @@ export default function ControlPanel() {
   // Product management handlers
   const handleAddProduct = () => {
     setEditingProduct(null)
-    setProductForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
+    setProductForm({
+      name: '',
+      description: '',
+      price: '',
+      stock: '',
+      imageUrl: '',
+      hasOptions: false,
+      optionLabel: '',
+      optionValues: [],
+    })
     setProductFormError(null)
     setShowProductForm(true)
   }
 
   const handleEditProduct = (product: any) => {
+    // Build optionValues from existing options if present
+    let optionValues: { value: string; stock: number | null }[] = []
+    let hasOptions = false
+    let optionLabel = ''
+    
+    if (product.options && product.options.length > 0) {
+      const opt = product.options[0]
+      hasOptions = true
+      optionLabel = opt.name
+      optionValues = opt.values.map((v: any) => ({ value: v.value, stock: v.stock }))
+    }
+    
     setEditingProduct(product)
     setProductForm({
       name: product.name,
       description: product.description,
       price: product.price.toString(),
       stock: product.stock.toString(),
-      imageUrl: product.imageUrl || ''
+      imageUrl: product.imageUrl || '',
+      hasOptions,
+      optionLabel,
+      optionValues,
     })
     setProductFormError(null)
     setShowProductForm(true)
+  }
+
+  // Option value management within product form
+  const handleToggleHasOptions = () => {
+    setProductForm(prev => ({
+      ...prev,
+      hasOptions: !prev.hasOptions,
+      // Reset option fields when disabling
+      optionValues: !prev.hasOptions ? prev.optionValues : [],
+      optionLabel: !prev.hasOptions ? prev.optionLabel : '',
+    }))
+  }
+
+  const handleOptionLabelChange = (label: string) => {
+    setProductForm(prev => ({ ...prev, optionLabel: label }))
+  }
+
+  const handleAddOptionValue = () => {
+    setProductForm(prev => ({
+      ...prev,
+      optionValues: [...prev.optionValues, { value: '', stock: null }],
+    }))
+  }
+
+  const handleOptionValueChange = (index: number, field: 'value' | 'stock', rawVal: string) => {
+    setProductForm(prev => {
+      const newValues = [...prev.optionValues]
+      if (field === 'value') {
+        newValues[index] = { ...newValues[index], value: rawVal }
+      } else {
+        // stock: empty string = null (infinite), number = finite
+        newValues[index] = { ...newValues[index], stock: rawVal === '' ? null : parseInt(rawVal, 10) || 0 }
+      }
+      return { ...prev, optionValues: newValues }
+    })
+  }
+
+  const handleRemoveOptionValue = (index: number) => {
+    setProductForm(prev => ({
+      ...prev,
+      optionValues: prev.optionValues.filter((_, i) => i !== index),
+    }))
   }
 
   const handleProductFormSubmit = async (e: React.FormEvent) => {
@@ -215,9 +284,28 @@ export default function ControlPanel() {
       setProductFormError('El precio debe ser mayor que 0')
       return
     }
-    if (isNaN(stock) || stock < 0) {
-      setProductFormError('El stock debe ser 0 o mayor')
-      return
+    if (productForm.hasOptions) {
+      // Validate options
+      if (!productForm.optionLabel.trim()) {
+        setProductFormError('La etiqueta de la opción es requerida (ej: Talla, Color)')
+        return
+      }
+      if (productForm.optionValues.length === 0) {
+        setProductFormError('Debes añadir al menos un valor para la opción')
+        return
+      }
+      for (const ov of productForm.optionValues) {
+        if (!ov.value.trim()) {
+          setProductFormError('Todos los valores deben tener texto')
+          return
+        }
+      }
+    } else {
+      // No options - stock must be >= 0
+      if (isNaN(stock) || stock < 0) {
+        setProductFormError('El stock debe ser 0 o mayor')
+        return
+      }
     }
     
     try {
@@ -228,13 +316,45 @@ export default function ControlPanel() {
             name: productForm.name,
             description: productForm.description,
             price,
-            stock,
+            stock: productForm.hasOptions ? 0 : stock, // If has options, stock derived from option values
             imageUrl: productForm.imageUrl || undefined
           }
         })
         if (result.error) {
           setProductFormError(result.error.message)
           return
+        }
+        
+        // Handle options update (delete existing and create new if changed)
+        if (productForm.hasOptions && productForm.optionValues.length > 0) {
+          // Delete existing option if any
+          if (editingProduct.options && editingProduct.options.length > 0) {
+            await deleteProductOptionMutation({ id: editingProduct.options[0].id })
+          }
+          // Create new option
+          // Infer type from label (default to SIZE, detect COLOR if label contains "color")
+        
+        const optResult = await createProductOptionMutation({
+          input: {
+            productId: editingProduct.id,
+            name: productForm.optionLabel,
+            required: true,
+          }
+        })
+          if (optResult.error) {
+            setProductFormError(optResult.error.message)
+            return
+          }
+          const optionId = (optResult.data as any)?.createProductOption?.id
+          if (optionId) {
+            await addOptionValuesMutation({
+              optionId,
+              values: productForm.optionValues.map(ov => ({ value: ov.value, stock: ov.stock })),
+            })
+          }
+        } else if (!productForm.hasOptions && editingProduct.options && editingProduct.options.length > 0) {
+          // Remove existing options
+          await deleteProductOptionMutation({ id: editingProduct.options[0].id })
         }
       } else {
         const result = await createProductMutation({
@@ -242,7 +362,7 @@ export default function ControlPanel() {
             name: productForm.name,
             description: productForm.description,
             price,
-            stock,
+            stock: productForm.hasOptions ? 0 : stock,
             imageUrl: productForm.imageUrl || undefined
           }
         })
@@ -250,11 +370,45 @@ export default function ControlPanel() {
           setProductFormError(result.error.message)
           return
         }
+        
+        // Create options if specified
+        if (productForm.hasOptions && productForm.optionValues.length > 0) {
+          const productId = (result.data as any)?.createProduct?.id
+          if (productId) {
+            const optResult = await createProductOptionMutation({
+              input: {
+                productId,
+                name: productForm.optionLabel,
+                required: true,
+              }
+            })
+            if (optResult.error) {
+              setProductFormError(optResult.error.message)
+              return
+            }
+            const optionId = (optResult.data as any)?.createProductOption?.id
+            if (optionId) {
+              await addOptionValuesMutation({
+                optionId,
+                values: productForm.optionValues.map(ov => ({ value: ov.value, stock: ov.stock })),
+              })
+            }
+          }
+        }
       }
       
       setShowProductForm(false)
       setEditingProduct(null)
-      setProductForm({ name: '', description: '', price: '', stock: '', imageUrl: '' })
+      setProductForm({
+        name: '',
+        description: '',
+        price: '',
+        stock: '',
+        imageUrl: '',
+        hasOptions: false,
+        optionLabel: '',
+        optionValues: [],
+      })
     } catch (err: any) {
       setProductFormError(err.message || 'Error al guardar el producto')
     }
@@ -995,6 +1149,7 @@ export default function ControlPanel() {
               marginBottom: theme.spacing.lg,
             }}
           >
+            {/* Basic Info Row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
               <div>
                 <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
@@ -1042,6 +1197,8 @@ export default function ControlPanel() {
                 />
               </div>
             </div>
+            
+            {/* Description */}
             <div style={{ marginTop: theme.spacing.md }}>
               <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
                 Descripción *
@@ -1064,8 +1221,32 @@ export default function ControlPanel() {
                 }}
               />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md, marginTop: theme.spacing.md }}>
-              <div>
+
+            {/* Image URL */}
+            <div style={{ marginTop: theme.spacing.md }}>
+              <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
+                URL de Imagen (opcional)
+              </label>
+              <input
+                type="text"
+                placeholder="https://..."
+                value={productForm.imageUrl}
+                onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: theme.spacing.sm,
+                  background: theme.colors.background,
+                  border: `1px solid ${theme.colors.border}`,
+                  borderRadius: theme.borderRadius.sm,
+                  color: theme.colors.text,
+                  fontSize: theme.typography.fontSize.sm,
+                }}
+              />
+            </div>
+
+            {/* Stock section - only if no options */}
+            {!productForm.hasOptions && (
+              <div style={{ marginTop: theme.spacing.md }}>
                 <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
                   Stock *
                 </label>
@@ -1087,27 +1268,161 @@ export default function ControlPanel() {
                   }}
                 />
               </div>
-              <div>
-                <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
-                  URL de Imagen (opcional)
-                </label>
+            )}
+
+            {/* Options toggle */}
+            <div style={{ marginTop: theme.spacing.lg, paddingTop: theme.spacing.md, borderTop: `1px solid ${theme.colors.border}` }}>
+              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                 <input
-                  type="text"
-                  placeholder="https://..."
-                  value={productForm.imageUrl}
-                  onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: theme.spacing.sm,
-                    background: theme.colors.background,
-                    border: `1px solid ${theme.colors.border}`,
-                    borderRadius: theme.borderRadius.sm,
-                    color: theme.colors.text,
-                    fontSize: theme.typography.fontSize.sm,
-                  }}
+                  type="checkbox"
+                  checked={productForm.hasOptions}
+                  onChange={handleToggleHasOptions}
+                  style={{ marginRight: theme.spacing.sm, width: '18px', height: '18px' }}
                 />
-              </div>
+                <span style={{ color: theme.colors.text, fontWeight: theme.typography.fontWeight.medium }}>
+                  Añadir opciones de producto (talla, color, etc.)
+                </span>
+              </label>
+              <p style={{ color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginTop: theme.spacing.xs, marginLeft: '26px' }}>
+                Si activas esta opción, el stock se calculará como la suma del stock de cada valor de opción
+              </p>
             </div>
+
+            {/* Expanded options panel */}
+            {productForm.hasOptions && (
+              <div style={{ 
+                marginTop: theme.spacing.md, 
+                padding: theme.spacing.md, 
+                background: theme.colors.background, 
+                borderRadius: theme.borderRadius.sm,
+                border: `1px solid ${theme.colors.border}`
+              }}>
+                {/* Option label input */}
+                <div>
+                  <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
+                    Nombre de la opción
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Talla, Color, Medida..."
+                    value={productForm.optionLabel}
+                    onChange={(e) => handleOptionLabelChange(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: theme.spacing.sm,
+                      background: theme.colors.surface,
+                      border: `1px solid ${theme.colors.border}`,
+                      borderRadius: theme.borderRadius.sm,
+                      color: theme.colors.text,
+                      fontSize: theme.typography.fontSize.sm,
+                    }}
+                  />
+                </div>
+
+                {/* Option values list */}
+                <div style={{ marginTop: theme.spacing.md }}>
+                  <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
+                    Valores de la opción
+                  </label>
+                  
+                  {productForm.optionValues.map((ov, index) => (
+                    <div 
+                      key={index}
+                      style={{ 
+                        display: 'flex', 
+                        gap: theme.spacing.sm, 
+                        alignItems: 'center',
+                        marginBottom: theme.spacing.sm,
+                        padding: theme.spacing.sm,
+                        background: theme.colors.surface,
+                        borderRadius: theme.borderRadius.sm,
+                      }}
+                    >
+                      {/* Value name input */}
+                      <input
+                        type="text"
+                        placeholder="Valor (ej: S, M, L, XL, Rojo)"
+                        value={ov.value}
+                        onChange={(e) => handleOptionValueChange(index, 'value', e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: theme.spacing.xs,
+                          background: theme.colors.background,
+                          border: `1px solid ${theme.colors.border}`,
+                          borderRadius: theme.borderRadius.sm,
+                          color: theme.colors.text,
+                          fontSize: theme.typography.fontSize.sm,
+                        }}
+                      />
+                      
+                      {/* Finite stock checkbox */}
+                      <label style={{ display: 'flex', alignItems: 'center', fontSize: theme.typography.fontSize.xs, color: theme.colors.textSecondary, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <input
+                          type="checkbox"
+                          checked={ov.stock !== null}
+                          onChange={(e) => handleOptionValueChange(index, 'stock', e.target.checked ? '0' : '')}
+                          style={{ marginRight: '4px', width: '14px', height: '14px' }}
+                        />
+                        Stock finito
+                      </label>
+                      
+                      {/* Stock input (only if finite) */}
+                      <input
+                        type="number"
+                        placeholder="0"
+                        min="0"
+                        value={ov.stock === null ? '' : ov.stock}
+                        onChange={(e) => handleOptionValueChange(index, 'stock', e.target.value)}
+                        disabled={ov.stock === null}
+                        style={{
+                          width: '80px',
+                          padding: theme.spacing.xs,
+                          background: ov.stock === null ? theme.colors.border : theme.colors.background,
+                          border: `1px solid ${theme.colors.border}`,
+                          borderRadius: theme.borderRadius.sm,
+                          color: ov.stock === null ? theme.colors.textSecondary : theme.colors.text,
+                          fontSize: theme.typography.fontSize.sm,
+                        }}
+                      />
+                      
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveOptionValue(index)}
+                        style={{
+                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                          background: theme.colors.error,
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: theme.borderRadius.sm,
+                          cursor: 'pointer',
+                          fontSize: theme.typography.fontSize.sm,
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Add value button */}
+                  <button
+                    type="button"
+                    onClick={handleAddOptionValue}
+                    style={{
+                      padding: `${theme.spacing.xs} ${theme.spacing.md}`,
+                      background: 'transparent',
+                      border: `1px dashed ${theme.colors.border}`,
+                      borderRadius: theme.borderRadius.sm,
+                      color: theme.colors.textSecondary,
+                      cursor: 'pointer',
+                      fontSize: theme.typography.fontSize.sm,
+                    }}
+                  >
+                    + Añadir valor
+                  </button>
+                </div>
+              </div>
+            )}
             
             {productFormError && (
               <p style={{ color: theme.colors.error, marginTop: theme.spacing.md, fontSize: theme.typography.fontSize.sm }}>
@@ -1286,183 +1601,6 @@ export default function ControlPanel() {
             </table>
           )}
         </div>
-      </section>
-
-      {/* Product Options Section - Staff+ */}
-      <section data-testid="product-options-section" style={{ marginTop: theme.spacing['2xl'] }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
-          <h2
-            style={{
-              color: theme.colors.text,
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.semibold,
-            }}
-          >
-            Opciones de Productos
-          </h2>
-        </div>
-
-        {products.filter(p => !p.options || p.options.length === 0).length === 0 ? (
-          <p style={{ color: theme.colors.textSecondary, fontStyle: 'italic', padding: theme.spacing.lg, textAlign: 'center' }}>
-            Todos los productos ya tienen opciones configuradas
-          </p>
-        ) : (
-          <div style={{ background: theme.colors.surface, borderRadius: theme.borderRadius.md, border: `1px solid ${theme.colors.border}`, padding: theme.spacing.lg }}>
-            <p style={{ color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.sm, marginBottom: theme.spacing.md }}>
-              Selecciona un producto para añadirle opciones (talla o color)
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: theme.spacing.md }}>
-              {products.filter(p => !p.options || p.options.length === 0).map(product => (
-                <div
-                  key={product.id}
-                  style={{
-                    background: theme.colors.background,
-                    borderRadius: theme.borderRadius.sm,
-                    border: `1px solid ${theme.colors.border}`,
-                    padding: theme.spacing.md,
-                  }}
-                >
-                  <h4 style={{ color: theme.colors.text, margin: `0 0 ${theme.spacing.xs} 0`, fontSize: theme.typography.fontSize.sm }}>
-                    {product.name}
-                  </h4>
-                  <p style={{ color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, margin: `0 0 ${theme.spacing.sm} 0` }}>
-                    {product.price.toFixed(2)}€
-                  </p>
-                  <div style={{ display: 'flex', gap: theme.spacing.xs }}>
-                    <button
-                      onClick={() => handleAddSizeOption(product.id)}
-                      style={{
-                        flex: 1,
-                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                        background: theme.colors.border,
-                        color: theme.colors.text,
-                        border: 'none',
-                        borderRadius: theme.borderRadius.sm,
-                        cursor: 'pointer',
-                        fontSize: theme.typography.fontSize.xs,
-                      }}
-                    >
-                      + Talla
-                    </button>
-                    <button
-                      onClick={() => handleAddColorOption(product.id)}
-                      style={{
-                        flex: 1,
-                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                        background: theme.colors.border,
-                        color: theme.colors.text,
-                        border: 'none',
-                        borderRadius: theme.borderRadius.sm,
-                        cursor: 'pointer',
-                        fontSize: theme.typography.fontSize.xs,
-                      }}
-                    >
-                      + Color
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Products with options */}
-        {products.filter(p => p.options && p.options.length > 0).length > 0 && (
-          <div style={{ marginTop: theme.spacing.lg }}>
-            <h3 style={{ color: theme.colors.text, fontSize: theme.typography.fontSize.base, marginBottom: theme.spacing.md }}>
-              Productos con opciones configuradas
-            </h3>
-            {products.filter(p => p.options && p.options.length > 0).map(product => (
-              <div
-                key={product.id}
-                style={{
-                  background: theme.colors.surface,
-                  borderRadius: theme.borderRadius.md,
-                  border: `1px solid ${theme.colors.border}`,
-                  padding: theme.spacing.lg,
-                  marginBottom: theme.spacing.md,
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: theme.spacing.sm }}>
-                  <div>
-                    <h4 style={{ color: theme.colors.text, margin: 0, fontSize: theme.typography.fontSize.base }}>
-                      {product.name}
-                    </h4>
-                    <p style={{ color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, margin: `${theme.spacing.xs} 0 0 0` }}>
-                      Tipo: {product.options[0].type === 'SIZE' ? 'Talla' : 'Color'} | {product.options[0].required ? 'Obligatorio' : 'Opcional'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteProductOption(product.options[0].id)}
-                    style={{
-                      padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                      background: theme.colors.error,
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: theme.borderRadius.sm,
-                      cursor: 'pointer',
-                      fontSize: theme.typography.fontSize.xs,
-                    }}
-                  >
-                    Eliminar opciones
-                  </button>
-                </div>
-                
-                {/* Option Values */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing.sm, marginTop: theme.spacing.md }}>
-                  {product.options[0].values.map(value => (
-                    <div
-                      key={value.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: theme.spacing.xs,
-                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                        background: theme.colors.background,
-                        borderRadius: theme.borderRadius.sm,
-                        border: `1px solid ${theme.colors.border}`,
-                      }}
-                    >
-                      <span style={{ color: theme.colors.text, fontSize: theme.typography.fontSize.sm }}>
-                        {value.value}
-                      </span>
-                      <span style={{ color: value.stock === null ? theme.colors.success : theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>
-                        ({value.stock === null ? '∞' : value.stock})
-                      </span>
-                      <button
-                        onClick={() => handleDeleteOptionValue(value.id)}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: theme.colors.error,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          padding: 0,
-                        }}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => handleAddOptionValue(product.options[0].id)}
-                    style={{
-                      padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                      background: 'transparent',
-                      border: `1px dashed ${theme.colors.border}`,
-                      borderRadius: theme.borderRadius.sm,
-                      color: theme.colors.textSecondary,
-                      cursor: 'pointer',
-                      fontSize: theme.typography.fontSize.xs,
-                    }}
-                  >
-                    + Añadir valor
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
 
       {/* News Management Section - Staff+ */}

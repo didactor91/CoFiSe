@@ -24,16 +24,10 @@ export const typeDefs = gql`
     options: [ProductOption!]!
   }
 
-  enum OptionType {
-    SIZE
-    COLOR
-  }
-
   type ProductOption {
     id: ID!
     productId: ID!
     name: String!
-    type: OptionType!
     required: Boolean!
     values: [OptionValue!]!
   }
@@ -219,13 +213,11 @@ export const typeDefs = gql`
   input CreateProductOptionInput {
     productId: ID!
     name: String!
-    type: OptionType!
     required: Boolean!
   }
 
   input UpdateProductOptionInput {
     name: String
-    type: OptionType
     required: Boolean
   }
 

@@ -181,9 +181,15 @@ function productOptionFromRow(row: any) {
     id: row.id.toString(),
     productId: row.product_id.toString(),
     name: row.name,
-    type: row.type.toUpperCase(),
     required: !!row.required
   }
+}
+
+// Helper: compute type from name (for backward compatibility with DB)
+function productOptionTypeFromName(name: string): string {
+  const lower = name.toLowerCase()
+  if (lower.includes('color') || lower.includes('colour')) return 'COLOR'
+  return 'SIZE'
 }
 
 // Helper to convert DB row to OptionValue type
@@ -314,6 +320,8 @@ export const resolvers = {
 
   // ProductOption type resolver with values
   ProductOption: {
+    // type computed from name for backward compatibility
+    type: (parent: any) => productOptionTypeFromName(parent.name),
     values: (parent: any) => {
       const rows = db.prepare(`SELECT * FROM option_values WHERE option_id = ? ORDER BY position`).all(parent.id)
       return rows.map(optionValueFromRow)
@@ -693,16 +701,17 @@ export const resolvers = {
       if (existingOption) {
         throw new Error('Product already has an option selector. Delete existing option first.')
       }
+      // Infer type from name for DB storage (compatibility)
+      const type = productOptionTypeFromName(args.input.name)
       const now = new Date().toISOString()
       const result = db.prepare(`
         INSERT INTO product_options (product_id, name, type, required, position, created_at, updated_at)
         VALUES (?, ?, ?, ?, 0, ?, ?)
-      `).run(args.input.productId, args.input.name, args.input.type.toLowerCase(), args.input.required ? 1 : 0, now, now)
+      `).run(args.input.productId, args.input.name, type, args.input.required ? 1 : 0, now, now)
       return {
         id: result.lastInsertRowid.toString(),
         productId: args.input.productId,
         name: args.input.name,
-        type: args.input.type,
         required: args.input.required,
         values: []
       }
@@ -716,16 +725,17 @@ export const resolvers = {
       }
       const now = new Date().toISOString()
       const name = args.input.name ?? existing.name
-      const type = args.input.type ?? existing.type
+      // If name changed, infer new type from name; otherwise keep existing
+      const type = args.input.name ? productOptionTypeFromName(args.input.name) : existing.type
       const required = args.input.required !== undefined ? (args.input.required ? 1 : 0) : existing.required
       db.prepare(`UPDATE product_options SET name = ?, type = ?, required = ?, updated_at = ? WHERE id = ?`)
-        .run(name, type.toLowerCase(), required, now, args.id)
+        .run(name, type, required, now, args.id)
       return {
         id: args.id,
         productId: existing.product_id.toString(),
         name,
-        type: type.toUpperCase(),
-        required: !!required
+        required: !!required,
+        values: []
       }
     },
 
