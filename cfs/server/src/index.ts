@@ -31,10 +31,26 @@ export async function buildServer(): Promise<FastifyInstance> {
   // Create executable schema for Mercurius
   const schema = makeExecutableSchema({ typeDefs, resolvers })
 
-  // GraphQL endpoint
+  // GraphQL endpoint with JWT verification in context
   await server.register(mercurius, {
     schema,
-    context: (request, reply) => ({ user: request.user, jwt: reply.jwt })
+    context: async (request, reply) => {
+      // Try to verify JWT and populate request.user if token present
+      let user = request.user
+      if (!user) {
+        const authHeader = request.headers.authorization
+        if (authHeader?.startsWith('Bearer ')) {
+          try {
+            const decoded = await request.jwtVerify()
+            user = decoded
+          } catch (err) {
+            // Token invalid or expired - user remains undefined
+            user = undefined
+          }
+        }
+      }
+      return { user, jwt: reply.jwt }
+    }
   })
 
   return server
