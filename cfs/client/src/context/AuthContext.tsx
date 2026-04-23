@@ -103,66 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         removeAllAuthTokens()
         setUser(null)
         setToken(null)
+        setIsLoading(false)
       }
     } catch (err) {
       removeAllAuthTokens()
       setUser(null)
       setToken(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-        return
-      }
-
-      console.log('[Auth] User validated:', result.data.me.email)
-      setUser(result.data.me)
-      setIsLoading(false)
-    } catch (err) {
-      console.log('[Auth] ME exception:', err)
-      const storedRefreshToken = getRefreshToken()
-      if (storedRefreshToken) {
-        refreshAccessToken(storedRefreshToken)
-      } else {
-        removeAllAuthTokens()
-        setUser(null)
-        setToken(null)
-        setIsLoading(false)
-      }
-    }
-  }
-
-  const refreshAccessToken = async (refreshToken: string) => {
-    try {
-      const result = await graphqlClient.mutation(REFRESH_TOKEN_MUTATION, { refreshToken }).toPromise()
-      
-      if (result.error) {
-        console.warn('[Auth] Refresh mutation error:', result.error.message)
-        removeAllAuthTokens()
-        setUser(null)
-        setToken(null)
-        setIsLoading(false)
-        return
-      }
-      
-      if (result.data?.refreshToken) {
-        const { token: newToken, refreshToken: newRefreshToken, user: newUser } = result.data.refreshToken
-        setToken(newToken)
-        setUser(newUser)
-        setAuthToken(newToken)
-        setRefreshToken(newRefreshToken)
-      } else {
-        console.warn('[Auth] Refresh returned no data, clearing auth')
-        removeAllAuthTokens()
-        setUser(null)
-        setToken(null)
-      }
-    } catch (err) {
-      console.warn('[Auth] Refresh exception:', err)
-      removeAllAuthTokens()
-      setUser(null)
-      setToken(null)
-    } finally {
       setIsLoading(false)
     }
   }

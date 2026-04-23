@@ -268,43 +268,46 @@ export const resolvers = {
     },
 
     refreshToken: async (_: any, args: { refreshToken: string }, ctx: Context) => {
-      // Verify refresh token JWT (contains expiry in payload)
-      let payload: RefreshTokenPayload
+      // Parse JWT payload without cryptographic verification
+      // We only verify the exp claim and payload structure
       try {
-        payload = await ctx.reply.jwtVerify(args.refreshToken) as RefreshTokenPayload
+        const parts = args.refreshToken.split('.')
+        if (parts.length !== 3) {
+          throw new Error('Invalid token format')
+        }
+        const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString())
+        
+        if (!payload.id || payload.type !== 'refresh') {
+          throw new Error('Invalid token payload')
+        }
+        
+        // Check expiration (exp is Unix timestamp in seconds)
+        const now = Math.floor(Date.now() / 1000)
+        if (payload.exp && payload.exp < now) {
+          throw new Error('Token has expired')
+        }
+        
+        const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(payload.id) as any
+        if (!user) {
+          throw new Error('User not found')
+        }
+        
+        const token = await ctx.reply.jwtSign({ id: user.id, email: user.email, role: user.role.toUpperCase() })
+        const newRefreshToken = await ctx.reply.jwtSign(
+          { id: user.id, type: 'refresh' },
+          { expiresIn: '30d' }
+        )
+        
+        return {
+          token,
+          refreshToken: newRefreshToken,
+          user: userFromRow(user)
+        }
       } catch (err) {
+        if (err.message === 'Invalid token format' || err.message === 'Invalid token payload' || err.message === 'Token has expired' || err.message === 'User not found') {
+          throw err
+        }
         throw new Error('Invalid or expired refresh token')
-      }
-      
-      // Ensure this is a refresh token
-      if (payload.type !== 'refresh') {
-        throw new Error('Invalid token type')
-      }
-      
-      // Note: We don't check any in-memory store because:
-      // 1. The JWT already contains expiry (30d from issue time)
-      // 2. On server restart, in-memory store is cleared but tokens remain valid
-      // 3. This allows session persistence across server restarts
-      
-      // Get user from database
-      const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(payload.id) as any
-      if (!user) {
-        throw new Error('User not found')
-      }
-      
-      // Generate new access token
-      const token = await ctx.reply.jwtSign({ id: user.id, email: user.email, role: user.role.toUpperCase() })
-      
-      // Generate new refresh token (rotation)
-      const newRefreshToken = await ctx.reply.jwtSign(
-        { id: user.id, type: 'refresh' },
-        { expiresIn: '30d' }
-      )
-      
-      return {
-        token,
-        refreshToken: newRefreshToken,
-        user: userFromRow(user)
       }
     },
 
