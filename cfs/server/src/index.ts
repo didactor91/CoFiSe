@@ -6,21 +6,22 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 import type { FastifyInstance } from 'fastify'
 import { typeDefs } from './graphql/schema.js'
 import { resolvers } from './graphql/resolvers.js'
+import config from './config.js'
 
 export async function buildServer(): Promise<FastifyInstance> {
   const server = Fastify({ logger: true })
 
-  // CORS: allow only seno.didtor.dev
+  // CORS: allow configured origins
   await server.register(cors, {
-    origin: ['https://seno.didtor.dev'],
-    credentials: true
+    origin: config.cors.origins,
+    credentials: config.cors.credentials
   })
 
-  // JWT plugin with 24h expiry
+  // JWT plugin with configured secret and expiry
   await server.register(jwt, {
-    secret: process.env.JWT_SECRET || 'changeme',
+    secret: config.jwt.secret || 'changeme',
     sign: {
-      expiresIn: '24h'
+      expiresIn: config.jwt.expiresIn
     }
   })
 
@@ -40,8 +41,12 @@ export async function buildServer(): Promise<FastifyInstance> {
 }
 
 // Start server if running directly
-const server = await buildServer()
-await server.listen({ port: 4000, host: '0.0.0.0' })
-console.log('Server running on http://0.0.0.0:4000')
+async function main() {
+  const server = await buildServer()
+  await server.listen({ port: config.server.port, host: config.server.host })
+  console.log(`Server running on http://${config.server.host}:${config.server.port}`)
+}
+
+main().catch(console.error)
 
 export default buildServer

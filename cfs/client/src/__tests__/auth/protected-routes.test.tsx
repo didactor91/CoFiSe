@@ -29,12 +29,12 @@ vi.mock('../../pages/Login', () => ({
   default: () => <div data-testid="login-page">Login Page</div>,
 }))
 
-import App from '../../App'
+import { AppRoutes } from '../../App'
 
 const renderWithRouter = (initialRoute: string) => {
   return render(
     <MemoryRouter initialEntries={[initialRoute]}>
-      <App />
+      <AppRoutes />
     </MemoryRouter>
   )
 }

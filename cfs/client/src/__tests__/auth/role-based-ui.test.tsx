@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from '../../context/AuthContext'
-import { UserRole } from '../../../../packages/types/generated/graphql'
+import { UserRole } from '../../graphql/generated-types'
 
 // Mutable state for controlling mock user
 let mockUser: { id: string; email: string; role: UserRole; createdAt: string } | null = null

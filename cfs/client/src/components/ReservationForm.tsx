@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import userEvent from '@testing-library/user-event'
 import { useCreateReservationMutation } from '../graphql/mutations'
-import type { Product } from '../../../packages/types/generated/graphql'
+import type { Product } from '../graphql/generated-types'
 
 interface ReservationFormProps {
   product: Product

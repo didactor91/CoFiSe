@@ -3,15 +3,17 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 // Mutable state for mocking
-let mockLoginResponse: { data: any; error: any } | null = null
+let mockLogin: any = vi.fn()
 
-// Mock graphql client
-vi.mock('../../graphql/client', () => ({
-  graphqlClient: {
-    mutation: vi.fn().mockImplementation(() => ({
-      toPromise: vi.fn().mockResolvedValue(mockLoginResponse),
-    })),
-  },
+// Mock AuthContext
+vi.mock('../../context/AuthContext', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAuth: () => ({
+    login: mockLogin,
+    user: null,
+    token: null,
+    isAuthenticated: false,
+  }),
 }))
 
 // Mock cookies
@@ -25,23 +27,14 @@ import LoginForm from '../../components/LoginForm'
 
 describe('7.1 Login Integration', () => {
   beforeEach(() => {
-    mockLoginResponse = null
+    mockLogin = vi.fn()
     vi.clearAllMocks()
   })
 
-  describe('LoginForm submits to GraphQL', () => {
-    it('should call login mutation with email and password on submit', async () => {
+  describe('LoginForm submits to AuthContext', () => {
+    it('should call login with email and password on submit', async () => {
       const user = userEvent.setup()
-
-      mockLoginResponse = {
-        data: {
-          login: {
-            token: 'valid-token',
-            user: { id: '1', email: 'admin@senacom.com', role: 'ADMIN', createdAt: '2026-04-01' },
-          },
-        },
-        error: null,
-      }
+      mockLogin.mockResolvedValue(undefined)
 
       render(<LoginForm onSuccess={vi.fn()} />)
 
@@ -50,17 +43,13 @@ describe('7.1 Login Integration', () => {
       await user.click(screen.getByRole('button', { name: /entrar/i }))
 
       await waitFor(() => {
-        expect(mockLoginResponse).not.toBeNull()
+        expect(mockLogin).toHaveBeenCalledWith('admin@senacom.com', 'changeme123')
       })
     })
 
     it('should display error message on failed login', async () => {
       const user = userEvent.setup()
-
-      mockLoginResponse = {
-        data: null,
-        error: { message: 'Invalid credentials' },
-      }
+      mockLogin.mockRejectedValue(new Error('Credenciales inválidas'))
 
       render(<LoginForm onSuccess={vi.fn()} />)
 
@@ -74,79 +63,11 @@ describe('7.1 Login Integration', () => {
     })
   })
 
-  describe('JWT storage on success', () => {
-    it('should call setAuthToken with token from login response', async () => {
-      const user = userEvent.setup()
-      const mockToken = 'eyJhbGciOiJIUzI1NiJ9.mock-token'
-
-      mockLoginResponse = {
-        data: {
-          login: {
-            token: mockToken,
-            user: { id: '1', email: 'admin@senacom.com', role: 'ADMIN', createdAt: '2026-04-01' },
-          },
-        },
-        error: null,
-      }
-
-      const onSuccess = vi.fn()
-      render(<LoginForm onSuccess={onSuccess} />)
-
-      await user.type(screen.getByLabelText(/email/i), 'admin@senacom.com')
-      await user.type(screen.getByLabelText(/contraseña/i), 'password')
-      await user.click(screen.getByRole('button', { name: /entrar/i }))
-
-      await waitFor(() => {
-        expect(onSuccess).toHaveBeenCalled()
-      })
-
-      // Verify setAuthToken was called via the module mock
-      const { setAuthToken } = await import('../../utils/cookies')
-      expect(setAuthToken).toHaveBeenCalled()
-    })
-
-    it('should set auth cookie with 24h max-age and proper path', async () => {
-      const user = userEvent.setup()
-      const mockToken = 'test-token'
-
-      mockLoginResponse = {
-        data: {
-          login: {
-            token: mockToken,
-            user: { id: '1', email: 'admin@senacom.com', role: 'ADMIN', createdAt: '2026-04-01' },
-          },
-        },
-        error: null,
-      }
-
-      const { setAuthToken } = await import('../../utils/cookies')
-
-      render(<LoginForm onSuccess={vi.fn()} />)
-
-      await user.type(screen.getByLabelText(/email/i), 'admin@senacom.com')
-      await user.type(screen.getByLabelText(/contraseña/i), 'password')
-      await user.click(screen.getByRole('button', { name: /entrar/i }))
-
-      await waitFor(() => {
-        expect(setAuthToken).toHaveBeenCalledWith(mockToken)
-      })
-    })
-  })
-
   describe('Redirect on success', () => {
     it('should call onSuccess callback after successful login', async () => {
       const user = userEvent.setup()
       const mockOnSuccess = vi.fn()
-
-      mockLoginResponse = {
-        data: {
-          login: {
-            token: 'valid-token',
-            user: { id: '1', email: 'admin@senacom.com', role: 'ADMIN', createdAt: '2026-04-01' },
-          },
-        },
-        error: null,
-      }
+      mockLogin.mockResolvedValue(undefined)
 
       render(<LoginForm onSuccess={mockOnSuccess} />)
 

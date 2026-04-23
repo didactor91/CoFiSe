@@ -12,7 +12,7 @@ import type {
   AllNewsQueryResult,
   ReservationsQueryResult,
   UsersQueryResult,
-} from '../../../packages/types/generated/graphql'
+} from '../graphql/generated-types'
 
 export const NEWS_QUERY = `
   query News {

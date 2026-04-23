@@ -9,7 +9,7 @@ import type {
   CreateUserInput,
   User,
   DeleteUserMutationResult,
-} from '../../../packages/types/generated/graphql'
+} from '../graphql/generated-types'
 
 export const LOGIN_MUTATION = `
   mutation Login($email: String!, $password: String!) {

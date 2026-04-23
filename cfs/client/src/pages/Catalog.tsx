@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useProductsQuery } from '../graphql/queries'
 import ProductCard from '../components/ProductCard'
 import ReservationForm from '../components/ReservationForm'
-import type { Product } from '../../../packages/types/generated/graphql'
+import type { Product } from '../graphql/generated-types'
 
 export default function Catalog() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)

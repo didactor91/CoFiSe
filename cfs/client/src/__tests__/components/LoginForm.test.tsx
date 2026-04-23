@@ -3,38 +3,18 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 // Mutable state for mocking
-let loginCalled = false
-let loginCredentials: { email: string; password: string } | null = null
+let mockLogin: any = null
 let loginError: string | null = null
 
-vi.mock('../../graphql/client', () => ({
-  graphqlClient: {
-    mutation: vi.fn().mockImplementation((query: string, variables: { email: string; password: string }) => ({
-      toPromise: vi.fn().mockImplementation(() => {
-        loginCalled = true
-        loginCredentials = variables
-
-        if (loginError) {
-          return Promise.resolve({ data: null, error: { message: loginError } })
-        }
-
-        return Promise.resolve({
-          data: {
-            login: {
-              token: 'fake-jwt-token',
-              user: {
-                id: '1',
-                email: variables.email,
-                role: 'STAFF',
-                createdAt: new Date().toISOString(),
-              },
-            },
-          },
-          error: null,
-        })
-      }),
-    })),
-  },
+// Mock AuthContext
+vi.mock('../../context/AuthContext', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAuth: () => ({
+    login: mockLogin,
+    user: null,
+    token: null,
+    isAuthenticated: false,
+  }),
 }))
 
 vi.mock('../../utils/cookies', () => ({
@@ -47,13 +27,12 @@ import LoginForm from '../../components/LoginForm'
 
 describe('LoginForm Component', () => {
   beforeEach(() => {
-    loginCalled = false
-    loginCredentials = null
     loginError = null
   })
 
   describe('Form Fields', () => {
     it('should render email and password fields', () => {
+      mockLogin = vi.fn()
       render(<LoginForm onSuccess={vi.fn()} />)
 
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
@@ -61,6 +40,7 @@ describe('LoginForm Component', () => {
     })
 
     it('should render submit button', () => {
+      mockLogin = vi.fn()
       render(<LoginForm onSuccess={vi.fn()} />)
 
       expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument()
@@ -68,9 +48,10 @@ describe('LoginForm Component', () => {
   })
 
   describe('Login Functionality', () => {
-    it('should call login mutation on submit', async () => {
+    it('should call login on submit with credentials', async () => {
       const user = userEvent.setup()
       const mockOnSuccess = vi.fn()
+      mockLogin = vi.fn().mockResolvedValue(undefined)
 
       render(<LoginForm onSuccess={mockOnSuccess} />)
 
@@ -79,18 +60,14 @@ describe('LoginForm Component', () => {
       await user.click(screen.getByRole('button', { name: /entrar/i }))
 
       await waitFor(() => {
-        expect(loginCalled).toBe(true)
-        expect(loginCredentials).toEqual({
-          email: 'admin@test.com',
-          password: 'password123',
-        })
+        expect(mockLogin).toHaveBeenCalledWith('admin@test.com', 'password123')
       })
     })
 
     it('should show error on failed login', async () => {
       const user = userEvent.setup()
       const mockOnSuccess = vi.fn()
-      loginError = 'Credenciales inválidas'
+      mockLogin = vi.fn().mockRejectedValue(new Error('Credenciales inválidas'))
 
       render(<LoginForm onSuccess={mockOnSuccess} />)
 
@@ -106,6 +83,7 @@ describe('LoginForm Component', () => {
     it('should call onSuccess on successful login', async () => {
       const user = userEvent.setup()
       const mockOnSuccess = vi.fn()
+      mockLogin = vi.fn().mockResolvedValue(undefined)
 
       render(<LoginForm onSuccess={mockOnSuccess} />)
 

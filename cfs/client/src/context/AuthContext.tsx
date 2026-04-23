@@ -5,7 +5,7 @@ import {
   useCallback,
 } from 'react'
 import type { ReactNode } from 'react'
-import type { User } from '../../../packages/types/generated/graphql'
+import type { User } from '../graphql/generated-types'
 import { graphqlClient } from '../graphql/client'
 import { LOGIN_MUTATION } from '../graphql/mutations'
 import { setAuthToken, removeAuthToken } from '../utils/cookies'

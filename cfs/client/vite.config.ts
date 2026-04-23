@@ -1,5 +1,12 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
+import path from 'path'
 import react from '@vitejs/plugin-react'
+
+// Load env variables from parent directory (monorepo structure)
+const env = loadEnv('development', path.resolve(__dirname, '..'), '')
+
+// API server URL - defaults to localhost:4000 for local development
+const API_URL = env.VITE_API_URL || 'http://localhost:4000'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -7,7 +14,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: API_URL,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/graphql': {
+        target: API_URL,
         changeOrigin: true,
       },
     },

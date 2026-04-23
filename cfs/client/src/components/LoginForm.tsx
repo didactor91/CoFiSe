@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import userEvent from '@testing-library/user-event'
-import { graphqlClient } from '../graphql/client'
-import { LOGIN_MUTATION } from '../graphql/mutations'
-import { setAuthToken } from '../utils/cookies'
+import { useAuth } from '../context/AuthContext'
+import theme from '../theme'
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -13,6 +12,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,24 +20,16 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setIsLoading(true)
 
     try {
-      const result = await graphqlClient.mutation(LOGIN_MUTATION, { email, password }).toPromise()
-
-      if (result.error) {
-        setError('Credenciales inválidas')
-        return
-      }
-
-      if (result.data?.login) {
-        const { token } = result.data.login
-        setAuthToken(token)
-        onSuccess?.()
-      }
-    } catch (err) {
-      setError('Credenciales inválidas')
+      await login(email, password)
+      onSuccess?.()
+    } catch (err: any) {
+      setError(err.message || 'Credenciales inválidas')
     } finally {
       setIsLoading(false)
     }
   }
+
+  const isDisabled = isLoading || !email || !password
 
   return (
     <form
@@ -45,22 +37,22 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem',
+        gap: theme.spacing.md,
         maxWidth: '400px',
         margin: '0 auto',
-        padding: '2rem',
-        background: '#141414',
-        borderRadius: '8px',
-        border: '1px solid #262626',
+        padding: theme.spacing.xl,
+        background: theme.colors.surface,
+        borderRadius: theme.borderRadius.md,
+        border: `1px solid ${theme.colors.border}`,
       }}
     >
       <h2
         style={{
-          color: '#d4af37',
-          fontSize: '1.5rem',
-          fontWeight: 600,
+          color: theme.colors.accent,
+          fontSize: theme.typography.fontSize.xl,
+          fontWeight: theme.typography.fontWeight.semibold,
           textAlign: 'center',
-          marginBottom: '1rem',
+          marginBottom: theme.spacing.sm,
         }}
       >
         Iniciar Sesión
@@ -69,11 +61,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       {error && (
         <div
           style={{
-            color: '#ef4444',
+            color: theme.colors.error,
             background: '#1a1a1a',
-            padding: '0.75rem',
-            borderRadius: '4px',
-            fontSize: '0.875rem',
+            padding: theme.spacing.sm,
+            borderRadius: theme.borderRadius.sm,
+            fontSize: theme.typography.fontSize.sm,
             textAlign: 'center',
           }}
         >
@@ -81,8 +73,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <label htmlFor="email" style={{ color: '#f5f5f5', fontSize: '0.875rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs }}>
+        <label htmlFor="email" style={{ color: theme.colors.text, fontSize: theme.typography.fontSize.sm }}>
           Email
         </label>
         <input
@@ -92,18 +84,18 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           onChange={(e) => setEmail(e.target.value)}
           required
           style={{
-            background: '#0a0a0a',
-            border: '1px solid #262626',
-            borderRadius: '4px',
-            padding: '0.75rem',
-            color: '#f5f5f5',
-            fontSize: '1rem',
+            background: theme.colors.background,
+            border: `1px solid ${theme.colors.border}`,
+            borderRadius: theme.borderRadius.sm,
+            padding: theme.spacing.sm,
+            color: theme.colors.text,
+            fontSize: theme.typography.fontSize.base,
           }}
         />
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <label htmlFor="password" style={{ color: '#f5f5f5', fontSize: '0.875rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs }}>
+        <label htmlFor="password" style={{ color: theme.colors.text, fontSize: theme.typography.fontSize.sm }}>
           Contraseña
         </label>
         <input
@@ -113,29 +105,29 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           onChange={(e) => setPassword(e.target.value)}
           required
           style={{
-            background: '#0a0a0a',
-            border: '1px solid #262626',
-            borderRadius: '4px',
-            padding: '0.75rem',
-            color: '#f5f5f5',
-            fontSize: '1rem',
+            background: theme.colors.background,
+            border: `1px solid ${theme.colors.border}`,
+            borderRadius: theme.borderRadius.sm,
+            padding: theme.spacing.sm,
+            color: theme.colors.text,
+            fontSize: theme.typography.fontSize.base,
           }}
         />
       </div>
 
       <button
         type="submit"
-        disabled={isLoading || !email || !password}
+        disabled={isDisabled}
         style={{
-          background: isLoading || !email || !password ? '#4a4a4a' : '#d4af37',
-          color: isLoading || !email || !password ? '#888' : '#0a0a0a',
+          background: isDisabled ? theme.colors.disabled : theme.colors.accent,
+          color: isDisabled ? theme.colors.disabledText : theme.colors.background,
           border: 'none',
-          borderRadius: '4px',
-          padding: '0.75rem',
-          fontSize: '1rem',
-          fontWeight: 600,
-          cursor: isLoading || !email || !password ? 'not-allowed' : 'pointer',
-          marginTop: '0.5rem',
+          borderRadius: theme.borderRadius.sm,
+          padding: theme.spacing.sm,
+          fontSize: theme.typography.fontSize.base,
+          fontWeight: theme.typography.fontWeight.semibold,
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
+          marginTop: theme.spacing.xs,
         }}
       >
         {isLoading ? 'Cargando...' : 'Entrar'}

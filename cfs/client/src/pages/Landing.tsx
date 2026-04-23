@@ -1,7 +1,8 @@
 import { useNewsQuery, useProductsQuery } from '../graphql/queries'
 import NewsCard from '../components/NewsCard'
 import ProductCard from '../components/ProductCard'
-import type { Product } from '../../../packages/types/generated/graphql'
+import type { Product } from '../graphql/generated-types'
+import theme from '../theme'
 
 export default function Landing() {
   const [newsResult] = useNewsQuery()
@@ -17,16 +18,16 @@ export default function Landing() {
   const catalogPreview = products.slice(0, 6)
 
   return (
-    <div data-testid="landing-page" style={{ minHeight: '100vh', background: '#0a0a0a', padding: '2rem' }}>
+    <div data-testid="landing-page" style={{ minHeight: '100vh', background: theme.colors.background, padding: theme.spacing.xl }}>
       {/* News Feed Section */}
-      <section style={{ marginBottom: '3rem' }}>
+      <section style={{ marginBottom: theme.spacing['2xl'] }}>
         <h2
           style={{
-            color: '#d4af37',
-            fontSize: '1.5rem',
-            fontWeight: 600,
-            marginBottom: '1.5rem',
-            fontFamily: 'system-ui, sans-serif',
+            color: theme.colors.accent,
+            fontSize: theme.typography.fontSize.xl,
+            fontWeight: theme.typography.fontWeight.semibold,
+            marginBottom: theme.spacing.lg,
+            fontFamily: theme.typography.fontFamily,
           }}
         >
           Noticias
@@ -36,11 +37,11 @@ export default function Landing() {
           <p
             data-testid="empty-news"
             style={{
-              color: '#a0a0a0',
-              fontSize: '1rem',
+              color: theme.colors.textSecondary,
+              fontSize: theme.typography.fontSize.base,
               fontStyle: 'italic',
               textAlign: 'center',
-              padding: '2rem',
+              padding: theme.spacing.xl,
             }}
           >
             No hay noticias todavía
@@ -50,7 +51,7 @@ export default function Landing() {
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: '1.5rem',
+              gap: theme.spacing.lg,
             }}
           >
             {news.map((item) => (
@@ -64,11 +65,11 @@ export default function Landing() {
       <section>
         <h2
           style={{
-            color: '#d4af37',
-            fontSize: '1.5rem',
-            fontWeight: 600,
-            marginBottom: '1.5rem',
-            fontFamily: 'system-ui, sans-serif',
+            color: theme.colors.accent,
+            fontSize: theme.typography.fontSize.xl,
+            fontWeight: theme.typography.fontWeight.semibold,
+            marginBottom: theme.spacing.lg,
+            fontFamily: theme.typography.fontFamily,
           }}
         >
           Catálogo
@@ -77,11 +78,11 @@ export default function Landing() {
         {catalogPreview.length === 0 ? (
           <p
             style={{
-              color: '#a0a0a0',
-              fontSize: '1rem',
+              color: theme.colors.textSecondary,
+              fontSize: theme.typography.fontSize.base,
               fontStyle: 'italic',
               textAlign: 'center',
-              padding: '2rem',
+              padding: theme.spacing.xl,
             }}
           >
             No hay productos disponibles
@@ -91,7 +92,7 @@ export default function Landing() {
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-              gap: '1.5rem',
+              gap: theme.spacing.lg,
             }}
           >
             {catalogPreview.map((product) => (

@@ -49,12 +49,12 @@ vi.mock('../../graphql/client', () => ({
   },
 }))
 
-import App from '../../App'
+import { AppRoutes } from '../../App'
 
 const renderWithRouter = (initialRoute: string) => {
   return render(
     <MemoryRouter initialEntries={[initialRoute]}>
-      <App />
+      <AppRoutes />
     </MemoryRouter>
   )
 }

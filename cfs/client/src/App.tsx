@@ -16,7 +16,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function AppRoutes() {
+export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
@@ -34,7 +34,7 @@ function AppRoutes() {
   )
 }
 
-function App() {
+export function App() {
   return (
     <BrowserRouter>
       <AuthProvider>

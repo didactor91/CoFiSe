@@ -1,4 +1,5 @@
-import type { Product } from '../../../packages/types/generated/graphql'
+import type { Product } from '../graphql/generated-types'
+import theme from '../theme'
 
 interface ProductCardProps {
   product: Product
@@ -7,7 +8,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, onClick }: ProductCardProps) {
   const stockStatus = product.stock > 0 ? 'En stock' : 'Sin stock'
-  const stockColor = product.stock > 0 ? '#22c55e' : '#ef4444'
+  const stockColor = product.stock > 0 ? theme.colors.success : theme.colors.error
 
   return (
     <article
@@ -15,14 +16,14 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
       data-testid-base="product-card"
       onClick={onClick}
       style={{
-        background: '#141414',
-        borderRadius: '8px',
-        padding: '1rem',
+        background: theme.colors.surface,
+        borderRadius: theme.borderRadius.md,
+        padding: theme.spacing.md,
         cursor: onClick ? 'pointer' : 'default',
-        border: '1px solid #262626',
+        border: `1px solid ${theme.colors.border}`,
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.5rem',
+        gap: theme.spacing.xs,
       }}
     >
       {product.imageUrl && (
@@ -33,15 +34,15 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
             width: '100%',
             height: '150px',
             objectFit: 'cover',
-            borderRadius: '4px',
+            borderRadius: theme.borderRadius.sm,
           }}
         />
       )}
       <h3
         style={{
-          color: '#f5f5f5',
-          fontSize: '1rem',
-          fontWeight: 600,
+          color: theme.colors.text,
+          fontSize: theme.typography.fontSize.base,
+          fontWeight: theme.typography.fontWeight.semibold,
           margin: 0,
         }}
       >
@@ -49,8 +50,8 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
       </h3>
       <p
         style={{
-          color: '#a0a0a0',
-          fontSize: '0.875rem',
+          color: theme.colors.textSecondary,
+          fontSize: theme.typography.fontSize.sm,
           margin: 0,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -69,9 +70,9 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
       >
         <span
           style={{
-            color: '#d4af37',
-            fontSize: '1.25rem',
-            fontWeight: 700,
+            color: theme.colors.accent,
+            fontSize: theme.typography.fontSize.lg,
+            fontWeight: theme.typography.fontWeight.bold,
           }}
         >
           {product.price.toFixed(2)}€
@@ -79,8 +80,8 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
         <span
           style={{
             color: stockColor,
-            fontSize: '0.75rem',
-            fontWeight: 500,
+            fontSize: theme.typography.fontSize.xs,
+            fontWeight: theme.typography.fontWeight.medium,
           }}
         >
           {stockStatus}

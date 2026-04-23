@@ -1,13 +1,10 @@
 import Database from 'better-sqlite3'
-import path from 'path'
+import { config } from '../config.js'
 
-// Database path from environment or default
-const DB_PATH = process.env.DATABASE_PATH || path.join('/opt/cfs', 'database', 'senocom.db')
-
-console.log('[CFS DB] Opening database at:', DB_PATH)
+console.log('[CFS DB] Opening database at:', config.database.path)
 
 // Create and export database instance
-const db = new Database(DB_PATH)
+const db = new Database(config.database.path)
 
 // Enable WAL mode for better concurrency
 db.pragma('journal_mode = WAL')

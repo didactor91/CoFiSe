@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useAllNewsQuery, useProductsQuery, useReservationsQuery, useUsersQuery } from '../graphql/queries'
 import { useCreateUserMutation, useDeleteUserMutation } from '../graphql/mutations'
-import type { UserRole, ReservationStatus } from '../../../packages/types/generated/graphql'
+import { UserRole, ReservationStatus } from '../graphql/generated-types'
+import theme from '../theme'
 
 interface StatCardProps {
   title: string
@@ -15,27 +16,27 @@ function StatCard({ title, value, testId }: StatCardProps) {
     <div
       data-testid={testId}
       style={{
-        background: '#141414',
-        borderRadius: '8px',
-        padding: '1.5rem',
-        border: '1px solid #262626',
+        background: theme.colors.surface,
+        borderRadius: theme.borderRadius.md,
+        padding: theme.spacing.lg,
+        border: `1px solid ${theme.colors.border}`,
         textAlign: 'center',
       }}
     >
       <div
         style={{
-          color: '#d4af37',
-          fontSize: '2rem',
-          fontWeight: 700,
+          color: theme.colors.accent,
+          fontSize: theme.typography.fontSize['2xl'],
+          fontWeight: theme.typography.fontWeight.bold,
         }}
       >
         {value}
       </div>
       <div
         style={{
-          color: '#a0a0a0',
-          fontSize: '0.875rem',
-          marginTop: '0.5rem',
+          color: theme.colors.textSecondary,
+          fontSize: theme.typography.fontSize.sm,
+          marginTop: theme.spacing.xs,
         }}
       >
         {title}
@@ -125,17 +126,17 @@ export default function ControlPanel() {
       data-testid="control-panel-page"
       style={{
         minHeight: '100vh',
-        background: '#0a0a0a',
-        padding: '2rem',
+        background: theme.colors.background,
+        padding: theme.spacing.xl,
       }}
     >
       <h1
         style={{
-          color: '#d4af37',
-          fontSize: '2rem',
-          fontWeight: 600,
-          marginBottom: '2rem',
-          fontFamily: 'system-ui, sans-serif',
+          color: theme.colors.accent,
+          fontSize: theme.typography.fontSize['2xl'],
+          fontWeight: theme.typography.fontWeight.semibold,
+          marginBottom: theme.spacing.xl,
+          fontFamily: theme.typography.fontFamily,
         }}
       >
         Panel de Control
@@ -146,8 +147,8 @@ export default function ControlPanel() {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1.5rem',
-          marginBottom: '3rem',
+          gap: theme.spacing.lg,
+          marginBottom: theme.spacing['2xl'],
         }}
       >
         <StatCard title="Noticias" value={news.length} testId="stat-news-count" />
@@ -159,29 +160,29 @@ export default function ControlPanel() {
         <StatCard title="Productos" value={products.length} testId="stat-product-count" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.xl }}>
         {/* Recent News Section */}
         <section>
           <h2
             style={{
-              color: '#f5f5f5',
-              fontSize: '1.25rem',
-              fontWeight: 600,
-              marginBottom: '1rem',
+              color: theme.colors.text,
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.semibold,
+              marginBottom: theme.spacing.md,
             }}
           >
             Noticias Recientes
           </h2>
           <div
             style={{
-              background: '#141414',
-              borderRadius: '8px',
-              border: '1px solid #262626',
+              background: theme.colors.surface,
+              borderRadius: theme.borderRadius.md,
+              border: `1px solid ${theme.colors.border}`,
               overflow: 'hidden',
             }}
           >
             {news.length === 0 ? (
-              <p style={{ color: '#a0a0a0', padding: '1rem', textAlign: 'center' }}>
+              <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
                 No hay noticias
               </p>
             ) : (
@@ -190,9 +191,9 @@ export default function ControlPanel() {
                   <li
                     key={item.id}
                     style={{
-                      padding: '1rem',
-                      borderBottom: '1px solid #262626',
-                      color: '#f5f5f5',
+                      padding: theme.spacing.md,
+                      borderBottom: `1px solid ${theme.colors.border}`,
+                      color: theme.colors.text,
                     }}
                   >
                     {item.title}
@@ -207,26 +208,26 @@ export default function ControlPanel() {
         <section>
           <h2
             style={{
-              color: '#f5f5f5',
-              fontSize: '1.25rem',
-              fontWeight: 600,
-              marginBottom: '1rem',
+              color: theme.colors.text,
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.semibold,
+              marginBottom: theme.spacing.md,
             }}
           >
             Reservas Recientes
           </h2>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', gap: theme.spacing.xs, marginBottom: theme.spacing.md }}>
             <button
               data-testid="reservation-filter-pending"
               onClick={() => setStatusFilter(ReservationStatus.Pending)}
               style={{
-                background: statusFilter === ReservationStatus.Pending ? '#d4af37' : '#262626',
-                color: statusFilter === ReservationStatus.Pending ? '#0a0a0a' : '#f5f5f5',
+                background: statusFilter === ReservationStatus.Pending ? theme.colors.accent : theme.colors.border,
+                color: statusFilter === ReservationStatus.Pending ? theme.colors.background : theme.colors.text,
                 border: 'none',
-                borderRadius: '4px',
-                padding: '0.5rem 1rem',
+                borderRadius: theme.borderRadius.sm,
+                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
                 cursor: 'pointer',
-                fontSize: '0.875rem',
+                fontSize: theme.typography.fontSize.sm,
               }}
             >
               Pendientes
@@ -235,13 +236,13 @@ export default function ControlPanel() {
               data-testid="reservation-filter-confirmed"
               onClick={() => setStatusFilter(ReservationStatus.Confirmed)}
               style={{
-                background: statusFilter === ReservationStatus.Confirmed ? '#d4af37' : '#262626',
-                color: statusFilter === ReservationStatus.Confirmed ? '#0a0a0a' : '#f5f5f5',
+                background: statusFilter === ReservationStatus.Confirmed ? theme.colors.accent : theme.colors.border,
+                color: statusFilter === ReservationStatus.Confirmed ? theme.colors.background : theme.colors.text,
                 border: 'none',
-                borderRadius: '4px',
-                padding: '0.5rem 1rem',
+                borderRadius: theme.borderRadius.sm,
+                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
                 cursor: 'pointer',
-                fontSize: '0.875rem',
+                fontSize: theme.typography.fontSize.sm,
               }}
             >
               Confirmadas
@@ -249,13 +250,13 @@ export default function ControlPanel() {
             <button
               onClick={() => setStatusFilter(null)}
               style={{
-                background: statusFilter === null ? '#d4af37' : '#262626',
-                color: statusFilter === null ? '#0a0a0a' : '#f5f5f5',
+                background: statusFilter === null ? theme.colors.accent : theme.colors.border,
+                color: statusFilter === null ? theme.colors.background : theme.colors.text,
                 border: 'none',
-                borderRadius: '4px',
-                padding: '0.5rem 1rem',
+                borderRadius: theme.borderRadius.sm,
+                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
                 cursor: 'pointer',
-                fontSize: '0.875rem',
+                fontSize: theme.typography.fontSize.sm,
               }}
             >
               Todas
@@ -263,14 +264,14 @@ export default function ControlPanel() {
           </div>
           <div
             style={{
-              background: '#141414',
-              borderRadius: '8px',
-              border: '1px solid #262626',
+              background: theme.colors.surface,
+              borderRadius: theme.borderRadius.md,
+              border: `1px solid ${theme.colors.border}`,
               overflow: 'hidden',
             }}
           >
             {reservations.length === 0 ? (
-              <p style={{ color: '#a0a0a0', padding: '1rem', textAlign: 'center' }}>
+              <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
                 No hay reservas
               </p>
             ) : (
@@ -279,12 +280,12 @@ export default function ControlPanel() {
                   <li
                     key={reservation.id}
                     style={{
-                      padding: '1rem',
-                      borderBottom: '1px solid #262626',
+                      padding: theme.spacing.md,
+                      borderBottom: `1px solid ${theme.colors.border}`,
                     }}
                   >
-                    <div style={{ color: '#f5f5f5', fontWeight: 500 }}>{reservation.name}</div>
-                    <div style={{ color: '#a0a0a0', fontSize: '0.875rem' }}>
+                    <div style={{ color: theme.colors.text, fontWeight: theme.typography.fontWeight.medium }}>{reservation.name}</div>
+                    <div style={{ color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.sm }}>
                       {reservation.quantity}x {reservation.product.name} - {reservation.status}
                     </div>
                   </li>
@@ -297,13 +298,13 @@ export default function ControlPanel() {
 
       {/* User Management Section - Admin Only */}
       {isAdmin && (
-        <section data-testid="user-management-section" style={{ marginTop: '3rem' }}>
+        <section data-testid="user-management-section" style={{ marginTop: theme.spacing['2xl'] }}>
           <h2
             style={{
-              color: '#f5f5f5',
-              fontSize: '1.25rem',
-              fontWeight: 600,
-              marginBottom: '1rem',
+              color: theme.colors.text,
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.semibold,
+              marginBottom: theme.spacing.md,
             }}
           >
             Gestión de Usuarios
@@ -314,19 +315,19 @@ export default function ControlPanel() {
             data-testid="create-user-form"
             onSubmit={handleCreateUser}
             style={{
-              background: '#141414',
-              borderRadius: '8px',
-              border: '1px solid #262626',
-              padding: '1.5rem',
-              marginBottom: '1.5rem',
+              background: theme.colors.surface,
+              borderRadius: theme.borderRadius.md,
+              border: `1px solid ${theme.colors.border}`,
+              padding: theme.spacing.lg,
+              marginBottom: theme.spacing.lg,
               display: 'flex',
-              gap: '1rem',
+              gap: theme.spacing.md,
               flexWrap: 'wrap',
               alignItems: 'flex-end',
             }}
           >
             <div style={{ flex: 1, minWidth: '200px' }}>
-              <label style={{ display: 'block', color: '#a0a0a0', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+              <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
                 Email
               </label>
               <input
@@ -337,17 +338,17 @@ export default function ControlPanel() {
                 required
                 style={{
                   width: '100%',
-                  padding: '0.75rem',
-                  background: '#0a0a0a',
-                  border: '1px solid #262626',
-                  borderRadius: '4px',
-                  color: '#f5f5f5',
-                  fontSize: '0.875rem',
+                  padding: theme.spacing.sm,
+                  background: theme.colors.background,
+                  border: `1px solid ${theme.colors.border}`,
+                  borderRadius: theme.borderRadius.sm,
+                  color: theme.colors.text,
+                  fontSize: theme.typography.fontSize.sm,
                 }}
               />
             </div>
             <div style={{ flex: 1, minWidth: '200px' }}>
-              <label style={{ display: 'block', color: '#a0a0a0', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+              <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
                 Contraseña
               </label>
               <input
@@ -359,17 +360,17 @@ export default function ControlPanel() {
                 minLength={8}
                 style={{
                   width: '100%',
-                  padding: '0.75rem',
-                  background: '#0a0a0a',
-                  border: '1px solid #262626',
-                  borderRadius: '4px',
-                  color: '#f5f5f5',
-                  fontSize: '0.875rem',
+                  padding: theme.spacing.sm,
+                  background: theme.colors.background,
+                  border: `1px solid ${theme.colors.border}`,
+                  borderRadius: theme.borderRadius.sm,
+                  color: theme.colors.text,
+                  fontSize: theme.typography.fontSize.sm,
                 }}
               />
             </div>
             <div style={{ flex: 1, minWidth: '150px' }}>
-              <label style={{ display: 'block', color: '#a0a0a0', fontSize: '0.75rem', marginBottom: '0.5rem' }}>
+              <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
                 Rol
               </label>
               <select
@@ -377,12 +378,12 @@ export default function ControlPanel() {
                 onChange={(e) => setNewUserRole(e.target.value as 'STAFF' | 'ADMIN')}
                 style={{
                   width: '100%',
-                  padding: '0.75rem',
-                  background: '#0a0a0a',
-                  border: '1px solid #262626',
-                  borderRadius: '4px',
-                  color: '#f5f5f5',
-                  fontSize: '0.875rem',
+                  padding: theme.spacing.sm,
+                  background: theme.colors.background,
+                  border: `1px solid ${theme.colors.border}`,
+                  borderRadius: theme.borderRadius.sm,
+                  color: theme.colors.text,
+                  fontSize: theme.typography.fontSize.sm,
                 }}
               >
                 <option value="STAFF">Staff</option>
@@ -392,14 +393,14 @@ export default function ControlPanel() {
             <button
               type="submit"
               style={{
-                padding: '0.75rem 1.5rem',
-                background: '#d4af37',
-                color: '#0a0a0a',
+                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                background: theme.colors.accent,
+                color: theme.colors.background,
                 border: 'none',
-                borderRadius: '4px',
+                borderRadius: theme.borderRadius.sm,
                 cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '0.875rem',
+                fontWeight: theme.typography.fontWeight.semibold,
+                fontSize: theme.typography.fontSize.sm,
               }}
             >
               Crear Usuario
@@ -407,13 +408,13 @@ export default function ControlPanel() {
           </form>
           
           {createError && (
-            <p style={{ color: '#ff6b6b', marginBottom: '1rem', fontSize: '0.875rem' }}>
+            <p style={{ color: theme.colors.error, marginBottom: theme.spacing.md, fontSize: theme.typography.fontSize.sm }}>
               {createError}
             </p>
           )}
           
           {deleteError && (
-            <p style={{ color: '#ff6b6b', marginBottom: '1rem', fontSize: '0.875rem' }}>
+            <p style={{ color: theme.colors.error, marginBottom: theme.spacing.md, fontSize: theme.typography.fontSize.sm }}>
               {deleteError}
             </p>
           )}
@@ -421,14 +422,14 @@ export default function ControlPanel() {
           {/* User List */}
           <div
             style={{
-              background: '#141414',
-              borderRadius: '8px',
-              border: '1px solid #262626',
+              background: theme.colors.surface,
+              borderRadius: theme.borderRadius.md,
+              border: `1px solid ${theme.colors.border}`,
               overflow: 'hidden',
             }}
           >
             {users.length === 0 ? (
-              <p style={{ color: '#a0a0a0', padding: '1rem', textAlign: 'center' }}>
+              <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
                 No hay usuarios
               </p>
             ) : (
@@ -437,24 +438,24 @@ export default function ControlPanel() {
                   <li
                     key={u.id}
                     style={{
-                      padding: '1rem',
-                      borderBottom: '1px solid #262626',
+                      padding: theme.spacing.md,
+                      borderBottom: `1px solid ${theme.colors.border}`,
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
                     }}
                   >
                     <div>
-                      <span style={{ color: '#f5f5f5', fontWeight: 500 }}>{u.email}</span>
+                      <span style={{ color: theme.colors.text, fontWeight: theme.typography.fontWeight.medium }}>{u.email}</span>
                       <span
                         style={{
-                          marginLeft: '0.75rem',
-                          padding: '0.25rem 0.5rem',
-                          background: u.role === 'ADMIN' ? '#d4af37' : '#262626',
-                          color: u.role === 'ADMIN' ? '#0a0a0a' : '#f5f5f5',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
+                          marginLeft: theme.spacing.sm,
+                          padding: `${theme.spacing.xs} ${theme.spacing.xs}`,
+                          background: u.role === 'ADMIN' ? theme.colors.accent : theme.colors.border,
+                          color: u.role === 'ADMIN' ? theme.colors.background : theme.colors.text,
+                          borderRadius: theme.borderRadius.sm,
+                          fontSize: theme.typography.fontSize.xs,
+                          fontWeight: theme.typography.fontWeight.semibold,
                         }}
                       >
                         {u.role === 'ADMIN' ? 'Admin' : 'Staff'}
@@ -465,14 +466,14 @@ export default function ControlPanel() {
                         data-testid="delete-user-btn"
                         onClick={() => handleDeleteUser(u.id)}
                         style={{
-                          padding: '0.5rem 1rem',
-                          background: '#262626',
-                          color: '#f5f5f5',
+                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                          background: theme.colors.border,
+                          color: theme.colors.text,
                           border: 'none',
-                          borderRadius: '4px',
+                          borderRadius: theme.borderRadius.sm,
                           cursor: 'pointer',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
+                          fontSize: theme.typography.fontSize.xs,
+                          fontWeight: theme.typography.fontWeight.semibold,
                         }}
                       >
                         Eliminar
