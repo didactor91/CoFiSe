@@ -245,7 +245,6 @@ export const CREATE_PRODUCT_OPTION_MUTATION = `
       id
       productId
       name
-      type
       required
       values {
         id
@@ -263,7 +262,6 @@ export const UPDATE_PRODUCT_OPTION_MUTATION = `
       id
       productId
       name
-      type
       required
     }
   }
@@ -281,7 +279,6 @@ export const ADD_OPTION_VALUES_MUTATION = `
       id
       productId
       name
-      type
       required
       values {
         id

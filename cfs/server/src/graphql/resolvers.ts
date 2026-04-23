@@ -320,8 +320,6 @@ export const resolvers = {
 
   // ProductOption type resolver with values
   ProductOption: {
-    // type computed from name for backward compatibility
-    type: (parent: any) => productOptionTypeFromName(parent.name),
     values: (parent: any) => {
       const rows = db.prepare(`SELECT * FROM option_values WHERE option_id = ? ORDER BY position`).all(parent.id)
       return rows.map(optionValueFromRow)

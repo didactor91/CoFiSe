@@ -485,7 +485,7 @@ export default function ControlPanel() {
     }
   }
 
-  const handleAddOptionValue = async (optionId: string) => {
+  const handleAddOptionValueToOption = async (optionId: string) => {
     const value = prompt('Valor (ej: M, L, XL, Rojo, Verde):')
     if (!value) return
     const stockStr = prompt('Stock (número o deja vacío para infinito):')

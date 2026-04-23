@@ -43,7 +43,6 @@ export const PRODUCTS_QUERY = `
         id
         productId
         name
-        type
         required
         values {
           id
