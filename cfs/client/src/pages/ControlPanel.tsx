@@ -4,6 +4,7 @@ import { useAllNewsQuery, useProductsQuery, useReservationsQuery, useUsersQuery 
 import { useCreateUserMutation, useDeleteUserMutation, useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation, useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation } from '../graphql/mutations'
 import { UserRole, ReservationStatus } from '../graphql/generated-types'
 import theme from '../theme'
+import type { Permission } from '../auth/permissions'
 
 interface StatCardProps {
   title: string
@@ -46,7 +47,7 @@ function StatCard({ title, value, testId }: StatCardProps) {
 }
 
 export default function ControlPanel() {
-  const { user, logout } = useAuth()
+  const { user, logout, can } = useAuth()
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | null>(null)
   
   // User management state
@@ -100,7 +101,14 @@ export default function ControlPanel() {
   const pendingReservations = reservations.filter((r) => r.status === ReservationStatus.Pending)
     .length
 
-  const isAdmin = user?.role === UserRole.Admin
+  // Permission checks (using the new permission system)
+  const canManageUsers = can('user.create') && can('user.delete')
+  const canCreateProduct = can('product.create')
+  const canEditProduct = can('product.update')
+  const canDeleteProduct = can('product.delete')
+  const canCreateNews = can('news.create')
+  const canEditNews = can('news.update')
+  const canDeleteNews = can('news.delete')
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -536,8 +544,8 @@ export default function ControlPanel() {
         </section>
       </div>
 
-      {/* User Management Section - Admin Only */}
-      {isAdmin && (
+      {/* User Management Section - Permission: user.create + user.delete */}
+      {canManageUsers && (
         <section data-testid="user-management-section" style={{ marginTop: theme.spacing['2xl'] }}>
           <h2
             style={{
@@ -739,21 +747,23 @@ export default function ControlPanel() {
           >
             Gestión de Productos
           </h2>
-          <button
-            onClick={handleAddProduct}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              background: theme.colors.accent,
-              color: theme.colors.background,
-              border: 'none',
-              borderRadius: theme.borderRadius.sm,
-              cursor: 'pointer',
-              fontWeight: theme.typography.fontWeight.semibold,
-              fontSize: theme.typography.fontSize.sm,
-            }}
-          >
-            Añadir Producto
-          </button>
+          {canCreateProduct && (
+            <button
+              onClick={handleAddProduct}
+              style={{
+                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                background: theme.colors.accent,
+                color: theme.colors.background,
+                border: 'none',
+                borderRadius: theme.borderRadius.sm,
+                cursor: 'pointer',
+                fontWeight: theme.typography.fontWeight.semibold,
+                fontSize: theme.typography.fontSize.sm,
+              }}
+            >
+              Añadir Producto
+            </button>
+          )}
         </div>
 
         {/* Product Form Modal */}
@@ -1016,39 +1026,43 @@ export default function ControlPanel() {
                       {product.stock === 0 && '⚠️ '}{product.stock}
                     </td>
                     <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
-                      <button
-                        data-testid={`edit-product-btn-${product.id}`}
-                        onClick={() => handleEditProduct(product)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.accent,
-                          color: theme.colors.background,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                          marginRight: theme.spacing.xs,
-                        }}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        data-testid={`delete-product-btn-${product.id}`}
-                        onClick={() => handleDeleteProductClick(product.id)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.border,
-                          color: theme.colors.text,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                        }}
-                      >
-                        Eliminar
-                      </button>
+                      {canEditProduct && (
+                        <button
+                          data-testid={`edit-product-btn-${product.id}`}
+                          onClick={() => handleEditProduct(product)}
+                          style={{
+                            padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                            background: theme.colors.accent,
+                            color: theme.colors.background,
+                            border: 'none',
+                            borderRadius: theme.borderRadius.sm,
+                            cursor: 'pointer',
+                            fontSize: theme.typography.fontSize.xs,
+                            fontWeight: theme.typography.fontWeight.semibold,
+                            marginRight: theme.spacing.xs,
+                          }}
+                        >
+                          Editar
+                        </button>
+                      )}
+                      {canDeleteProduct && (
+                        <button
+                          data-testid={`delete-product-btn-${product.id}`}
+                          onClick={() => handleDeleteProductClick(product.id)}
+                          style={{
+                            padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                            background: theme.colors.border,
+                            color: theme.colors.text,
+                            border: 'none',
+                            borderRadius: theme.borderRadius.sm,
+                            cursor: 'pointer',
+                            fontSize: theme.typography.fontSize.xs,
+                            fontWeight: theme.typography.fontWeight.semibold,
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -1070,21 +1084,23 @@ export default function ControlPanel() {
           >
             Gestión de Noticias
           </h2>
-          <button
-            onClick={handleAddNews}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              background: theme.colors.accent,
-              color: theme.colors.background,
-              border: 'none',
-              borderRadius: theme.borderRadius.sm,
-              cursor: 'pointer',
-              fontWeight: theme.typography.fontWeight.semibold,
-              fontSize: theme.typography.fontSize.sm,
-            }}
-          >
-            Añadir Noticia
-          </button>
+          {canCreateNews && (
+            <button
+              onClick={handleAddNews}
+              style={{
+                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+                background: theme.colors.accent,
+                color: theme.colors.background,
+                border: 'none',
+                borderRadius: theme.borderRadius.sm,
+                cursor: 'pointer',
+                fontWeight: theme.typography.fontWeight.semibold,
+                fontSize: theme.typography.fontSize.sm,
+              }}
+            >
+              Añadir Noticia
+            </button>
+          )}
         </div>
 
         {/* News Form Modal */}
@@ -1301,39 +1317,43 @@ export default function ControlPanel() {
                       )}
                     </td>
                     <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
-                      <button
-                        data-testid={`edit-news-btn-${item.id}`}
-                        onClick={() => handleEditNews(item)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.accent,
-                          color: theme.colors.background,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                          marginRight: theme.spacing.xs,
-                        }}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        data-testid={`delete-news-btn-${item.id}`}
-                        onClick={() => handleDeleteNewsClick(item.id)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.border,
-                          color: theme.colors.text,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                        }}
-                      >
-                        Eliminar
-                      </button>
+                      {canEditNews && (
+                        <button
+                          data-testid={`edit-news-btn-${item.id}`}
+                          onClick={() => handleEditNews(item)}
+                          style={{
+                            padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                            background: theme.colors.accent,
+                            color: theme.colors.background,
+                            border: 'none',
+                            borderRadius: theme.borderRadius.sm,
+                            cursor: 'pointer',
+                            fontSize: theme.typography.fontSize.xs,
+                            fontWeight: theme.typography.fontWeight.semibold,
+                            marginRight: theme.spacing.xs,
+                          }}
+                        >
+                          Editar
+                        </button>
+                      )}
+                      {canDeleteNews && (
+                        <button
+                          data-testid={`delete-news-btn-${item.id}`}
+                          onClick={() => handleDeleteNewsClick(item.id)}
+                          style={{
+                            padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                            background: theme.colors.border,
+                            color: theme.colors.text,
+                            border: 'none',
+                            borderRadius: theme.borderRadius.sm,
+                            cursor: 'pointer',
+                            fontSize: theme.typography.fontSize.xs,
+                            fontWeight: theme.typography.fontWeight.semibold,
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

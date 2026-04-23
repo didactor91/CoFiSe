@@ -16,6 +16,16 @@ vi.mock('../../context/AuthContext', () => ({
     isAuthenticated: !!mockUser,
     login: vi.fn(),
     logout: vi.fn(),
+    can: (permission: string) => {
+      if (!mockUser) return false
+      // ADMIN has all permissions, STAFF has read-only user permissions
+      if (mockUser.role === 'ADMIN') return true
+      // STAFF can do anything except user.create and user.delete
+      if (permission.startsWith('user.') && (permission === 'user.create' || permission === 'user.delete')) {
+        return false
+      }
+      return true
+    },
   }),
 }))
 

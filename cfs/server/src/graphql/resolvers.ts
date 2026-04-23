@@ -2,6 +2,7 @@ import { GraphQLScalarType, Kind } from 'graphql'
 import bcrypt from 'bcrypt'
 import { db } from '../db/index.js'
 import type { AuthUser } from '../auth/middleware.js'
+import { hasPermission, hasAnyPermission, type Permission } from '../auth/permissions.js'
 
 // Refresh token payload interface
 interface RefreshTokenPayload {
@@ -51,6 +52,31 @@ function requireAuth(ctx: Context): AuthUser {
   return ctx.user
 }
 
+/**
+ * Generic permission check function
+ */
+function requirePermission(ctx: Context, permission: Permission): AuthUser {
+  const user = requireAuth(ctx)
+  if (!hasPermission(user.role, permission)) {
+    throw new Error('Insufficient permissions')
+  }
+  return user
+}
+
+/**
+ * Check if user has ANY of the given permissions
+ */
+function requireAnyPermission(ctx: Context, permissions: Permission[]): AuthUser {
+  const user = requireAuth(ctx)
+  if (!hasAnyPermission(user.role, permissions)) {
+    throw new Error('Insufficient permissions')
+  }
+  return user
+}
+
+/**
+ * Staff role check (ADMIN or STAFF)
+ */
 function requireStaff(ctx: Context): AuthUser {
   const user = requireAuth(ctx)
   if (user.role !== 'ADMIN' && user.role !== 'STAFF') {
@@ -59,6 +85,9 @@ function requireStaff(ctx: Context): AuthUser {
   return user
 }
 
+/**
+ * Admin role check (ADMIN only)
+ */
 function requireAdmin(ctx: Context): AuthUser {
   const user = requireAuth(ctx)
   if (user.role !== 'ADMIN') {
@@ -169,13 +198,13 @@ export const resolvers = {
 
     // Staff+ queries
     allNews: (_: any, __: any, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'news.read')
       const rows = db.prepare(`SELECT * FROM news ORDER BY created_at DESC`).all()
       return rows.map(newsFromRow)
     },
 
     reservations: (_: any, args: { status?: string }, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'reservation.read')
       let query = `
         SELECT r.*, p.name as product_name, p.description as product_description, 
                p.price as product_price, p.stock as product_stock, p.image_url as product_image_url,
@@ -194,7 +223,7 @@ export const resolvers = {
     },
 
     reservation: (_: any, args: { id: string }, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'reservation.read')
       const row = db.prepare(`
         SELECT r.*, p.name as product_name, p.description as product_description, 
                p.price as product_price, p.stock as product_stock, p.image_url as product_image_url,
@@ -208,7 +237,7 @@ export const resolvers = {
 
     // Admin only
     users: (_: any, __: any, ctx: Context) => {
-      requireAdmin(ctx)
+      requirePermission(ctx, 'user.read')
       const rows = db.prepare(`SELECT * FROM users ORDER BY created_at DESC`).all()
       return rows.map(userFromRow)
     }
@@ -328,7 +357,7 @@ export const resolvers = {
 
     // News mutations (Staff+)
     createNews: (_: any, args: { input: any }, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'news.create')
       const now = new Date().toISOString()
       const result = db.prepare(`
         INSERT INTO news (title, content, image_url, created_at, updated_at)
@@ -346,7 +375,7 @@ export const resolvers = {
     },
 
     updateNews: (_: any, args: { id: string; input: any }, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'news.update')
       const existing = db.prepare(`SELECT * FROM news WHERE id = ?`).get(args.id) as any
       if (!existing) {
         throw new Error('News not found')
@@ -370,7 +399,7 @@ export const resolvers = {
     },
 
     deleteNews: (_: any, args: { id: string }, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'news.delete')
       const existing = db.prepare(`SELECT * FROM news WHERE id = ?`).get(args.id)
       if (!existing) {
         throw new Error('News not found')
@@ -381,7 +410,7 @@ export const resolvers = {
 
     // Product mutations (Staff+)
     createProduct: (_: any, args: { input: any }, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'product.create')
       const { name, description, price, stock, imageUrl } = args.input
       
       // Validation
@@ -417,7 +446,7 @@ export const resolvers = {
     },
 
     updateProduct: (_: any, args: { id: string; input: any }, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'product.update')
       const existing = db.prepare(`SELECT * FROM products WHERE id = ?`).get(args.id) as any
       if (!existing) {
         throw new Error('Product not found')
@@ -463,7 +492,7 @@ export const resolvers = {
     },
 
     deleteProduct: (_: any, args: { id: string }, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'product.delete')
       const existing = db.prepare(`SELECT * FROM products WHERE id = ?`).get(args.id)
       if (!existing) {
         throw new Error('Product not found')
@@ -474,7 +503,7 @@ export const resolvers = {
 
     // Reservation mutations (Staff+)
     updateReservationStatus: (_: any, args: { id: string; status: string }, ctx: Context) => {
-      requireStaff(ctx)
+      requirePermission(ctx, 'reservation.update')
       const existing = db.prepare(`SELECT * FROM reservations WHERE id = ?`).get(args.id) as any
       if (!existing) {
         throw new Error('Reservation not found')
@@ -522,7 +551,7 @@ export const resolvers = {
 
     // User mutations (Admin only)
     createUser: async (_: any, args: { input: any }, ctx: Context) => {
-      requireAdmin(ctx)
+      requirePermission(ctx, 'user.create')
       const existing = db.prepare(`SELECT * FROM users WHERE email = ?`).get(args.input.email)
       if (existing) {
         throw new Error('Email already in use')
@@ -544,7 +573,7 @@ export const resolvers = {
     },
 
     deleteUser: (_: any, args: { id: string }, ctx: Context) => {
-      requireAdmin(ctx)
+      requirePermission(ctx, 'user.delete')
       const existing = db.prepare(`SELECT * FROM users WHERE id = ?`).get(args.id) as any
       if (!existing) {
         throw new Error('User not found')

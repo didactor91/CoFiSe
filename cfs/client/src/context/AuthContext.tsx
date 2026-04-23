@@ -11,6 +11,7 @@ import { graphqlClient } from '../graphql/client'
 import { LOGIN_MUTATION, REFRESH_TOKEN_MUTATION } from '../graphql/mutations'
 import { ME_QUERY } from '../graphql/queries'
 import { setAuthToken, setRefreshToken, removeAllAuthTokens, getAuthToken, getRefreshToken } from '../utils/cookies'
+import { hasPermission as serverHasPermission, type Permission } from '../auth/permissions'
 
 interface AuthContextValue {
   user: User | null
@@ -19,6 +20,7 @@ interface AuthContextValue {
   logout: () => void
   isAuthenticated: boolean
   isLoading: boolean
+  can: (permission: Permission) => boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -137,8 +139,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!token && !!user
 
+  /**
+   * Check if current user has a specific permission
+   */
+  const can = useCallback((permission: Permission): boolean => {
+    if (!user) return false
+    return serverHasPermission(user.role as 'ADMIN' | 'STAFF', permission)
+  }, [user])
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated, isLoading, can }}>
       {children}
     </AuthContext.Provider>
   )
