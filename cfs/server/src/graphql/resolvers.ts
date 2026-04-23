@@ -175,27 +175,6 @@ function eventFromRow(row: any) {
   }
 }
 
-// Helper to convert DB row to ProductOption type
-function productOptionFromRow(row: any) {
-  return {
-    id: row.id.toString(),
-    productId: row.product_id.toString(),
-    name: row.name,
-    type: row.type.toUpperCase(),
-    required: !!row.required
-  }
-}
-
-// Helper to convert DB row to OptionValue type
-function optionValueFromRow(row: any) {
-  return {
-    id: row.id.toString(),
-    optionId: row.option_id.toString(),
-    value: row.value,
-    stock: row.stock
-  }
-}
-
 export const resolvers = {
   DateTime: dateTimeScalar,
 
@@ -253,13 +232,6 @@ export const resolvers = {
       return rows.map(eventFromRow)
     },
 
-    // Product options query
-    productOptions: (_: any, args: { productId: string }, ctx: Context) => {
-      requireStaff(ctx)
-      const rows = db.prepare(`SELECT * FROM product_options WHERE product_id = ? ORDER BY position`).all(args.productId)
-      return rows.map(productOptionFromRow)
-    },
-
     reservations: (_: any, args: { status?: string }, ctx: Context) => {
       requirePermission(ctx, 'reservation.read')
       let query = `
@@ -297,27 +269,6 @@ export const resolvers = {
       requirePermission(ctx, 'user.read')
       const rows = db.prepare(`SELECT * FROM users ORDER BY created_at DESC`).all()
       return rows.map(userFromRow)
-    }
-  },
-
-  // Product type resolver with options
-  Product: {
-    options: (parent: any) => {
-      const rows = db.prepare(`SELECT * FROM product_options WHERE product_id = ? ORDER BY position`).all(parent.id)
-      const options = rows.map(productOptionFromRow)
-      // For each option, fetch its values
-      return options.map((opt: any) => ({
-        ...opt,
-        values: db.prepare(`SELECT * FROM option_values WHERE option_id = ? ORDER BY position`).all(opt.id).map(optionValueFromRow)
-      }))
-    }
-  },
-
-  // ProductOption type resolver with values
-  ProductOption: {
-    values: (parent: any) => {
-      const rows = db.prepare(`SELECT * FROM option_values WHERE option_id = ? ORDER BY position`).all(parent.id)
-      return rows.map(optionValueFromRow)
     }
   },
 
@@ -680,153 +631,6 @@ export const resolvers = {
         throw new Error('Product not found')
       }
       db.prepare(`DELETE FROM products WHERE id = ?`).run(args.id)
-      return true
-    },
-
-    // Product Option mutations (Staff+)
-    createProductOption: (_: any, args: { input: any }, ctx: Context) => {
-      requirePermission(ctx, 'product.update')
-      
-      // Check product exists
-      const product = db.prepare(`SELECT id FROM products WHERE id = ?`).get(args.input.productId)
-      if (!product) {
-        throw new Error('Product not found')
-      }
-      
-      // Check if product already has an option (single selector per product)
-      const existingOption = db.prepare(`SELECT id FROM product_options WHERE product_id = ?`).get(args.input.productId)
-      if (existingOption) {
-        throw new Error('Product already has an option selector. Delete existing option first.')
-      }
-      
-      const now = new Date().toISOString()
-      const result = db.prepare(`
-        INSERT INTO product_options (product_id, name, type, required, position, created_at, updated_at)
-        VALUES (?, ?, ?, ?, 0, ?, ?)
-      `).run(args.input.productId, args.input.name, args.input.type.toLowerCase(), args.input.required ? 1 : 0, now, now)
-      
-      return {
-        id: result.lastInsertRowid.toString(),
-        productId: args.input.productId,
-        name: args.input.name,
-        type: args.input.type,
-        required: args.input.required,
-        values: []
-      }
-    },
-
-    updateProductOption: (_: any, args: { id: string; input: any }, ctx: Context) => {
-      requirePermission(ctx, 'product.update')
-      
-      const existing = db.prepare(`SELECT * FROM product_options WHERE id = ?`).get(args.id) as any
-      if (!existing) {
-        throw new Error('Product option not found')
-      }
-      
-      const now = new Date().toISOString()
-      const name = args.input.name ?? existing.name
-      const type = args.input.type ?? existing.type
-      const required = args.input.required !== undefined ? (args.input.required ? 1 : 0) : existing.required
-      
-      db.prepare(`
-        UPDATE product_options SET name = ?, type = ?, required = ?, updated_at = ?
-        WHERE id = ?
-      `).run(name, type.toLowerCase(), required, now, args.id)
-      
-      return {
-        id: args.id,
-        productId: existing.product_id.toString(),
-        name,
-        type: type.toUpperCase(),
-        required: !!required
-      }
-    },
-
-    deleteProductOption: (_: any, args: { id: string }, ctx: Context) => {
-      requirePermission(ctx, 'product.delete')
-      
-      const existing = db.prepare(`SELECT id FROM product_options WHERE id = ?`).get(args.id)
-      if (!existing) {
-        throw new Error('Product option not found')
-      }
-      
-      // Delete option values first
-      db.prepare(`DELETE FROM option_values WHERE option_id = ?`).run(args.id)
-      // Delete the option
-      db.prepare(`DELETE FROM product_options WHERE id = ?`).run(args.id)
-      
-      return true
-    },
-
-    addOptionValues: (_: any, args: { optionId: string; values: any[] }, ctx: Context) => {
-      requirePermission(ctx, 'product.update')
-      
-      const option = db.prepare(`SELECT * FROM product_options WHERE id = ?`).get(args.optionId) as any
-      if (!option) {
-        throw new Error('Product option not found')
-      }
-      
-      const now = new Date().toISOString()
-      const insertedValues = []
-      
-      for (const val of args.values) {
-        const result = db.prepare(`
-          INSERT INTO option_values (option_id, value, stock, position, created_at, updated_at)
-          VALUES (?, ?, ?, 0, ?, ?)
-        `).run(args.optionId, val.value, val.stock ?? null, now, now)
-        
-        insertedValues.push({
-          id: result.lastInsertRowid.toString(),
-          optionId: args.optionId,
-          value: val.value,
-          stock: val.stock ?? null
-        })
-      }
-      
-      return {
-        id: option.id.toString(),
-        productId: option.product_id.toString(),
-        name: option.name,
-        type: option.type.toUpperCase(),
-        required: !!option.required,
-        values: insertedValues
-      }
-    },
-
-    updateOptionValue: (_: any, args: { id: string; value?: string; stock?: number }, ctx: Context) => {
-      requirePermission(ctx, 'product.update')
-      
-      const existing = db.prepare(`SELECT * FROM option_values WHERE id = ?`).get(args.id) as any
-      if (!existing) {
-        throw new Error('Option value not found')
-      }
-      
-      const now = new Date().toISOString()
-      const newValue = args.value ?? existing.value
-      const newStock = args.stock !== undefined ? args.stock : existing.stock
-      
-      db.prepare(`
-        UPDATE option_values SET value = ?, stock = ?, updated_at = ?
-        WHERE id = ?
-      `).run(newValue, newStock, now, args.id)
-      
-      return {
-        id: args.id,
-        optionId: existing.option_id.toString(),
-        value: newValue,
-        stock: newStock
-      }
-    },
-
-    deleteOptionValue: (_: any, args: { id: string }, ctx: Context) => {
-      requirePermission(ctx, 'product.delete')
-      
-      const existing = db.prepare(`SELECT id FROM option_values WHERE id = ?`).get(args.id)
-      if (!existing) {
-        throw new Error('Option value not found')
-      }
-      
-      db.prepare(`DELETE FROM option_values WHERE id = ?`).run(args.id)
       return true
     },
 
