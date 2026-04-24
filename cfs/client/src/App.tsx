@@ -3,6 +3,9 @@ import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { useAuth } from './hooks/useAuth'
 import Landing from './pages/Landing'
+import NewsDetail from './pages/NewsDetail'
+import EventDetail from './pages/EventDetail'
+import ProductDetail from './pages/ProductDetail'
 import Catalog from './pages/Catalog'
 import Login from './pages/Login'
 import Checkout from './pages/Checkout'
@@ -37,6 +40,9 @@ export function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/verification" element={<Verification />} />
+      <Route path="/news/:id" element={<NewsDetail />} />
+      <Route path="/events/:id" element={<EventDetail />} />
+      <Route path="/products/:id" element={<ProductDetail />} />
       <Route
         path="/admin"
         element={

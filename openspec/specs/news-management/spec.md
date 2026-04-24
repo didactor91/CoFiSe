@@ -126,6 +126,47 @@ The system MUST enforce that news mutations are only accessible to STAFF and ADM
 - WHEN any news mutation is called
 - THEN the operation succeeds (after validation)
 
+### Requirement: NewsDetail Page
+
+The system SHALL provide a public detail page at `/news/:id` that displays full news content.
+
+#### Scenario: News detail displays all fields
+
+- GIVEN a news item with id "abc" exists with title "Test News", content "Full content", imageUrl, and createdAt
+- WHEN user navigates to `/news/abc`
+- THEN the page displays title as `<h1>Test News</h1>`, image as full-width img, content preserves paragraphs
+- AND date is formatted as "25 de abril de 2026"
+
+#### Scenario: News detail loading state
+
+- GIVEN user navigates to `/news/abc`
+- WHEN the query is loading
+- THEN a centered spinner with "⏳" and "Cargando..." is displayed
+
+#### Scenario: News detail not found
+
+- GIVEN no news item with id "xyz" exists
+- WHEN user navigates to `/news/xyz`
+- THEN "Esta noticia no existe" is displayed with a "Volver" button
+
+#### Scenario: News detail navigable from Landing
+
+- GIVEN user is on the Landing page with news items displayed
+- WHEN user clicks a news card
+- THEN browser navigates to `/news/:id`
+
+#### Scenario: News detail navigable from Admin
+
+- GIVEN user is on `/admin/news`
+- WHEN user clicks a table row
+- THEN browser navigates to `/news/:id?from=admin`
+
+#### Scenario: News detail admin mode
+
+- GIVEN user navigates to `/news/abc?from=admin`
+- THEN a "Modo Admin" badge is displayed in the page header
+- AND a "Volver" button navigates back to admin list
+
 ### Requirement: Admin UI — News Management Section
 
 The system SHALL provide a News page at `/admin/news` accessible to STAFF and ADMIN users. The page MUST display a news list table and a news form modal. News management behavior (validation, mutations) remains unchanged from the original ControlPanel implementation.

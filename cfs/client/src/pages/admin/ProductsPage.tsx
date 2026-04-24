@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useProductsQuery, useReservationsQuery } from '../../graphql/queries'
 import { useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation, useCreateProductOptionMutation, useAddOptionValuesMutation, useDeleteProductOptionMutation } from '../../graphql/mutations'
@@ -29,6 +30,7 @@ const emptyProductForm: ProductFormState = {
 }
 
 export default function ProductsPage() {
+  const navigate = useNavigate()
   const { can } = useAuth()
   const [productsResult] = useProductsQuery()
   const [, createProductMutation] = useCreateProductMutation()
@@ -727,7 +729,8 @@ export default function ProductsPage() {
               {products.map((product) => (
                 <tr
                   key={product.id}
-                  style={{ borderBottom: `1px solid ${theme.colors.border}` }}
+                  onClick={() => navigate(`/products/${product.id}?from=admin`)}
+                  style={{ cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}
                 >
                   <td style={{ padding: theme.spacing.sm, color: theme.colors.text }}>{product.name}</td>
                   <td style={{ padding: theme.spacing.sm, color: theme.colors.text }}>€{product.price.toFixed(2)}</td>

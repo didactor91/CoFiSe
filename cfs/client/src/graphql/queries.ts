@@ -125,6 +125,34 @@ export const ALL_EVENTS_QUERY = `
   }
 `
 
+export const PRODUCT_QUERY = `
+  query Product($id: ID!) {
+    product(id: $id) {
+      id
+      name
+      description
+      price
+      stock
+      limitedStock
+      imageUrl
+      options {
+        id
+        name
+        required
+        values {
+          id
+          value
+          stock
+        }
+      }
+    }
+  }
+`
+
+export function useProductQuery(id: string) {
+  return useQuery({ query: PRODUCT_QUERY, variables: { id } })
+}
+
 export const RESERVATIONS_QUERY = `
   query Reservations($status: ReservationStatus) {
     reservations(status: $status) {

@@ -58,7 +58,7 @@ export default function Landing() {
             }}
           >
             {news.map((item) => (
-              <NewsCard key={item.id} news={item} />
+              <NewsCard key={item.id} news={item} onClick={() => navigate(`/news/${item.id}`)} />
             ))}
           </div>
         )}
@@ -101,11 +101,13 @@ export default function Landing() {
             {events.map((event) => (
               <div
                 key={event.id}
+                onClick={() => navigate(`/events/${event.id}`)}
                 style={{
                   background: theme.colors.surface,
                   borderRadius: theme.borderRadius.md,
                   padding: theme.spacing.lg,
                   border: `1px solid ${theme.colors.border}`,
+                  cursor: 'pointer',
                 }}
               >
                 <h3
@@ -212,7 +214,7 @@ export default function Landing() {
             {catalogPreview.map((product) => (
               <div
                 key={product.id}
-                onClick={() => navigate('/catalog')}
+onClick={() => navigate(`/products/${product.id}`)}
                 style={{
                   background: theme.colors.surface,
                   borderRadius: theme.borderRadius.md,

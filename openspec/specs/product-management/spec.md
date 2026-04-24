@@ -143,6 +143,67 @@ The system MUST enforce that product mutations are only accessible to STAFF and 
 - WHEN any product mutation is called
 - THEN the operation succeeds (after validation)
 
+### Requirement: ProductDetail Page
+
+The system SHALL provide a public detail page at `/products/:id` that displays full product information.
+
+#### Scenario: Product detail displays all fields
+
+- GIVEN a product exists with name "Test Product", price 29.90, description, stock 10, limitedStock true, imageUrl, and options
+- WHEN user views `/products/:id`
+- THEN the page displays name in `<h1>`, image if exists, price formatted as "29.90€"
+- AND stock badge: "En stock" (green) when stock > 0
+
+#### Scenario: Product detail stock states
+
+- GIVEN a product with `limitedStock: false`
+- WHEN user views `/products/:id`
+- THEN stock badge shows "Stock infinito" in gray
+
+- GIVEN a product with `stock: 0` and `limitedStock: true`
+- WHEN user views `/products/:id`
+- THEN stock badge shows "Sin stock" in red
+
+#### Scenario: Product detail options display
+
+- GIVEN a product has options with name "Size" and values ["S", "M", "L"]
+- WHEN user views `/products/:id`
+- THEN below the price, a row shows "Size:" followed by three badge chips
+
+- GIVEN a product has no options
+- WHEN user views `/products/:id`
+- THEN no options section is rendered
+
+#### Scenario: Product detail loading state
+
+- GIVEN user navigates to `/products/:id`
+- WHEN the query is loading
+- THEN a centered spinner with "⏳" and "Cargando..." is displayed
+
+#### Scenario: Product detail error state
+
+- GIVEN no product with the given id exists
+- WHEN user navigates to `/products/:id`
+- THEN "Producto no encontrado" is displayed with a "Volver" button
+
+#### Scenario: Product detail navigable from Landing
+
+- GIVEN user is on the Landing page with product preview displayed
+- WHEN user clicks a product card
+- THEN browser navigates to `/products/:id`
+
+#### Scenario: Product detail navigable from Admin
+
+- GIVEN user is on `/admin/products`
+- WHEN user clicks a table row
+- THEN browser navigates to `/products/:id?from=admin`
+
+#### Scenario: Product detail admin mode
+
+- GIVEN user navigates to `/products/abc?from=admin`
+- THEN a "Modo Admin" badge is displayed in the page header
+- AND a "Volver" button navigates back to admin list
+
 ### Requirement: Admin UI — Product Management Section
 
 The system SHALL provide a Products page at `/admin/products` accessible to STAFF and ADMIN users. The page MUST display a product list table and a product form modal. Product management behavior (validation, mutations) remains unchanged from the original ControlPanel implementation.

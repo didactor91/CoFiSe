@@ -126,6 +126,48 @@ The system SHALL validate:
 - WHEN the user submits an event with malformed start_time
 - THEN the system rejects with invalid datetime format error
 
+### Requirement: EventDetail Page
+
+The system SHALL provide a public detail page at `/events/:id` that displays full event information.
+
+#### Scenario: Event detail displays all fields
+
+- GIVEN an event exists with name "Concert", location "Auditorium", startTime "2026-04-25T18:00:00Z", endTime "2026-04-25T21:00:00Z"
+- WHEN user views `/events/:id`
+- THEN the page displays name in `<h1>`, location with "📍" prefix
+- AND datetime shows "25 de abril de 2026, 18:00 - 21:00" in a single line
+- AND description if exists
+
+#### Scenario: Event detail loading state
+
+- GIVEN user navigates to `/events/:id`
+- WHEN the query is loading
+- THEN a centered spinner with "⏳" and "Cargando..." is displayed
+
+#### Scenario: Event detail error state
+
+- GIVEN no event with the given id exists
+- WHEN user navigates to `/events/:id`
+- THEN "Evento no encontrado" is displayed with a "Volver" button
+
+#### Scenario: Event detail navigable from Landing
+
+- GIVEN user is on the Landing page with event cards displayed
+- WHEN user clicks an event card
+- THEN browser navigates to `/events/:id`
+
+#### Scenario: Event detail navigable from Admin
+
+- GIVEN user is on `/admin/events`
+- WHEN user clicks a table row
+- THEN browser navigates to `/events/:id?from=admin`
+
+#### Scenario: Event detail admin mode
+
+- GIVEN user navigates to `/events/abc?from=admin`
+- THEN a "Modo Admin" badge is displayed in the page header
+- AND a "Volver" button navigates back to admin list
+
 ### Requirement: Admin UI — Event Management Section
 
 The system SHALL provide an Events page at `/admin/events` accessible to STAFF and ADMIN users. The page MUST display an events list and event form. Event management behavior (validation, create, update, delete by ADMIN only) remains unchanged.
