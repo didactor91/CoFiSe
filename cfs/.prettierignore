@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+coverage
+playwright-report
+test-results
+client/src/graphql/generated-types.ts
+packages/types/generated
+*.db
+*.db-journal
