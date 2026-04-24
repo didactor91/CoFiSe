@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-=======
 import { useAuth } from '../../hooks/useAuth'
 import { useAllEventsQuery } from '../../graphql/queries'
 import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from '../../graphql/mutations'
@@ -8,7 +7,6 @@ import theme from '../../theme'
 
 export default function EventsPage() {
   const navigate = useNavigate()
-=======
   const { can } = useAuth()
   const [eventsResult] = useAllEventsQuery()
   const [, createEventMutation] = useCreateEventMutation()
@@ -392,8 +390,6 @@ export default function EventsPage() {
             <tbody>
               {events.map((event) => (
                 <tr key={event.id} onClick={() => navigate(`/events/${event.id}?from=admin`)} style={{ cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}>
-=======
-                <tr key={event.id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
                   <td style={{ padding: theme.spacing.sm, color: theme.colors.text }}>{event.name}</td>
                   <td style={{ padding: theme.spacing.sm, color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>{event.location}</td>
                   <td style={{ padding: theme.spacing.sm, color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>

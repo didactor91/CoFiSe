@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-=======
 import { useAuth } from '../../hooks/useAuth'
 import { useAllNewsQuery } from '../../graphql/queries'
 import { useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation } from '../../graphql/mutations'
@@ -8,7 +7,6 @@ import theme from '../../theme'
 
 export default function NewsPage() {
   const navigate = useNavigate()
-=======
   const { can } = useAuth()
   const [newsResult] = useAllNewsQuery()
   const [, createNewsMutation] = useCreateNewsMutation()
@@ -313,8 +311,6 @@ export default function NewsPage() {
             <tbody>
               {news.map((item) => (
                 <tr key={item.id} onClick={() => navigate(`/news/${item.id}?from=admin`)} style={{ cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}>
-=======
-                <tr key={item.id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
                   <td style={{ padding: theme.spacing.sm, color: theme.colors.text }}>{item.title}</td>
                   <td style={{ padding: theme.spacing.sm, color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {item.content}
