@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (storedRefreshToken) {
         refreshAccessToken(storedRefreshToken)
       } else {
-        validateTokenAndFetchUser(storedToken)
+        validateTokenAndFetchUser()
       }
     } else if (storedRefreshToken) {
       refreshAccessToken(storedRefreshToken)
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const validateTokenAndFetchUser = async (token: string) => {
+  const validateTokenAndFetchUser = async () => {
     try {
       const result = await graphqlClient.query(ME_QUERY, {}).toPromise()
 
