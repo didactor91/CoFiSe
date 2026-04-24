@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react'
 
-import theme from '../../theme'
-
 interface PageHeaderProps {
   title: string
   action?: ReactNode
@@ -9,16 +7,8 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, action }: PageHeaderProps) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
-      <h1
-        style={{
-          color: theme.colors.text,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.semibold,
-        }}
-      >
-        {title}
-      </h1>
+    <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{title}</h1>
       {action}
     </div>
   )

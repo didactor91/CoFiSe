@@ -323,7 +323,7 @@ export default function ProductsPage() {
           style={{}}
         >
           {/* Basic Info Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: theme.spacing.md }}>
             <div>
               <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
                 Nombre *
@@ -630,58 +630,60 @@ export default function ProductsPage() {
             No hay productos. Haz clic en 'Añadir Producto' para crear uno.
           </p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: theme.colors.border }}>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Nombre</th>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Precio</th>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Stock</th>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'right', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr
-                  key={product.id}
-                  onClick={() => navigate(`/products/${product.id}?from=admin`)}
-                  style={{ cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}
-                >
-                  <td style={{ padding: theme.spacing.sm, color: theme.colors.text }}>{product.name}</td>
-                  <td style={{ padding: theme.spacing.sm, color: theme.colors.text }}>€{product.price.toFixed(2)}</td>
-                  <td
-                    style={{
-                      padding: theme.spacing.sm,
-                      color: !product.limitedStock ? theme.colors.success : (product.stock === 0 ? theme.colors.error : theme.colors.text),
-                      fontWeight: product.stock === 0 ? theme.typography.fontWeight.bold : undefined
-                    }}
-                  >
-                    {!product.limitedStock ? 'Ilimitado' : (product.stock === 0 ? '⚠️ 0' : product.stock)}
-                  </td>
-                  <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
-                    {canEdit && (
-                      <Button
-                        data-testid={`edit-product-btn-${product.id}`}
-                        onClick={() => handleEditProduct(product)}
-                        style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
-                      >
-                        Editar
-                      </Button>
-                    )}
-                    {canDelete && (
-                      <Button
-                        data-testid={`delete-product-btn-${product.id}`}
-                        onClick={() => handleDeleteProductClick(product.id)}
-                        variant="secondary"
-                        style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
-                      >
-                        Eliminar
-                      </Button>
-                    )}
-                  </td>
+          <div className="table-scroll">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th className="admin-th">Nombre</th>
+                  <th className="admin-th">Precio</th>
+                  <th className="admin-th">Stock</th>
+                  <th className="admin-th text-right">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr
+                    key={product.id}
+                    onClick={() => navigate(`/products/${product.id}?from=admin`)}
+                    className="admin-row cursor-pointer"
+                  >
+                    <td className="admin-td font-medium text-slate-800">{product.name}</td>
+                    <td className="admin-td">€{product.price.toFixed(2)}</td>
+                    <td
+                      className="admin-td"
+                      style={{
+                        color: !product.limitedStock ? theme.colors.success : (product.stock === 0 ? theme.colors.error : theme.colors.text),
+                        fontWeight: product.stock === 0 ? theme.typography.fontWeight.bold : undefined
+                      }}
+                    >
+                      {!product.limitedStock ? 'Ilimitado' : (product.stock === 0 ? '⚠️ 0' : product.stock)}
+                    </td>
+                    <td className="admin-td text-right">
+                      {canEdit && (
+                        <Button
+                          data-testid={`edit-product-btn-${product.id}`}
+                          onClick={() => handleEditProduct(product)}
+                          style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                        >
+                          Editar
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          data-testid={`delete-product-btn-${product.id}`}
+                          onClick={() => handleDeleteProductClick(product.id)}
+                          variant="secondary"
+                          style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                        >
+                          Eliminar
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Panel>
     </div>

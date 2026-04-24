@@ -152,7 +152,7 @@ export default function EventsPage() {
           data-testid="event-form"
           style={{}}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: theme.spacing.md }}>
             <div>
               <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
                 Nombre *
@@ -216,7 +216,7 @@ export default function EventsPage() {
               }}
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md, marginTop: theme.spacing.md }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: theme.spacing.md, marginTop: theme.spacing.md }}>
             <div>
               <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
                 Fecha/Hora inicio *
@@ -290,48 +290,50 @@ export default function EventsPage() {
             No hay eventos. Haz clic en 'Añadir Evento' para crear uno.
           </p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: theme.colors.border }}>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Nombre</th>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Lugar</th>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Fecha</th>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'right', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map((event) => (
-                <tr key={event.id} onClick={() => navigate(`/events/${event.id}?from=admin`)} style={{ cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}>
-                  <td style={{ padding: theme.spacing.sm, color: theme.colors.text }}>{event.name}</td>
-                  <td style={{ padding: theme.spacing.sm, color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>{event.location}</td>
-                  <td style={{ padding: theme.spacing.sm, color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>
-                    {new Date(event.startTime).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}
-                  </td>
-                  <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
-                    {canEdit && (
-                      <Button
-                        data-testid={`edit-event-btn-${event.id}`}
-                        onClick={() => handleEditEvent(event)}
-                        style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
-                      >
-                        Editar
-                      </Button>
-                    )}
-                    {canDelete && (
-                      <Button
-                        data-testid={`delete-event-btn-${event.id}`}
-                        onClick={() => handleDeleteEventClick(event.id)}
-                        variant="secondary"
-                        style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
-                      >
-                        Eliminar
-                      </Button>
-                    )}
-                  </td>
+          <div className="table-scroll">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th className="admin-th">Nombre</th>
+                  <th className="admin-th">Lugar</th>
+                  <th className="admin-th">Fecha</th>
+                  <th className="admin-th text-right">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {events.map((event) => (
+                  <tr key={event.id} onClick={() => navigate(`/events/${event.id}?from=admin`)} className="admin-row cursor-pointer">
+                    <td className="admin-td font-medium text-slate-800">{event.name}</td>
+                    <td className="admin-td text-xs text-slate-500">{event.location}</td>
+                    <td className="admin-td text-xs text-slate-500">
+                      {new Date(event.startTime).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}
+                    </td>
+                    <td className="admin-td text-right">
+                      {canEdit && (
+                        <Button
+                          data-testid={`edit-event-btn-${event.id}`}
+                          onClick={() => handleEditEvent(event)}
+                          style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                        >
+                          Editar
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          data-testid={`delete-event-btn-${event.id}`}
+                          onClick={() => handleDeleteEventClick(event.id)}
+                          variant="secondary"
+                          style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                        >
+                          Eliminar
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Panel>
     </div>

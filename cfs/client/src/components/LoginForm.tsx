@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { useAuth } from '../context/AuthContext'
-import theme from '../theme'
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -34,47 +33,17 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: theme.spacing.md,
-        maxWidth: '400px',
-        margin: '0 auto',
-        padding: theme.spacing.xl,
-        background: theme.colors.surface,
-        borderRadius: theme.borderRadius.md,
-        border: `1px solid ${theme.colors.border}`,
-      }}
+      className="w-full max-w-md space-y-4 rounded-3xl border border-slate-200 bg-white/95 p-5 shadow-lg shadow-slate-200/50 sm:p-8"
     >
-      <h2
-        style={{
-          color: theme.colors.accent,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.semibold,
-          textAlign: 'center',
-          marginBottom: theme.spacing.sm,
-        }}
-      >
-        Iniciar Sesión
-      </h2>
+      <h2 className="mb-1 text-center text-2xl font-semibold tracking-tight text-slate-900">Iniciar sesión</h2>
+      <p className="text-center text-sm text-slate-500">Accede al panel de administración</p>
 
       {error && (
-        <div
-          style={{
-            color: theme.colors.error,
-            background: '#1a1a1a',
-            padding: theme.spacing.sm,
-            borderRadius: theme.borderRadius.sm,
-            fontSize: theme.typography.fontSize.sm,
-            textAlign: 'center',
-          }}
-        >
-          {error}
-        </div>
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-center text-sm text-rose-700">{error}</div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs }}>
-        <label htmlFor="email" style={{ color: theme.colors.text, fontSize: theme.typography.fontSize.sm }}>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="email" className="text-sm font-medium text-slate-700">
           Email
         </label>
         <input
@@ -83,19 +52,12 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{
-            background: theme.colors.background,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.sm,
-            padding: theme.spacing.sm,
-            color: theme.colors.text,
-            fontSize: theme.typography.fontSize.base,
-          }}
+          className="h-11 rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
         />
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs }}>
-        <label htmlFor="password" style={{ color: theme.colors.text, fontSize: theme.typography.fontSize.sm }}>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="password" className="text-sm font-medium text-slate-700">
           Contraseña
         </label>
         <input
@@ -104,31 +66,14 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{
-            background: theme.colors.background,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.sm,
-            padding: theme.spacing.sm,
-            color: theme.colors.text,
-            fontSize: theme.typography.fontSize.base,
-          }}
+          className="h-11 rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
         />
       </div>
 
       <button
         type="submit"
         disabled={isDisabled}
-        style={{
-          background: isDisabled ? theme.colors.disabled : theme.colors.accent,
-          color: isDisabled ? theme.colors.disabledText : theme.colors.background,
-          border: 'none',
-          borderRadius: theme.borderRadius.sm,
-          padding: theme.spacing.sm,
-          fontSize: theme.typography.fontSize.base,
-          fontWeight: theme.typography.fontWeight.semibold,
-          cursor: isDisabled ? 'not-allowed' : 'pointer',
-          marginTop: theme.spacing.xs,
-        }}
+        className="btn-primary mt-2 h-11 w-full"
       >
         {isLoading ? 'Cargando...' : 'Entrar'}
       </button>
