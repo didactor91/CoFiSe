@@ -4,6 +4,10 @@ import { useAuth } from '../../hooks/useAuth'
 import { useAllNewsQuery } from '../../graphql/queries'
 import { useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation } from '../../graphql/mutations'
 import theme from '../../theme'
+import { Button } from '../../shared/ui/Button'
+import { ConfirmDialog } from '../../shared/ui/ConfirmDialog'
+import { PageHeader } from '../../shared/ui/PageHeader'
+import { Panel } from '../../shared/ui/Panel'
 
 export default function NewsPage() {
   const navigate = useNavigate()
@@ -96,44 +100,17 @@ export default function NewsPage() {
 
   return (
     <div data-testid="news-page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
-        <h1 style={{
-          color: theme.colors.text,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.semibold,
-        }}>
-          Gestión de Noticias
-        </h1>
-        {canCreate && (
-          <button
-            onClick={handleAddNews}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              background: theme.colors.accent,
-              color: theme.colors.background,
-              border: 'none',
-              borderRadius: theme.borderRadius.sm,
-              cursor: 'pointer',
-              fontWeight: theme.typography.fontWeight.semibold,
-              fontSize: theme.typography.fontSize.sm,
-            }}
-          >
-            Añadir Noticia
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Gestión de Noticias"
+        action={canCreate ? <Button onClick={handleAddNews}>Añadir Noticia</Button> : undefined}
+      />
 
       {showNewsForm && (
+        <Panel style={{ padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
         <form
           onSubmit={handleNewsFormSubmit}
           data-testid="news-form"
-          style={{
-            background: theme.colors.surface,
-            borderRadius: theme.borderRadius.md,
-            border: `1px solid ${theme.colors.border}`,
-            padding: theme.spacing.lg,
-            marginBottom: theme.spacing.lg,
-          }}
+          style={{}}
         >
           <div style={{ marginBottom: theme.spacing.md }}>
             <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
@@ -202,98 +179,27 @@ export default function NewsPage() {
             </p>
           )}
           <div style={{ display: 'flex', gap: theme.spacing.sm }}>
-            <button
-              type="submit"
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.accent,
-                color: theme.colors.background,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
+            <Button type="submit">
               {editingNews ? 'Actualizar' : 'Crear'}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setShowNewsForm(false); setEditingNews(null); }}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.border,
-                color: theme.colors.text,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => { setShowNewsForm(false); setEditingNews(null); }}>
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
+        </Panel>
       )}
 
       {deleteConfirm && (
-        <div
-          data-testid="news-delete-confirm-dialog"
-          style={{
-            background: theme.colors.surface,
-            borderRadius: theme.borderRadius.md,
-            border: `1px solid ${theme.colors.error}`,
-            padding: theme.spacing.lg,
-            marginBottom: theme.spacing.lg,
-          }}
-        >
-          <p style={{ color: theme.colors.text, marginBottom: theme.spacing.md }}>
-            ¿Eliminar noticia? Esta acción no se puede deshacer.
-          </p>
-          <div style={{ display: 'flex', gap: theme.spacing.sm }}>
-            <button
-              onClick={handleConfirmDelete}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.error,
-                color: '#fff',
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
-              Eliminar
-            </button>
-            <button
-              onClick={() => setDeleteConfirm(null)}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.border,
-                color: theme.colors.text,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
+        <ConfirmDialog
+          testId="news-delete-confirm-dialog"
+          message="¿Eliminar noticia? Esta acción no se puede deshacer."
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteConfirm(null)}
+        />
       )}
 
-      <div
-        style={{
-          background: theme.colors.surface,
-          borderRadius: theme.borderRadius.md,
-          border: `1px solid ${theme.colors.border}`,
-          overflow: 'hidden',
-        }}
-      >
+      <Panel style={{ overflow: 'hidden' }}>
         {news.length === 0 ? (
           <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
             No hay noticias. Haz clic en 'Añadir Noticia' para crear una.
@@ -320,41 +226,23 @@ export default function NewsPage() {
                   </td>
                   <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
                     {canEdit && (
-                      <button
+                      <Button
                         data-testid={`edit-news-btn-${item.id}`}
                         onClick={() => handleEditNews(item)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.accent,
-                          color: theme.colors.background,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                          marginRight: theme.spacing.xs,
-                        }}
+                        style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                       >
                         Editar
-                      </button>
+                      </Button>
                     )}
                     {canDelete && (
-                      <button
+                      <Button
                         data-testid={`delete-news-btn-${item.id}`}
                         onClick={() => handleDeleteNewsClick(item.id)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.border,
-                          color: theme.colors.text,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                        }}
+                        variant="secondary"
+                        style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                       >
                         Eliminar
-                      </button>
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -362,7 +250,7 @@ export default function NewsPage() {
             </tbody>
           </table>
         )}
-      </div>
+      </Panel>
     </div>
   )
 }

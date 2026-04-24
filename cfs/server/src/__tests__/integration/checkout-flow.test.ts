@@ -102,12 +102,12 @@ describe('Checkout Flow Integration', () => {
     `)
 
     const now = new Date().toISOString()
-    
+
     // Seed product with options (Corbata - Color options)
     db.prepare(`INSERT INTO products (name, description, price, stock, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`).run(
       'Corbata', 'Elegant tie with color options', 25.00, 10, now, now
     )
-    
+
     // Color option for Corbata (required)
     db.prepare(`INSERT INTO product_options (product_id, name, type, required, position) VALUES (?, ?, ?, ?, ?)`).run(
       1, 'Color', 'COLOR', 1, 0
@@ -216,7 +216,7 @@ describe('Checkout Flow Integration', () => {
         cart: (_: any, args: { sessionId: string }) => {
           let cart = db.prepare(`SELECT * FROM carts WHERE session_id = ?`).get(args.sessionId) as any
           if (!cart) return null
-          
+
           const items = db.prepare(`
             SELECT ci.*, p.name, p.description, p.price, p.stock,
                    ov.value as option_value, ov.stock as option_stock
@@ -225,7 +225,7 @@ describe('Checkout Flow Integration', () => {
             LEFT JOIN option_values ov ON ci.option_value_id = ov.id
             WHERE ci.cart_id = ?
           `).all(cart.id)
-          
+
           return {
             id: cart.id.toString(),
             sessionId: cart.session_id,
@@ -255,7 +255,7 @@ describe('Checkout Flow Integration', () => {
           const options = db.prepare(`
             SELECT * FROM product_options WHERE product_id = ? ORDER BY position
           `).all(args.productId)
-          
+
           return options.map((opt: any) => {
             const values = db.prepare(`SELECT * FROM option_values WHERE option_id = ? ORDER BY position`).all(opt.id)
             return {
@@ -278,7 +278,7 @@ describe('Checkout Flow Integration', () => {
       Mutation: {
         addToCart: async (_: any, args: { sessionId: string; input: any }) => {
           const { productId, optionValueId, quantity } = args.input
-          
+
           // Get or create cart
           let cart = db.prepare(`SELECT * FROM carts WHERE session_id = ?`).get(args.sessionId) as any
           if (!cart) {
@@ -286,12 +286,12 @@ describe('Checkout Flow Integration', () => {
             const result = db.prepare(`INSERT INTO carts (session_id, status, created_at) VALUES (?, 'active', ?)`).run(args.sessionId, now)
             cart = { id: result.lastInsertRowid, session_id: args.sessionId }
           }
-          
+
           // Check existing item
           const existingItem = db.prepare(`
             SELECT * FROM cart_items WHERE cart_id = ? AND product_id = ? AND option_value_id = ?
           `).get(cart.id, productId, optionValueId || null)
-          
+
           if (existingItem) {
             db.prepare(`UPDATE cart_items SET quantity = quantity + ? WHERE id = ?`).run(quantity, (existingItem as any).id)
           } else {
@@ -299,13 +299,13 @@ describe('Checkout Flow Integration', () => {
               cart.id, productId, optionValueId || null, quantity
             )
           }
-          
+
           // Return cart
           return resolvers.Query.cart!(null, { sessionId: args.sessionId })
         },
         submitCartForVerification: async (_: any, args: { sessionId: string; input: any }) => {
           const { name, email, phone, honeypot, formRenderTime, notes } = args.input
-          
+
           // Honeypot check
           if (honeypot && honeypot.trim().length > 0) {
             return {
@@ -315,7 +315,7 @@ describe('Checkout Flow Integration', () => {
               demoCode: null
             }
           }
-          
+
           // Timing check
           if (formRenderTime && (Date.now() - formRenderTime) < 3000) {
             return {
@@ -325,7 +325,7 @@ describe('Checkout Flow Integration', () => {
               demoCode: null
             }
           }
-          
+
           // Get cart
           const cart = db.prepare(`SELECT * FROM carts WHERE session_id = ?`).get(args.sessionId) as any
           if (!cart) {
@@ -336,14 +336,14 @@ describe('Checkout Flow Integration', () => {
               demoCode: null
             }
           }
-          
+
           // Get cart items
           const cartItems = db.prepare(`
             SELECT ci.*, p.price as unit_price FROM cart_items ci
             JOIN products p ON ci.product_id = p.id
             WHERE ci.cart_id = ?
           `).all(cart.id)
-          
+
           if (cartItems.length === 0) {
             return {
               success: false,
@@ -352,31 +352,32 @@ describe('Checkout Flow Integration', () => {
               demoCode: null
             }
           }
-          
+
           // Create reservation with items from cart
           const now = new Date().toISOString()
           const firstItem = cartItems[0] as any
-          
+
           const result = db.prepare(`
             INSERT INTO reservations (product_id, quantity, name, email, phone, notes, status, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, 'pending_unverified', ?, ?)
           `).run(firstItem.product_id, firstItem.quantity, name, email, phone, notes || null, now, now)
-          
+
           const reservationId = result.lastInsertRowid.toString()
-          
+
           // Generate verification code
           const code = Math.floor(1000 + Math.random() * 9000).toString()
           const expiresAt = new Date(Date.now() + 10 * 60000).toISOString()
-          
+
           db.prepare(`
             INSERT INTO verification_codes (reservation_id, code, expires_at, used, attempts)
             VALUES (?, ?, ?, 0, 0)
           `).run(reservationId, code, expiresAt)
-          
-          // Store code in memory for demo (in real app, would be fetched)
-          (server as any).demoCodes = (server as any).demoCodes || {}
-          ;(server as any).demoCodes[reservationId] = code
-          
+
+            // Store code in memory for demo (in real app, would be fetched)
+            // NOTE: keep explicit semicolon to avoid ASI call chaining with previous run(...)
+            ; (server as any).demoCodes = (server as any).demoCodes || {}
+            ; (server as any).demoCodes[reservationId] = code
+
           return {
             success: true,
             message: 'Código de verificación generado',
@@ -391,7 +392,7 @@ describe('Checkout Flow Integration', () => {
             JOIN reservations r ON vc.reservation_id = r.id
             WHERE vc.reservation_id = ?
           `).get(args.reservationId) as any
-          
+
           if (!verification) {
             return {
               success: false,
@@ -400,7 +401,7 @@ describe('Checkout Flow Integration', () => {
               demoCode: null
             }
           }
-          
+
           if (verification.used) {
             return {
               success: false,
@@ -409,7 +410,7 @@ describe('Checkout Flow Integration', () => {
               demoCode: null
             }
           }
-          
+
           if (new Date(verification.expires_at).getTime() < Date.now()) {
             return {
               success: false,
@@ -418,7 +419,7 @@ describe('Checkout Flow Integration', () => {
               demoCode: null
             }
           }
-          
+
           if (verification.attempts >= 3) {
             db.prepare(`UPDATE reservations SET status = 'cancelled' WHERE id = ?`).run(args.reservationId)
             return {
@@ -428,7 +429,7 @@ describe('Checkout Flow Integration', () => {
               demoCode: null
             }
           }
-          
+
           // For demo: check against stored code OR accept '1234' as demo code
           const demoCode = (server as any).demoCodes?.[args.reservationId]
           if (verification.code !== args.code && args.code !== '1234') {
@@ -441,12 +442,12 @@ describe('Checkout Flow Integration', () => {
               demoCode: null
             }
           }
-          
+
           // Success
           const now = new Date().toISOString()
           db.prepare(`UPDATE verification_codes SET used = 1 WHERE id = ?`).run(verification.id)
           db.prepare(`UPDATE reservations SET status = 'pending', verified_at = ? WHERE id = ?`).run(now, args.reservationId)
-          
+
           return {
             success: true,
             message: 'Verificación exitosa',
@@ -477,7 +478,7 @@ describe('Checkout Flow Integration', () => {
     db.prepare(`DELETE FROM verification_codes`).run()
     db.prepare(`DELETE FROM reservations`).run()
     db.prepare(`DELETE FROM cart_items`).run()
-    ;(server as any).demoCodes = {}
+      ; (server as any).demoCodes = {}
   })
 
   describe('Step 1: Cart Review', () => {
@@ -537,7 +538,7 @@ describe('Checkout Flow Integration', () => {
 
       expect(addResponse.statusCode).toBe(200)
       const addBody = JSON.parse(addResponse.body)
-      
+
       if (!addBody.data?.addToCart) {
         console.log('addToCart failed:', JSON.stringify(addBody, null, 2))
       }
@@ -563,7 +564,7 @@ describe('Checkout Flow Integration', () => {
 
       expect(response.statusCode).toBe(200)
       const body = JSON.parse(response.body)
-      
+
       if (!body.data?.submitCartForVerification) {
         console.log('submitCartForVerification failed:', JSON.stringify(body, null, 2))
       }
@@ -606,7 +607,7 @@ describe('Checkout Flow Integration', () => {
           query: `mutation { 
             submitCartForVerification(sessionId: "test-session", input: { 
               name: "Fast Bot", email: "fast@bot.com", phone: "123", 
-              formRenderTime: ${Date.now()}  // Just now = instant
+              formRenderTime: ${Date.now()}
             }) { 
               success message 
             }
@@ -622,7 +623,24 @@ describe('Checkout Flow Integration', () => {
   })
 
   describe('Step 3: Verification', () => {
+    const seedCartWithItem = async () => {
+      const addResponse = await server.inject({
+        method: 'POST',
+        url: '/graphql',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          query: `mutation { 
+            addToCart(sessionId: "test-session", input: { productId: "1", optionValueId: "1", quantity: 1 }) { 
+              id totalItems 
+            }
+          }`,
+        }),
+      })
+      expect(addResponse.statusCode).toBe(200)
+    }
+
     it('should verify with correct code and update reservation status to PENDING', async () => {
+      await seedCartWithItem()
       // Create reservation
       const createResponse = await server.inject({
         method: 'POST',
@@ -669,6 +687,7 @@ describe('Checkout Flow Integration', () => {
     })
 
     it('should reject wrong code and show remaining attempts', async () => {
+      await seedCartWithItem()
       // Create reservation
       const createResponse = await server.inject({
         method: 'POST',
@@ -711,6 +730,7 @@ describe('Checkout Flow Integration', () => {
     })
 
     it('should cancel reservation after 3 failed attempts', async () => {
+      await seedCartWithItem()
       // Create reservation
       const createResponse = await server.inject({
         method: 'POST',
@@ -763,7 +783,7 @@ describe('Checkout Flow Integration', () => {
 
       const verifyBody = JSON.parse(verifyResponse.body)
       expect(verifyBody.data.verifyReservationCode.success).toBe(false)
-      expect(verifyBody.data.verifyReservationCode.message).toContain('inválido')
+      expect(verifyBody.data.verifyReservationCode.message).toContain('inicia el proceso de nuevo')
 
       // Verify reservation is cancelled
       const reservation = db.prepare(`SELECT status FROM reservations WHERE id = ?`).get(reservationId) as any

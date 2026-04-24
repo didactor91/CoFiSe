@@ -2,7 +2,6 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
-import sensible from '@fastify/sensible'
 import jwt from '@fastify/jwt'
 import mercurius from 'mercurius'
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -49,14 +48,14 @@ export async function buildServer(): Promise<FastifyInstance> {
         frameSrc: ["'none'"],
         frameAncestors: ["'none'"],
         formAction: ["'self'"],
-        upgradeInsecureRequests: config.isProduction ? [] : undefined,
       }
     },
     // HSTS - only in production
     hsts: config.isProduction ? {
       maxAge: 31536000, // 1 year
       includeSubDomains: true,
-      preload: true
+      preload: true,
+      upgradeInsecureRequests: true,
     } : false,
     // Prevent clickjacking
     frameguard: {
@@ -105,7 +104,7 @@ export async function buildServer(): Promise<FastifyInstance> {
     schema,
     context: async (request, reply) => {
       // Try to verify JWT and populate request.user if token present
-      let user = request.user
+      let user: unknown = request.user
       if (!user) {
         const authHeader = request.headers.authorization
         if (authHeader?.startsWith('Bearer ')) {
@@ -114,11 +113,11 @@ export async function buildServer(): Promise<FastifyInstance> {
             user = decoded
           } catch (err) {
             // Token invalid or expired - user remains undefined
-            user = undefined
+            user = null
           }
         }
       }
-      return { user, jwt: reply.jwt }
+      return { user, reply, jwt: request.server.jwt }
     }
   })
 

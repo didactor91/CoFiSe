@@ -4,6 +4,10 @@ import { useAuth } from '../../hooks/useAuth'
 import { useAllEventsQuery } from '../../graphql/queries'
 import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from '../../graphql/mutations'
 import theme from '../../theme'
+import { Button } from '../../shared/ui/Button'
+import { ConfirmDialog } from '../../shared/ui/ConfirmDialog'
+import { PageHeader } from '../../shared/ui/PageHeader'
+import { Panel } from '../../shared/ui/Panel'
 
 export default function EventsPage() {
   const navigate = useNavigate()
@@ -130,44 +134,17 @@ export default function EventsPage() {
 
   return (
     <div data-testid="events-page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
-        <h1 style={{
-          color: theme.colors.text,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.semibold,
-        }}>
-          Gestión de Eventos
-        </h1>
-        {canCreate && (
-          <button
-            onClick={handleAddEvent}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              background: theme.colors.accent,
-              color: theme.colors.background,
-              border: 'none',
-              borderRadius: theme.borderRadius.sm,
-              cursor: 'pointer',
-              fontWeight: theme.typography.fontWeight.semibold,
-              fontSize: theme.typography.fontSize.sm,
-            }}
-          >
-            Añadir Evento
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Gestión de Eventos"
+        action={canCreate ? <Button onClick={handleAddEvent}>Añadir Evento</Button> : undefined}
+      />
 
       {showEventForm && (
+        <Panel style={{ padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
         <form
           onSubmit={handleEventFormSubmit}
           data-testid="event-form"
-          style={{
-            background: theme.colors.surface,
-            borderRadius: theme.borderRadius.md,
-            border: `1px solid ${theme.colors.border}`,
-            padding: theme.spacing.lg,
-            marginBottom: theme.spacing.lg,
-          }}
+          style={{}}
         >
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
             <div>
@@ -281,98 +258,27 @@ export default function EventsPage() {
             </p>
           )}
           <div style={{ display: 'flex', gap: theme.spacing.sm, marginTop: theme.spacing.md }}>
-            <button
-              type="submit"
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.accent,
-                color: theme.colors.background,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
+            <Button type="submit">
               {editingEvent ? 'Actualizar' : 'Crear'}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setShowEventForm(false); setEditingEvent(null); }}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.border,
-                color: theme.colors.text,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => { setShowEventForm(false); setEditingEvent(null); }}>
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
+        </Panel>
       )}
 
       {deleteConfirm && (
-        <div
-          data-testid="event-delete-confirm-dialog"
-          style={{
-            background: theme.colors.surface,
-            borderRadius: theme.borderRadius.md,
-            border: `1px solid ${theme.colors.error}`,
-            padding: theme.spacing.lg,
-            marginBottom: theme.spacing.lg,
-          }}
-        >
-          <p style={{ color: theme.colors.text, marginBottom: theme.spacing.md }}>
-            ¿Eliminar evento? Esta acción no se puede deshacer.
-          </p>
-          <div style={{ display: 'flex', gap: theme.spacing.sm }}>
-            <button
-              onClick={handleConfirmDelete}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.error,
-                color: '#fff',
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
-              Eliminar
-            </button>
-            <button
-              onClick={() => setDeleteConfirm(null)}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.border,
-                color: theme.colors.text,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
+        <ConfirmDialog
+          testId="event-delete-confirm-dialog"
+          message="¿Eliminar evento? Esta acción no se puede deshacer."
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteConfirm(null)}
+        />
       )}
 
-      <div
-        style={{
-          background: theme.colors.surface,
-          borderRadius: theme.borderRadius.md,
-          border: `1px solid ${theme.colors.border}`,
-          overflow: 'hidden',
-        }}
-      >
+      <Panel style={{ overflow: 'hidden' }}>
         {events.length === 0 ? (
           <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
             No hay eventos. Haz clic en 'Añadir Evento' para crear uno.
@@ -397,41 +303,23 @@ export default function EventsPage() {
                   </td>
                   <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
                     {canEdit && (
-                      <button
+                      <Button
                         data-testid={`edit-event-btn-${event.id}`}
                         onClick={() => handleEditEvent(event)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.accent,
-                          color: theme.colors.background,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                          marginRight: theme.spacing.xs,
-                        }}
+                        style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                       >
                         Editar
-                      </button>
+                      </Button>
                     )}
                     {canDelete && (
-                      <button
+                      <Button
                         data-testid={`delete-event-btn-${event.id}`}
                         onClick={() => handleDeleteEventClick(event.id)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.border,
-                          color: theme.colors.text,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                        }}
+                        variant="secondary"
+                        style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                       >
                         Eliminar
-                      </button>
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -439,7 +327,7 @@ export default function EventsPage() {
             </tbody>
           </table>
         )}
-      </div>
+      </Panel>
     </div>
   )
 }

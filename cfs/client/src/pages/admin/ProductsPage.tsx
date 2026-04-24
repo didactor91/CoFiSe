@@ -1,9 +1,20 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { useProductsQuery, useReservationsQuery } from '../../graphql/queries'
-import { useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation, useCreateProductOptionMutation, useAddOptionValuesMutation, useDeleteProductOptionMutation } from '../../graphql/mutations'
+import { useProductsQuery } from '../../graphql/queries'
+import {
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+  useCreateProductOptionMutation,
+  useAddOptionValuesMutation,
+  useDeleteProductOptionMutation,
+} from '../../graphql/mutations'
 import theme from '../../theme'
+import { Button } from '../../shared/ui/Button'
+import { ConfirmDialog } from '../../shared/ui/ConfirmDialog'
+import { PageHeader } from '../../shared/ui/PageHeader'
+import { Panel } from '../../shared/ui/Panel'
 
 interface ProductFormState {
   name: string
@@ -287,45 +298,18 @@ export default function ProductsPage() {
 
   return (
     <div data-testid="products-page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
-        <h1 style={{
-          color: theme.colors.text,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.semibold,
-        }}>
-          Gestión de Productos
-        </h1>
-        {canCreate && (
-          <button
-            onClick={handleAddProduct}
-            style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              background: theme.colors.accent,
-              color: theme.colors.background,
-              border: 'none',
-              borderRadius: theme.borderRadius.sm,
-              cursor: 'pointer',
-              fontWeight: theme.typography.fontWeight.semibold,
-              fontSize: theme.typography.fontSize.sm,
-            }}
-          >
-            Añadir Producto
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Gestión de Productos"
+        action={canCreate ? <Button onClick={handleAddProduct}>Añadir Producto</Button> : undefined}
+      />
 
       {/* Product Form Modal */}
       {showProductForm && (
+        <Panel style={{ padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
         <form
           data-testid="product-form"
           onSubmit={handleProductFormSubmit}
-          style={{
-            background: theme.colors.surface,
-            borderRadius: theme.borderRadius.md,
-            border: `1px solid ${theme.colors.border}`,
-            padding: theme.spacing.lg,
-            marginBottom: theme.spacing.lg,
-          }}
+          style={{}}
         >
           {/* Basic Info Row */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
@@ -573,39 +557,29 @@ export default function ProductsPage() {
                       }}
                     />
 
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleRemoveOptionValue(index)}
-                      style={{
-                        padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                        background: theme.colors.error,
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: theme.borderRadius.sm,
-                        cursor: 'pointer',
-                        fontSize: theme.typography.fontSize.sm,
-                      }}
+                      variant="danger"
+                      style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                     >
                       ×
-                    </button>
+                    </Button>
                   </div>
                 ))}
 
-                <button
+                <Button
                   type="button"
                   onClick={handleAddOptionValue}
+                  variant="ghost"
                   style={{
                     padding: `${theme.spacing.xs} ${theme.spacing.md}`,
-                    background: 'transparent',
-                    border: `1px dashed ${theme.colors.border}`,
-                    borderRadius: theme.borderRadius.sm,
                     color: theme.colors.textSecondary,
-                    cursor: 'pointer',
                     fontSize: theme.typography.fontSize.sm,
                   }}
                 >
                   + Añadir valor
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -617,100 +591,29 @@ export default function ProductsPage() {
           )}
 
           <div style={{ display: 'flex', gap: theme.spacing.sm, marginTop: theme.spacing.md }}>
-            <button
-              type="submit"
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.accent,
-                color: theme.colors.background,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
+            <Button type="submit">
               {editingProduct ? 'Actualizar' : 'Crear'}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setShowProductForm(false); setEditingProduct(null); }}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.border,
-                color: theme.colors.text,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => { setShowProductForm(false); setEditingProduct(null); }}>
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
+        </Panel>
       )}
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirm && (
-        <div
-          data-testid="delete-confirm-dialog"
-          style={{
-            background: theme.colors.surface,
-            borderRadius: theme.borderRadius.md,
-            border: `1px solid ${theme.colors.error}`,
-            padding: theme.spacing.lg,
-            marginBottom: theme.spacing.lg,
-          }}
-        >
-          <p style={{ color: theme.colors.text, marginBottom: theme.spacing.md }}>
-            ¿Eliminar producto? Esta acción no se puede deshacer.
-          </p>
-          <div style={{ display: 'flex', gap: theme.spacing.sm }}>
-            <button
-              onClick={handleConfirmDelete}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.error,
-                color: '#fff',
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
-              Eliminar
-            </button>
-            <button
-              onClick={handleCancelDelete}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.border,
-                color: theme.colors.text,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
+        <ConfirmDialog
+          testId="delete-confirm-dialog"
+          message="¿Eliminar producto? Esta acción no se puede deshacer."
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
       )}
 
       {/* Product List Table */}
-      <div
-        style={{
-          background: theme.colors.surface,
-          borderRadius: theme.borderRadius.md,
-          border: `1px solid ${theme.colors.border}`,
-          overflow: 'hidden',
-        }}
-      >
+      <Panel style={{ overflow: 'hidden' }}>
         {products.length === 0 ? (
           <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
             No hay productos. Haz clic en 'Añadir Producto' para crear uno.
@@ -745,41 +648,23 @@ export default function ProductsPage() {
                   </td>
                   <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
                     {canEdit && (
-                      <button
+                      <Button
                         data-testid={`edit-product-btn-${product.id}`}
                         onClick={() => handleEditProduct(product)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.accent,
-                          color: theme.colors.background,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                          marginRight: theme.spacing.xs,
-                        }}
+                        style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                       >
                         Editar
-                      </button>
+                      </Button>
                     )}
                     {canDelete && (
-                      <button
+                      <Button
                         data-testid={`delete-product-btn-${product.id}`}
                         onClick={() => handleDeleteProductClick(product.id)}
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                          background: theme.colors.border,
-                          color: theme.colors.text,
-                          border: 'none',
-                          borderRadius: theme.borderRadius.sm,
-                          cursor: 'pointer',
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                        }}
+                        variant="secondary"
+                        style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                       >
                         Eliminar
-                      </button>
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -787,7 +672,7 @@ export default function ProductsPage() {
             </tbody>
           </table>
         )}
-      </div>
+      </Panel>
     </div>
   )
 }
