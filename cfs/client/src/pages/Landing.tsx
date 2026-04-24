@@ -108,6 +108,7 @@ export default function Landing() {
                   padding: theme.spacing.lg,
                   border: `1px solid ${theme.colors.border}`,
                   cursor: 'pointer',
+=======
                 }}
               >
                 <h3

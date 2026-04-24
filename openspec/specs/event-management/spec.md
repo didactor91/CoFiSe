@@ -168,6 +168,7 @@ The system SHALL provide a public detail page at `/events/:id` that displays ful
 - THEN a "Modo Admin" badge is displayed in the page header
 - AND a "Volver" button navigates back to admin list
 
+=======
 ### Requirement: Admin UI — Event Management Section
 
 The system SHALL provide an Events page at `/admin/events` accessible to STAFF and ADMIN users. The page MUST display an events list and event form. Event management behavior (validation, create, update, delete by ADMIN only) remains unchanged.
