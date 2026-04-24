@@ -1,6 +1,6 @@
 import { db } from '../../db/index.js'
-import { productFromRow, reservationFromRow } from '../shared/mappers.js'
 import { requirePermission, type Context } from '../shared/guards.js'
+import { productFromRow, reservationFromRow } from '../shared/mappers.js'
 
 export const reservationsResolvers = {
     Query: {

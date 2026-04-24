@@ -1,4 +1,5 @@
 import { Client, cacheExchange, fetchExchange } from 'urql'
+
 import { getAuthToken } from '../utils/cookies'
 
 // Note: fetchOptions is called per-request by urql, so token is read dynamically

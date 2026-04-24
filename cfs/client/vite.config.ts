@@ -1,6 +1,6 @@
-import { defineConfig, loadEnv } from 'vite'
-import path from 'path'
 import react from '@vitejs/plugin-react'
+import path from 'path'
+import { defineConfig, loadEnv } from 'vite'
 
 // Load env variables from parent directory (monorepo structure)
 const env = loadEnv('development', path.resolve(__dirname, '..'), '')

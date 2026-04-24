@@ -1,13 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
-import { useAllNewsQuery } from '../../graphql/queries'
+
+import type { News } from '../../graphql/generated-types'
 import { useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation } from '../../graphql/mutations'
-import theme from '../../theme'
+import { useAllNewsQuery } from '../../graphql/queries'
+import { useAuth } from '../../hooks/useAuth'
 import { Button } from '../../shared/ui/Button'
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { Panel } from '../../shared/ui/Panel'
+import theme from '../../theme'
+
+function toErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback
+}
 
 export default function NewsPage() {
   const navigate = useNavigate()
@@ -17,7 +23,7 @@ export default function NewsPage() {
   const [, updateNewsMutation] = useUpdateNewsMutation()
   const [, deleteNewsMutation] = useDeleteNewsMutation()
 
-  const news = newsResult.data?.allNews ?? []
+  const news: News[] = newsResult.data?.allNews ?? []
 
   const canCreate = can('news.create')
   const canEdit = can('news.update')
@@ -25,7 +31,7 @@ export default function NewsPage() {
 
   // News form state
   const [showNewsForm, setShowNewsForm] = useState(false)
-  const [editingNews, setEditingNews] = useState<any>(null)
+  const [editingNews, setEditingNews] = useState<News | null>(null)
   const [newsForm, setNewsForm] = useState({ title: '', content: '', imageUrl: '' })
   const [newsFormError, setNewsFormError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -37,7 +43,7 @@ export default function NewsPage() {
     setShowNewsForm(true)
   }
 
-  const handleEditNews = (item: any) => {
+  const handleEditNews = (item: News) => {
     setEditingNews(item)
     setNewsForm({ title: item.title, content: item.content, imageUrl: item.imageUrl || '' })
     setNewsFormError(null)
@@ -79,8 +85,8 @@ export default function NewsPage() {
       setShowNewsForm(false)
       setEditingNews(null)
       setNewsForm({ title: '', content: '', imageUrl: '' })
-    } catch (err: any) {
-      setNewsFormError(err.message || 'Error al guardar')
+    } catch (err: unknown) {
+      setNewsFormError(toErrorMessage(err, 'Error al guardar'))
     }
   }
 
@@ -92,8 +98,8 @@ export default function NewsPage() {
     if (!deleteConfirm) return
     try {
       await deleteNewsMutation({ id: deleteConfirm })
-    } catch (err: any) {
-      setNewsFormError(err.message || 'Error al eliminar')
+    } catch (err: unknown) {
+      setNewsFormError(toErrorMessage(err, 'Error al eliminar'))
     }
     setDeleteConfirm(null)
   }

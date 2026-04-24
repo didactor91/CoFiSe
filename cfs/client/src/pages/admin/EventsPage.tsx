@@ -1,13 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
-import { useAllEventsQuery } from '../../graphql/queries'
+
+import type { Event } from '../../graphql/generated-types'
 import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from '../../graphql/mutations'
-import theme from '../../theme'
+import { useAllEventsQuery } from '../../graphql/queries'
+import { useAuth } from '../../hooks/useAuth'
 import { Button } from '../../shared/ui/Button'
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { Panel } from '../../shared/ui/Panel'
+import theme from '../../theme'
+
+function toErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback
+}
 
 export default function EventsPage() {
   const navigate = useNavigate()
@@ -17,7 +23,7 @@ export default function EventsPage() {
   const [, updateEventMutation] = useUpdateEventMutation()
   const [, deleteEventMutation] = useDeleteEventMutation()
 
-  const events = eventsResult.data?.allEvents ?? []
+  const events: Event[] = eventsResult.data?.allEvents ?? []
 
   const canCreate = can('event.create')
   const canEdit = can('event.update')
@@ -25,7 +31,7 @@ export default function EventsPage() {
 
   // Event form state
   const [showEventForm, setShowEventForm] = useState(false)
-  const [editingEvent, setEditingEvent] = useState<any>(null)
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [eventForm, setEventForm] = useState({ name: '', description: '', location: '', startTime: '', endTime: '' })
   const [eventFormError, setEventFormError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -37,7 +43,7 @@ export default function EventsPage() {
     setShowEventForm(true)
   }
 
-  const handleEditEvent = (item: any) => {
+  const handleEditEvent = (item: Event) => {
     setEditingEvent(item)
     setEventForm({
       name: item.name,
@@ -113,8 +119,8 @@ export default function EventsPage() {
       setShowEventForm(false)
       setEditingEvent(null)
       setEventForm({ name: '', description: '', location: '', startTime: '', endTime: '' })
-    } catch (err: any) {
-      setEventFormError(err.message || 'Error al guardar')
+    } catch (err: unknown) {
+      setEventFormError(toErrorMessage(err, 'Error al guardar'))
     }
   }
 
@@ -126,8 +132,8 @@ export default function EventsPage() {
     if (!deleteConfirm) return
     try {
       await deleteEventMutation({ id: deleteConfirm })
-    } catch (err: any) {
-      setEventFormError(err.message || 'Error al eliminar')
+    } catch (err: unknown) {
+      setEventFormError(toErrorMessage(err, 'Error al eliminar'))
     }
     setDeleteConfirm(null)
   }

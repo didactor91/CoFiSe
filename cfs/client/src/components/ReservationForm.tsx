@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import userEvent from '@testing-library/user-event'
-import { useCreateReservationMutation } from '../graphql/mutations'
+
 import type { Product } from '../graphql/generated-types'
+import { useCreateReservationMutation } from '../graphql/mutations'
 
 interface ReservationFormProps {
   product: Product
@@ -79,7 +79,7 @@ export default function ReservationForm({ product, onSuccess }: ReservationFormP
       }
 
       onSuccess?.()
-    } catch (err) {
+    } catch {
       setSubmitError('Error al crear la reserva')
     }
   }

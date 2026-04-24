@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useAuth } from '../../hooks/useAuth'
-import { useAllNewsQuery, useProductsQuery, useReservationsQuery } from '../../graphql/queries'
+
 import { ReservationStatus } from '../../graphql/generated-types'
+import { useAllNewsQuery, useProductsQuery, useReservationsQuery } from '../../graphql/queries'
 import theme from '../../theme'
 
 interface StatCardProps {
@@ -45,7 +45,6 @@ function StatCard({ title, value, testId }: StatCardProps) {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth()
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | null>(null)
 
   const [newsResult] = useAllNewsQuery()

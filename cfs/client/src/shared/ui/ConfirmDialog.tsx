@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import theme from '../../theme'
+
 import { Button } from './Button'
 import { Panel } from './Panel'
+import theme from '../../theme'
 
 interface ConfirmDialogProps {
   message: ReactNode

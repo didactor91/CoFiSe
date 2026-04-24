@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+
 import theme from '../../theme'
 
 interface PanelProps {

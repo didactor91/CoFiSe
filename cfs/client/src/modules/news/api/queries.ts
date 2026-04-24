@@ -1,5 +1,5 @@
-import { useQuery } from 'urql'
-import type { UseQueryResponse } from 'urql'
+import { useQuery, type UseQueryResponse } from 'urql'
+
 import type { NewsQueryResult, NewsItemQueryResult, AllNewsQueryResult } from '../../../graphql/generated-types'
 
 export const NEWS_QUERY = `

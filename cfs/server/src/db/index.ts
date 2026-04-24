@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3'
+
 import { config } from '../config.js'
 
 console.log('[CFS DB] Opening database at:', config.database.path)

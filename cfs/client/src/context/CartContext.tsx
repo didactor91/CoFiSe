@@ -1,11 +1,13 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useContext,
   useState,
   useCallback,
   useEffect,
+  type ReactNode,
 } from 'react'
-import type { ReactNode } from 'react'
+
 import { graphqlClient } from '../graphql/client'
 
 const PRODUCTS_QUERY = `

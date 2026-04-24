@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import userEvent from '@testing-library/user-event'
+
 import { useAuth } from '../context/AuthContext'
 import theme from '../theme'
 
@@ -22,8 +22,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     try {
       await login(email, password)
       onSuccess?.()
-    } catch (err: any) {
-      setError(err.message || 'Credenciales inválidas')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Credenciales inválidas')
     } finally {
       setIsLoading(false)
     }

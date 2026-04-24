@@ -1,17 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import theme from '../theme'
-import { useMutation } from 'urql'
 
-// GraphQL mutation for code verification
-const VERIFY_RESERVATION_CODE_MUTATION = `
-  mutation VerifyReservationCode($reservationId: ID!, $code: String!) {
-    verifyReservationCode(reservationId: $reservationId, code: $code) {
-      success
-      message
-    }
-  }
-`
+import theme from '../theme'
 
 export default function Verification() {
   const [searchParams] = useSearchParams()
@@ -20,13 +10,41 @@ export default function Verification() {
   const [codeInput, setCodeInput] = useState('')
   const [verificationError, setVerificationError] = useState<string | null>(null)
   const [attemptsRemaining, setAttemptsRemaining] = useState(3)
-  const [demoCode, setDemoCode] = useState<string | null>(null)
+  const demoCode = '1234'
   const [isVerified, setIsVerified] = useState(false)
 
-  // Verify code mutation
-  const [verifyCodeResult, verifyCode] = useMutation(VERIFY_RESERVATION_CODE_MUTATION)
+  const handleCodeChange = (value: string) => {
+    // Only allow digits, max 4
+    const cleaned = value.replace(/\D/g, '').slice(0, 4)
+    setCodeInput(cleaned)
+    setVerificationError(null)
+  }
 
-  // If no reservationId, show error
+  const handleVerificationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (codeInput.length !== 4) {
+      setVerificationError('Código debe tener 4 dígitos')
+      return
+    }
+
+    // Demo verification: check against demoCode
+    // In production, this would call the GraphQL mutation
+    if (codeInput === demoCode) {
+      setIsVerified(true)
+    } else {
+      const remaining = attemptsRemaining - 1
+      setAttemptsRemaining(remaining)
+      setVerificationError('Código incorrecto')
+      setCodeInput('')
+      
+      if (remaining <= 0) {
+        setVerificationError('Ha ocurrido un error, por favor inicia el proceso de nuevo')
+        // In real app, would cancel reservation here
+      }
+    }
+  }
+
   if (!reservationId) {
     return (
       <div
@@ -86,55 +104,6 @@ export default function Verification() {
         </div>
       </div>
     )
-  }
-
-  // Demo: if we were passed a demo code in real scenario, it would come from URL
-  // For demo purposes, we'll use a mock
-  useEffect(() => {
-    // In production, this would be fetched from the server based on reservationId
-    // For demo, we'll use a placeholder
-    if (reservationId && !demoCode) {
-      // This would normally be set when the reservation was created
-      // For demo, we'll simulate showing a code
-      setDemoCode('1234')
-    }
-  }, [reservationId, demoCode])
-
-  const handleCodeChange = (value: string) => {
-    // Only allow digits, max 4
-    const cleaned = value.replace(/\D/g, '').slice(0, 4)
-    setCodeInput(cleaned)
-    setVerificationError(null)
-  }
-
-  const handleVerificationSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (codeInput.length !== 4) {
-      setVerificationError('Código debe tener 4 dígitos')
-      return
-    }
-
-    if (!demoCode) {
-      setVerificationError('Código no disponible')
-      return
-    }
-
-    // Demo verification: check against demoCode
-    // In production, this would call the GraphQL mutation
-    if (codeInput === demoCode) {
-      setIsVerified(true)
-    } else {
-      const remaining = attemptsRemaining - 1
-      setAttemptsRemaining(remaining)
-      setVerificationError('Código incorrecto')
-      setCodeInput('')
-      
-      if (remaining <= 0) {
-        setVerificationError('Ha ocurrido un error, por favor inicia el proceso de nuevo')
-        // In real app, would cancel reservation here
-      }
-    }
   }
 
   // Verification success - redirect to confirmation
@@ -319,7 +288,7 @@ export default function Verification() {
             marginBottom: '0.5rem',
           }}
         >
-          {demoCode || '____'}
+          {demoCode}
         </div>
         <p
           style={{

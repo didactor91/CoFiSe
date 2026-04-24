@@ -1,6 +1,6 @@
 import { db } from '../../db/index.js'
-import { newsFromRow } from '../shared/mappers.js'
 import { requirePermission, type Context } from '../shared/guards.js'
+import { newsFromRow } from '../shared/mappers.js'
 
 export const newsResolvers = {
     Query: {

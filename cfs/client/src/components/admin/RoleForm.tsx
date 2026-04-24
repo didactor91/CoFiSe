@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import theme from '../../theme'
 
 interface RoleFormProps {
@@ -38,8 +39,6 @@ export default function RoleForm({ editingRole, onSave, onCancel }: RoleFormProp
     }
     onSave({ name: name.trim(), permissions }, editingRole?.id)
   }
-
-  const isSystemRole = (roleName: string) => roleName === 'ADMIN' || roleName === 'STAFF'
 
   return (
     <form onSubmit={handleSubmit} style={{

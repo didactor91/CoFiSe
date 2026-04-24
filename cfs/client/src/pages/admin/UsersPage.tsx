@@ -1,9 +1,21 @@
 import { useState } from 'react'
-import { useAuth } from '../../hooks/useAuth'
-import { useUsersQuery, useRolesQuery } from '../../graphql/queries'
-import { useCreateUserMutation, useDeleteUserMutation, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from '../../graphql/mutations'
+
 import RoleForm from '../../components/admin/RoleForm'
+import type { User } from '../../graphql/generated-types'
+import { useCreateUserMutation, useDeleteUserMutation, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from '../../graphql/mutations'
+import { useUsersQuery, useRolesQuery } from '../../graphql/queries'
+import { useAuth } from '../../hooks/useAuth'
 import theme from '../../theme'
+
+interface RoleItem {
+  id: string
+  name: string
+  permissions: string[]
+}
+
+function toErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback
+}
 
 export default function UsersPage() {
   const { user, can } = useAuth()
@@ -15,8 +27,8 @@ export default function UsersPage() {
   const [, updateRoleMutation] = useUpdateRoleMutation()
   const [, deleteRoleMutation] = useDeleteRoleMutation()
 
-  const users = usersResult.data?.users ?? []
-  const roles = rolesResult.data?.roles ?? []
+  const users: User[] = usersResult.data?.users ?? []
+  const roles: RoleItem[] = rolesResult.data?.roles ?? []
 
   // Permissions
   const canManageUsers = can('user.create') && can('user.delete')
@@ -32,7 +44,7 @@ export default function UsersPage() {
 
   // Role form state
   const [showRoleForm, setShowRoleForm] = useState(false)
-  const [editingRole, setEditingRole] = useState<any>(null)
+  const [editingRole, setEditingRole] = useState<RoleItem | null>(null)
 
   const isSystemRole = (name: string) => name === 'ADMIN' || name === 'STAFF'
 
@@ -51,8 +63,8 @@ export default function UsersPage() {
       setNewUserPassword('')
       setNewUserRole('STAFF')
       setShowUserForm(false)
-    } catch (err: any) {
-      setCreateError(err.message || 'Error al crear usuario')
+    } catch (err: unknown) {
+      setCreateError(toErrorMessage(err, 'Error al crear usuario'))
     }
   }
 
@@ -68,12 +80,12 @@ export default function UsersPage() {
       if (result.error) {
         setDeleteError(result.error.message)
       }
-    } catch (err: any) {
-      setDeleteError(err.message || 'Error al eliminar usuario')
+    } catch (err: unknown) {
+      setDeleteError(toErrorMessage(err, 'Error al eliminar usuario'))
     }
   }
 
-  const handleEditRole = (role: any) => {
+  const handleEditRole = (role: RoleItem) => {
     setEditingRole(role)
     setShowRoleForm(true)
   }
@@ -85,8 +97,8 @@ export default function UsersPage() {
       if (result.error) {
         alert('Error: ' + result.error.message)
       }
-    } catch (err: any) {
-      alert('Error: ' + err.message)
+    } catch (err: unknown) {
+      alert('Error: ' + toErrorMessage(err, 'Error al eliminar rol'))
     }
   }
 
@@ -107,8 +119,8 @@ export default function UsersPage() {
       }
       setShowRoleForm(false)
       setEditingRole(null)
-    } catch (err: any) {
-      alert('Error: ' + err.message)
+    } catch (err: unknown) {
+      alert('Error: ' + toErrorMessage(err, 'Error al guardar rol'))
     }
   }
 

@@ -1,5 +1,5 @@
-import { useMutation } from 'urql'
-import type { UseMutationResponse } from 'urql'
+import { useMutation, type UseMutationResponse } from 'urql'
+
 import type {
     CreateNewsMutationResult,
     UpdateNewsMutationResult,

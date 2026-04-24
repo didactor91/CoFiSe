@@ -1,5 +1,5 @@
-import { useMutation } from 'urql'
-import type { UseMutationResponse } from 'urql'
+import { useMutation, type UseMutationResponse } from 'urql'
+
 import type { LoginMutationResult } from '../../../graphql/generated-types'
 
 export const LOGIN_MUTATION = `

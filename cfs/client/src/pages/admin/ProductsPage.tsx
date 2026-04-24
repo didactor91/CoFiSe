@@ -1,7 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
-import { useProductsQuery } from '../../graphql/queries'
+
+import type {
+  CreateProductMutationResult,
+  CreateProductOptionMutationResult,
+  OptionValue,
+  Product,
+} from '../../graphql/generated-types'
 import {
   useCreateProductMutation,
   useUpdateProductMutation,
@@ -10,11 +15,17 @@ import {
   useAddOptionValuesMutation,
   useDeleteProductOptionMutation,
 } from '../../graphql/mutations'
-import theme from '../../theme'
+import { useProductsQuery } from '../../graphql/queries'
+import { useAuth } from '../../hooks/useAuth'
 import { Button } from '../../shared/ui/Button'
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { Panel } from '../../shared/ui/Panel'
+import theme from '../../theme'
+
+function toErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback
+}
 
 interface ProductFormState {
   name: string
@@ -51,7 +62,7 @@ export default function ProductsPage() {
   const [, addOptionValuesMutation] = useAddOptionValuesMutation()
   const [, deleteProductOptionMutation] = useDeleteProductOptionMutation()
 
-  const products = productsResult.data?.products ?? []
+  const products: Product[] = productsResult.data?.products ?? []
 
   // Permissions
   const canCreate = can('product.create')
@@ -60,7 +71,7 @@ export default function ProductsPage() {
 
   // Form state
   const [showProductForm, setShowProductForm] = useState(false)
-  const [editingProduct, setEditingProduct] = useState<any>(null)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [productFormError, setProductFormError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [productForm, setProductForm] = useState<ProductFormState>(emptyProductForm)
@@ -112,7 +123,7 @@ export default function ProductsPage() {
     setShowProductForm(true)
   }
 
-  const handleEditProduct = (product: any) => {
+  const handleEditProduct = (product: Product) => {
     let optionValues: { value: string; stock: number | null }[] = []
     let hasOptions = false
     let optionLabel = ''
@@ -121,7 +132,7 @@ export default function ProductsPage() {
       const opt = product.options[0]
       hasOptions = true
       optionLabel = opt.name
-      optionValues = opt.values.map((v: any) => ({ value: v.value, stock: v.stock }))
+      optionValues = opt.values.map((v: OptionValue) => ({ value: v.value, stock: v.stock ?? null }))
     }
 
     setEditingProduct(product)
@@ -215,7 +226,7 @@ export default function ProductsPage() {
             setProductFormError(optResult.error.message)
             return
           }
-          const optionId = (optResult.data as any)?.createProductOption?.id
+          const optionId = (optResult.data as CreateProductOptionMutationResult | undefined)?.createProductOption?.id
           if (optionId) {
             await addOptionValuesMutation({
               optionId,
@@ -242,7 +253,7 @@ export default function ProductsPage() {
         }
 
         if (productForm.hasOptions && productForm.optionValues.length > 0) {
-          const productId = (result.data as any)?.createProduct?.id
+          const productId = (result.data as CreateProductMutationResult | undefined)?.createProduct?.id
           if (productId) {
             const optResult = await createProductOptionMutation({
               input: {
@@ -255,7 +266,7 @@ export default function ProductsPage() {
               setProductFormError(optResult.error.message)
               return
             }
-            const optionId = (optResult.data as any)?.createProductOption?.id
+            const optionId = (optResult.data as CreateProductOptionMutationResult | undefined)?.createProductOption?.id
             if (optionId) {
               await addOptionValuesMutation({
                 optionId,
@@ -269,8 +280,8 @@ export default function ProductsPage() {
       setShowProductForm(false)
       setEditingProduct(null)
       setProductForm(emptyProductForm)
-    } catch (err: any) {
-      setProductFormError(err.message || 'Error al guardar el producto')
+    } catch (err: unknown) {
+      setProductFormError(toErrorMessage(err, 'Error al guardar el producto'))
     }
   }
 
@@ -286,8 +297,8 @@ export default function ProductsPage() {
       if (result.error) {
         setProductFormError(result.error.message)
       }
-    } catch (err: any) {
-      setProductFormError(err.message || 'Error al eliminar el producto')
+    } catch (err: unknown) {
+      setProductFormError(toErrorMessage(err, 'Error al eliminar el producto'))
     }
     setDeleteConfirm(null)
   }

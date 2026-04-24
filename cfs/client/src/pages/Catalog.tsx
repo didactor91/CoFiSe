@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { useProductsQuery } from '../graphql/queries'
-import ProductCard from '../components/ProductCard'
-import OptionSelector from '../components/OptionSelector'
+
 import CartDrawer from '../components/CartDrawer'
+import OptionSelector, { type ProductOption } from '../components/OptionSelector'
+import ProductCard from '../components/ProductCard'
 import { useCart } from '../context/CartContext'
 import type { Product } from '../graphql/generated-types'
-import type { ProductOption } from '../components/OptionSelector'
+import { useProductsQuery } from '../graphql/queries'
 import theme from '../theme'
 
 interface OptionState {
@@ -91,11 +91,6 @@ export default function Catalog() {
     setOptionState(null)
     setSelectedOptionValueId(undefined)
     setOptionError(undefined)
-  }
-
-  const handleReservationSuccess = () => {
-    setSelectedProduct(null)
-    alert('Reserva creada exitosamente')
   }
 
   if (selectedProduct) {

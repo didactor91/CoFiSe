@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { useNewsQuery, useProductsQuery, useEventsQuery } from '../graphql/queries'
+
 import NewsCard from '../components/NewsCard'
+import { useNewsQuery, useProductsQuery, useEventsQuery } from '../graphql/queries'
 import theme from '../theme'
 
 export default function Landing() {

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+
 import { useNewsItemQuery } from '../graphql/queries'
 import theme from '../theme'
 

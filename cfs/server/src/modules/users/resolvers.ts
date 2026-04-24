@@ -1,7 +1,8 @@
 import bcrypt from 'bcrypt'
+
 import { db } from '../../db/index.js'
-import { userFromRow } from '../shared/mappers.js'
 import { requirePermission, type Context } from '../shared/guards.js'
+import { userFromRow } from '../shared/mappers.js'
 
 export const usersResolvers = {
     Query: {
