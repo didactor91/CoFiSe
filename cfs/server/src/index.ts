@@ -1,5 +1,8 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import helmet from '@fastify/helmet'
+import rateLimit from '@fastify/rate-limit'
+import sensible from '@fastify/sensible'
 import jwt from '@fastify/jwt'
 import mercurius from 'mercurius'
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -9,12 +12,78 @@ import { resolvers } from './graphql/resolvers.js'
 import config from './config.js'
 
 export async function buildServer(): Promise<FastifyInstance> {
-  const server = Fastify({ logger: true })
+  const server = Fastify({
+    logger: true,
+    // Security: limit request body size
+    bodyLimit: config.security.bodyLimit,
+    // Security: connection timeout
+    connectionTimeout: config.security.connectionTimeout,
+    // Security: request timeout
+    requestTimeout: config.security.requestTimeout,
+  })
+
+  // Security: global rate limiting
+  await server.register(rateLimit, {
+    max: config.security.rateLimit.max,
+    timeWindow: config.security.rateLimit.timeWindow,
+    errorResponseBuilder: () => ({
+      statusCode: 429,
+      error: 'Too Many Requests',
+      message: 'Has superado el límite de solicitudes. Inténtalo de nuevo en un minuto.'
+    })
+  })
+
+  // Security: HTTP security headers (CSP, HSTS, X-Frame-Options, etc.)
+  await server.register(helmet, {
+    // Content Security Policy - strict but functional
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // inline needed for GraphQL playground in dev
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: config.isProduction ? [] : undefined,
+      }
+    },
+    // HSTS - only in production
+    hsts: config.isProduction ? {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true
+    } : false,
+    // Prevent clickjacking
+    frameguard: {
+      action: 'deny'
+    },
+    // XSS protection
+    xssFilter: true,
+    // No sniff for content type
+    noSniff: true,
+    // Referrer policy
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    // Disable powered-by header
+    hidePoweredBy: true,
+    // Force HTTPS in production (behind reverse proxy)
+    forceHttps: config.isProduction,
+  })
 
   // CORS: allow configured origins
   await server.register(cors, {
     origin: config.cors.origins,
-    credentials: config.cors.credentials
+    credentials: config.cors.credentials,
+    // Security: restrict exposed methods
+    methods: ['GET', 'POST', 'OPTIONS'],
+    // Security: limit exposed headers
+    exposedHeaders: ['Authorization', 'Content-Type'],
+    // Security: cache preflight for 1 hour
+    maxAge: 3600,
   })
 
   // JWT plugin with configured secret and expiry
