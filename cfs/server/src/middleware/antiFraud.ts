@@ -9,7 +9,7 @@
  */
 
 // Honeypot field name
-const HONEYPOT_FIELD = 'website'
+const _HONEYPOT_FIELD = 'website'
 const HONEYPOT_REJECT_MESSAGE = 'Por favor, completa el formulario correctamente'
 
 // Timing constants
@@ -18,12 +18,12 @@ const TIMING_REJECT_MESSAGE = 'Por favor, revisa el formulario antes de enviar'
 
 // Rate limiting constants
 const MAX_RESERVATIONS_PER_IP_PER_HOUR = 3
-const RATE_LIMIT_WINDOW_HOURS = 1
+const _RATE_LIMIT_WINDOW_HOURS = 1
 const RATE_LIMIT_REJECT_MESSAGE = 'Algo salió mal, por favor intenta más tarde'
 
 // Verification constants
 const VERIFICATION_CODE_ATTEMPTS = 3
-const VERIFICATION_CODE_EXPIRY_MINUTES = 10
+const _VERIFICATION_CODE_EXPIRY_MINUTES = 10
 
 export interface HoneypotResult {
   valid: boolean

@@ -19,7 +19,7 @@ declare module 'fastify' {
 export async function requireAuth(this: FastifyInstance, request: FastifyRequest, reply: FastifyReply): Promise<void> {
   try {
     await request.jwtVerify()
-  } catch (err) {
+  } catch {
     reply.status(401).send({ error: 'Invalid token' })
   }
 }
@@ -28,7 +28,7 @@ export async function requireRole(role: 'ADMIN' | 'STAFF') {
   return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
       await request.jwtVerify()
-    } catch (err) {
+    } catch {
       reply.status(401).send({ error: 'Invalid token' })
       return
     }
