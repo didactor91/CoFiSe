@@ -61,7 +61,7 @@ describe('Database Initialization', () => {
       expect(tables).toBeDefined()
       
       const columns = db.prepare("PRAGMA table_info(products)").all() as Array<{name: string, type: string}>
-      expect(columns.length).toBe(8)
+      expect(columns.length).toBe(9)
       
       const columnNames = columns.map(c => c.name)
       expect(columnNames).toContain('id')
@@ -69,6 +69,7 @@ describe('Database Initialization', () => {
       expect(columnNames).toContain('description')
       expect(columnNames).toContain('price')
       expect(columnNames).toContain('stock')
+      expect(columnNames).toContain('limited_stock')
       expect(columnNames).toContain('image_url')
       expect(columnNames).toContain('created_at')
       expect(columnNames).toContain('updated_at')
@@ -79,7 +80,7 @@ describe('Database Initialization', () => {
       expect(tables).toBeDefined()
       
       const columns = db.prepare("PRAGMA table_info(reservations)").all() as Array<{name: string, type: string}>
-      expect(columns.length).toBe(10)
+      expect(columns.length).toBe(13)
       
       const columnNames = columns.map(c => c.name)
       expect(columnNames).toContain('id')
@@ -90,6 +91,9 @@ describe('Database Initialization', () => {
       expect(columnNames).toContain('phone')
       expect(columnNames).toContain('notes')
       expect(columnNames).toContain('status')
+      expect(columnNames).toContain('cart_id')
+      expect(columnNames).toContain('verified_at')
+      expect(columnNames).toContain('ip_address')
       expect(columnNames).toContain('created_at')
       expect(columnNames).toContain('updated_at')
     })
