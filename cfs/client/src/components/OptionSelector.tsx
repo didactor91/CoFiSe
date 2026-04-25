@@ -1,5 +1,3 @@
-import theme from '../theme'
-
 export interface OptionValue {
   id: string
   value: string
@@ -39,22 +37,14 @@ export default function OptionSelector({
   error,
 }: OptionSelectorProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.md }}>
+    <div className="flex flex-col gap-4">
       {options.map((option) => (
-        <div key={option.id} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}>
-          <span
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.typography.fontSize.sm,
-              fontWeight: theme.typography.fontWeight.medium,
-            }}
-          >
+        <div key={option.id} className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-slate-600">
             {option.name}
-            {option.required && (
-              <span style={{ color: theme.colors.error }}> *</span>
-            )}
+            {option.required && <span className="text-rose-600"> *</span>}
           </span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing.sm }}>
+          <div className="flex flex-wrap gap-2">
             {option.values.map((value) => {
               const disabled = isOutOfStock(value.stock)
               const selected = value.id === selectedValueId
@@ -66,38 +56,16 @@ export default function OptionSelector({
                   disabled={disabled}
                   data-selected={selected ? 'true' : 'false'}
                   onClick={() => onSelect(option.id, value.id)}
-                  style={{
-                    padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                    borderRadius: theme.borderRadius.md,
-                    border: selected
-                      ? `2px solid ${theme.colors.accent}`
-                      : `1px solid ${disabled ? theme.colors.disabled : theme.colors.border}`,
-                    background: disabled
-                      ? theme.colors.disabled
+                  className={`flex items-center gap-1 rounded-xl border px-3 py-1.5 text-sm font-medium transition ${
+                    disabled
+                      ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-70'
                       : selected
-                        ? theme.colors.surface
-                        : 'transparent',
-                    color: disabled
-                      ? theme.colors.disabledText
-                      : selected
-                        ? theme.colors.accent
-                        : theme.colors.text,
-                    cursor: disabled ? 'not-allowed' : 'pointer',
-                    fontSize: theme.typography.fontSize.sm,
-                    fontWeight: theme.typography.fontWeight.medium,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: theme.spacing.xs,
-                    opacity: disabled ? 0.6 : 1,
-                  }}
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+                  }`}
                 >
                   <span>{value.value}</span>
-                  <span
-                    style={{
-                      fontSize: theme.typography.fontSize.xs,
-                      color: disabled ? theme.colors.error : theme.colors.textSecondary,
-                    }}
-                  >
+                  <span className={`text-xs ${disabled ? 'text-rose-600' : 'text-slate-500'}`}>
                     {getStockDisplay(value.stock)}
                   </span>
                 </button>
@@ -105,15 +73,7 @@ export default function OptionSelector({
             })}
           </div>
           {option.required && !selectedValueId && error && (
-            <span
-              style={{
-                color: theme.colors.error,
-                fontSize: theme.typography.fontSize.xs,
-                marginTop: theme.spacing.xs,
-              }}
-            >
-              {error}
-            </span>
+            <span className="mt-1 text-xs text-rose-600">{error}</span>
           )}
         </div>
       ))}

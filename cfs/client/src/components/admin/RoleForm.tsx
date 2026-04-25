@@ -1,4 +1,7 @@
 import { useState } from 'react'
+
+import { Button } from '../../shared/ui/Button'
+import { Panel } from '../../shared/ui/Panel'
 import theme from '../../theme'
 
 interface RoleFormProps {
@@ -39,16 +42,9 @@ export default function RoleForm({ editingRole, onSave, onCancel }: RoleFormProp
     onSave({ name: name.trim(), permissions }, editingRole?.id)
   }
 
-  const isSystemRole = (roleName: string) => roleName === 'ADMIN' || roleName === 'STAFF'
-
   return (
-    <form onSubmit={handleSubmit} style={{
-      background: theme.colors.surface,
-      borderRadius: theme.borderRadius.md,
-      border: `1px solid ${theme.colors.border}`,
-      padding: theme.spacing.lg,
-      marginBottom: theme.spacing.lg,
-    }}>
+    <Panel style={{ marginBottom: theme.spacing.lg }}>
+      <form onSubmit={handleSubmit}>
       <div style={{ marginBottom: theme.spacing.md }}>
         <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
           Nombre del Rol *
@@ -74,7 +70,7 @@ export default function RoleForm({ editingRole, onSave, onCancel }: RoleFormProp
         <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.sm }}>
           Permisos
         </label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: theme.spacing.md }}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {resources.map((resource) => (
             <div key={resource.name} style={{
               background: theme.colors.background,
@@ -122,38 +118,14 @@ export default function RoleForm({ editingRole, onSave, onCancel }: RoleFormProp
       </div>
 
       <div style={{ display: 'flex', gap: theme.spacing.sm }}>
-        <button
-          type="submit"
-          style={{
-            padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-            background: theme.colors.accent,
-            color: theme.colors.background,
-            border: 'none',
-            borderRadius: theme.borderRadius.sm,
-            cursor: 'pointer',
-            fontWeight: theme.typography.fontWeight.semibold,
-            fontSize: theme.typography.fontSize.sm,
-          }}
-        >
+        <Button type="submit">
           {editingRole ? 'Actualizar' : 'Crear'}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          style={{
-            padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-            background: theme.colors.border,
-            color: theme.colors.text,
-            border: 'none',
-            borderRadius: theme.borderRadius.sm,
-            cursor: 'pointer',
-            fontWeight: theme.typography.fontWeight.semibold,
-            fontSize: theme.typography.fontSize.sm,
-          }}
-        >
+        </Button>
+        <Button type="button" onClick={onCancel} variant="secondary">
           Cancelar
-        </button>
+        </Button>
       </div>
-    </form>
+      </form>
+    </Panel>
   )
 }

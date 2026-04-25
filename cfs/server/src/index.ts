@@ -1,18 +1,20 @@
-import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
-import rateLimit from '@fastify/rate-limit'
 import jwt from '@fastify/jwt'
-import mercurius from 'mercurius'
+import rateLimit from '@fastify/rate-limit'
 import { makeExecutableSchema } from '@graphql-tools/schema'
-import type { FastifyInstance } from 'fastify'
-import { typeDefs } from './graphql/schema.js'
-import { resolvers } from './graphql/resolvers.js'
+import Fastify, { type FastifyInstance } from 'fastify'
+import { NoSchemaIntrospectionCustomRule } from 'graphql'
+import mercurius from 'mercurius'
+
 import config from './config.js'
+import { resolvers } from './graphql/resolvers.js'
+import { typeDefs } from './graphql/schema.js'
 
 export async function buildServer(): Promise<FastifyInstance> {
   const server = Fastify({
     logger: true,
+    trustProxy: config.security.trustProxy,
     // Security: limit request body size
     bodyLimit: config.security.bodyLimit,
     // Security: connection timeout
@@ -80,17 +82,24 @@ export async function buildServer(): Promise<FastifyInstance> {
     // Security: restrict exposed methods
     methods: ['GET', 'POST', 'OPTIONS'],
     // Security: limit exposed headers
-    exposedHeaders: ['Authorization', 'Content-Type'],
+    exposedHeaders: ['Content-Type'],
     // Security: cache preflight for 1 hour
     maxAge: 3600,
   })
 
   // JWT plugin with configured secret and expiry
   await server.register(jwt, {
-    secret: config.jwt.secret || 'changeme',
+    secret: config.jwt.secret,
     sign: {
-      expiresIn: config.jwt.expiresIn
-    }
+      algorithm: 'HS256',
+      expiresIn: config.jwt.expiresIn,
+      iss: config.jwt.issuer,
+      aud: config.jwt.audience,
+    },
+    verify: {
+      allowedIss: config.jwt.issuer,
+      allowedAud: config.jwt.audience,
+    },
   })
 
   // Health check endpoint
@@ -102,6 +111,10 @@ export async function buildServer(): Promise<FastifyInstance> {
   // GraphQL endpoint with JWT verification in context
   await server.register(mercurius, {
     schema,
+    queryDepth: config.security.graphqlQueryDepth,
+    graphiql: !config.isProduction,
+    ide: !config.isProduction,
+    validationRules: config.security.enableGraphqlIntrospection ? undefined : [NoSchemaIntrospectionCustomRule],
     context: async (request, reply) => {
       // Try to verify JWT and populate request.user if token present
       let user: unknown = request.user
@@ -111,7 +124,7 @@ export async function buildServer(): Promise<FastifyInstance> {
           try {
             const decoded = await request.jwtVerify()
             user = decoded
-          } catch (err) {
+          } catch {
             // Token invalid or expired - user remains undefined
             user = null
           }

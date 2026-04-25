@@ -1,5 +1,4 @@
 import type { News } from '../graphql/generated-types'
-import theme from '../theme'
 
 interface NewsCardProps {
   news: News
@@ -18,42 +17,14 @@ export default function NewsCard({ news, onClick }: NewsCardProps) {
       data-testid={`news-card-${news.id}`}
       data-testid-base="news-card"
       onClick={onClick}
-      style={{
-        background: theme.colors.surface,
-        borderRadius: theme.borderRadius.md,
-        padding: theme.spacing.lg,
-        cursor: onClick ? 'pointer' : 'default',
-        border: `1px solid ${theme.colors.border}`,
-      }}
+      className={`card h-full ${onClick ? 'card-hover cursor-pointer' : ''}`}
     >
-      <h3
-        style={{
-          color: theme.colors.text,
-          fontSize: theme.typography.fontSize.lg,
-          marginBottom: theme.spacing.xs,
-          fontWeight: theme.typography.fontWeight.semibold,
-        }}
-      >
-        {news.title}
-      </h3>
-      <p
-        style={{
-          color: theme.colors.textSecondary,
-          fontSize: theme.typography.fontSize.sm,
-          marginBottom: theme.spacing.sm,
-        }}
-      >
+      <h3 className="mb-2 text-lg font-semibold text-slate-900">{news.title}</h3>
+      <p className="mb-3 text-sm leading-6 text-slate-600">
         {news.content.substring(0, 100)}
         {news.content.length > 100 ? '...' : ''}
       </p>
-      <time
-        style={{
-          color: theme.colors.accent,
-          fontSize: theme.typography.fontSize.xs,
-          fontStyle: 'italic',
-        }}
-        dateTime={news.createdAt}
-      >
+      <time className="text-xs font-medium text-slate-500" dateTime={news.createdAt}>
         {formattedDate}
       </time>
     </article>
@@ -63,7 +34,7 @@ export default function NewsCard({ news, onClick }: NewsCardProps) {
 // Export a version with proper testid for the grid
 export function NewsCardGrid({ items }: { items: News[] }) {
   return (
-    <div data-testid="news-card" style={{ display: 'none' }}>
+    <div data-testid="news-card" className="hidden">
       {items.map((news) => (
         <NewsCard key={news.id} news={news} />
       ))}

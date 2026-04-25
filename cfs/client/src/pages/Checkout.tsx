@@ -1,18 +1,9 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useCart } from '../context/CartContext'
-import theme from '../theme'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useMutation } from 'urql'
 
-interface CartItem {
-  id: string
-  productId: string
-  productName: string
-  productPrice: number
-  optionValueId: string | null
-  optionValueName: string | null
-  quantity: number
-}
+import { useCart } from '../context/CartContext'
+import theme from '../theme'
 
 // GraphQL mutation for checkout
 const SUBMIT_CART_FOR_VERIFICATION_MUTATION = `
@@ -38,8 +29,7 @@ interface ContactFormData {
 }
 
 export default function Checkout() {
-  const navigate = useNavigate()
-  const { items, updateQuantity, removeItem, totalItems } = useCart()
+  const { items, updateQuantity, removeItem } = useCart()
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('cart-review')
   const [formData, setFormData] = useState<ContactFormData>({
     name: '',
@@ -57,7 +47,7 @@ export default function Checkout() {
   const [attemptsRemaining, setAttemptsRemaining] = useState(3)
 
   // Submit cart mutation
-  const [submitCartResult, submitCart] = useMutation(SUBMIT_CART_FOR_VERIFICATION_MUTATION)
+  const [, submitCart] = useMutation(SUBMIT_CART_FOR_VERIFICATION_MUTATION)
 
   // Empty cart guard
   if (items.length === 0 && currentStep === 'cart-review') {

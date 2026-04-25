@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { useNewsQuery, useProductsQuery, useEventsQuery } from '../graphql/queries'
+
 import NewsCard from '../components/NewsCard'
-import theme from '../theme'
+import { useNewsQuery, useProductsQuery, useEventsQuery } from '../graphql/queries'
 
 export default function Landing() {
   const navigate = useNavigate()
@@ -21,42 +21,14 @@ export default function Landing() {
   const catalogPreview = products.slice(0, 6)
 
   return (
-    <div data-testid="landing-page" style={{ minHeight: '100vh', background: theme.colors.background, padding: theme.spacing.xl }}>
-      {/* News Feed Section */}
-      <section style={{ marginBottom: theme.spacing['2xl'] }}>
-        <h2
-          style={{
-            color: theme.colors.accent,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.semibold,
-            marginBottom: theme.spacing.lg,
-            fontFamily: theme.typography.fontFamily,
-          }}
-        >
-          Noticias
-        </h2>
+    <main data-testid="landing-page" className="app-shell space-y-12">
+      <section className="space-y-5">
+        <h2 className="section-title">Noticias</h2>
 
         {news.length === 0 ? (
-          <p
-            data-testid="empty-news"
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.typography.fontSize.base,
-              fontStyle: 'italic',
-              textAlign: 'center',
-              padding: theme.spacing.xl,
-            }}
-          >
-            No hay noticias todavía
-          </p>
+          <p data-testid="empty-news" className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm italic text-slate-500">No hay noticias todavía</p>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: theme.spacing.lg,
-            }}
-          >
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {news.map((item) => (
               <NewsCard key={item.id} news={item} onClick={() => navigate(`/news/${item.id}`)} />
             ))}
@@ -64,92 +36,29 @@ export default function Landing() {
         )}
       </section>
 
-      {/* Upcoming Events Section */}
-      <section style={{ marginBottom: theme.spacing['2xl'] }}>
-        <h2
-          style={{
-            color: theme.colors.accent,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.semibold,
-            marginBottom: theme.spacing.lg,
-            fontFamily: theme.typography.fontFamily,
-          }}
-        >
-          Próximos Eventos
-        </h2>
+      <section className="space-y-5">
+        <h2 className="section-title">Próximos eventos</h2>
 
         {events.length === 0 ? (
-          <p
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.typography.fontSize.base,
-              fontStyle: 'italic',
-              textAlign: 'center',
-              padding: theme.spacing.xl,
-            }}
-          >
-            No hay eventos programados
-          </p>
+          <p className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm italic text-slate-500">No hay eventos programados</p>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: theme.spacing.lg,
-            }}
-          >
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {events.map((event) => (
               <div
                 key={event.id}
                 onClick={() => navigate(`/events/${event.id}`)}
-                style={{
-                  background: theme.colors.surface,
-                  borderRadius: theme.borderRadius.md,
-                  padding: theme.spacing.lg,
-                  border: `1px solid ${theme.colors.border}`,
-                  cursor: 'pointer',
-                }}
+                className="card card-hover cursor-pointer"
               >
-                <h3
-                  style={{
-                    color: theme.colors.text,
-                    fontSize: theme.typography.fontSize.lg,
-                    fontWeight: theme.typography.fontWeight.semibold,
-                    marginBottom: theme.spacing.sm,
-                  }}
-                >
-                  {event.name}
-                </h3>
-                <p
-                  style={{
-                    color: theme.colors.textSecondary,
-                    fontSize: theme.typography.fontSize.sm,
-                    marginBottom: theme.spacing.xs,
-                  }}
-                >
-                  📍 {event.location}
-                </p>
-                <p
-                  style={{
-                    color: theme.colors.accent,
-                    fontSize: theme.typography.fontSize.sm,
-                    fontWeight: theme.typography.fontWeight.medium,
-                  }}
-                >
-                  🗓 {new Date(event.startTime).toLocaleString('es-ES', {
+                <h3 className="mb-2 text-lg font-semibold text-slate-900">{event.name}</h3>
+                <p className="mb-1 text-sm text-slate-500">📍 {event.location}</p>
+                <p className="text-sm font-medium text-slate-700">
+                  🗓️ {new Date(event.startTime).toLocaleString('es-ES', {
                     dateStyle: 'medium',
                     timeStyle: 'short',
                   })}
                 </p>
                 {event.description && (
-                  <p
-                    style={{
-                      color: theme.colors.textSecondary,
-                      fontSize: theme.typography.fontSize.base,
-                      marginTop: theme.spacing.md,
-                      lineHeight: 1.5,
-                    }}
-                  >
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
                     {event.description.length > 120
                       ? `${event.description.substring(0, 120)}...`
                       : event.description}
@@ -161,127 +70,39 @@ export default function Landing() {
         )}
       </section>
 
-      {/* Catalog Preview Section */}
-      <section>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.lg }}>
-          <h2
-            style={{
-              color: theme.colors.accent,
-              fontSize: theme.typography.fontSize.xl,
-              fontWeight: theme.typography.fontWeight.semibold,
-              fontFamily: theme.typography.fontFamily,
-              margin: 0,
-            }}
-          >
-            Catálogo
-          </h2>
+      <section className="space-y-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="section-title">Catálogo</h2>
           <button
             onClick={() => navigate('/catalog')}
-            style={{
-              background: 'transparent',
-              border: `1px solid ${theme.colors.accent}`,
-              borderRadius: theme.borderRadius.md,
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              color: theme.colors.accent,
-              cursor: 'pointer',
-              fontSize: theme.typography.fontSize.sm,
-            }}
+            className="btn-secondary w-fit"
           >
-            Ver todo →
+            Ver todo
           </button>
         </div>
 
         {catalogPreview.length === 0 ? (
-          <p
-            style={{
-              color: theme.colors.textSecondary,
-              fontSize: theme.typography.fontSize.base,
-              fontStyle: 'italic',
-              textAlign: 'center',
-              padding: theme.spacing.xl,
-            }}
-          >
-            No hay productos disponibles
-          </p>
+          <p className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm italic text-slate-500">No hay productos disponibles</p>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-              gap: theme.spacing.lg,
-            }}
-          >
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {catalogPreview.map((product) => (
               <div
                 key={product.id}
                 onClick={() => navigate(`/products/${product.id}`)}
-                style={{
-                  background: theme.colors.surface,
-                  borderRadius: theme.borderRadius.md,
-                  padding: theme.spacing.md,
-                  border: `1px solid ${theme.colors.border}`,
-                  cursor: 'pointer',
-                  transition: 'border-color 0.2s',
-                }}
+                className="card card-hover cursor-pointer"
               >
                 {product.imageUrl && (
                   <img
                     src={product.imageUrl}
                     alt={product.name}
-                    style={{
-                      width: '100%',
-                      height: '150px',
-                      objectFit: 'cover',
-                      borderRadius: theme.borderRadius.sm,
-                      marginBottom: theme.spacing.sm,
-                    }}
+                    className="mb-3 h-40 w-full rounded-xl object-cover"
                   />
                 )}
-                <h3
-                  style={{
-                    color: theme.colors.text,
-                    fontSize: theme.typography.fontSize.base,
-                    fontWeight: theme.typography.fontWeight.semibold,
-                    margin: 0,
-                  }}
-                >
-                  {product.name}
-                </h3>
-                <p
-                  style={{
-                    color: theme.colors.textSecondary,
-                    fontSize: theme.typography.fontSize.sm,
-                    margin: `${theme.spacing.xs} 0`,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {product.description}
-                </p>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: theme.spacing.sm,
-                  }}
-                >
-                  <span
-                    style={{
-                      color: theme.colors.accent,
-                      fontSize: theme.typography.fontSize.lg,
-                      fontWeight: theme.typography.fontWeight.bold,
-                    }}
-                  >
-                    {product.price.toFixed(2)}€
-                  </span>
-                  <span
-                    style={{
-                      color: product.stock > 0 ? theme.colors.success : theme.colors.error,
-                      fontSize: theme.typography.fontSize.xs,
-                    }}
-                  >
+                <h3 className="text-base font-semibold text-slate-900">{product.name}</h3>
+                <p className="mt-1 truncate text-sm text-slate-500">{product.description}</p>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-lg font-semibold text-slate-900">{product.price.toFixed(2)}€</span>
+                  <span className={`text-xs font-medium ${product.stock > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {product.stock > 0 ? 'En stock' : 'Sin stock'}
                   </span>
                 </div>
@@ -290,6 +111,6 @@ export default function Landing() {
           </div>
         )}
       </section>
-    </div>
+    </main>
   )
 }

@@ -1,6 +1,6 @@
 import { db } from '../../db/index.js'
-import { eventFromRow } from '../shared/mappers.js'
 import { requirePermission, type Context } from '../shared/guards.js'
+import { eventFromRow } from '../shared/mappers.js'
 
 export const eventsResolvers = {
     Query: {

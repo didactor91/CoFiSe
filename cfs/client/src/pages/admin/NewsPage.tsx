@@ -1,13 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
-import { useAllNewsQuery } from '../../graphql/queries'
+
+import type { News } from '../../graphql/generated-types'
 import { useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation } from '../../graphql/mutations'
-import theme from '../../theme'
+import { useAllNewsQuery } from '../../graphql/queries'
+import { useAuth } from '../../hooks/useAuth'
 import { Button } from '../../shared/ui/Button'
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { Panel } from '../../shared/ui/Panel'
+import theme from '../../theme'
+
+function toErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback
+}
 
 export default function NewsPage() {
   const navigate = useNavigate()
@@ -17,7 +23,7 @@ export default function NewsPage() {
   const [, updateNewsMutation] = useUpdateNewsMutation()
   const [, deleteNewsMutation] = useDeleteNewsMutation()
 
-  const news = newsResult.data?.allNews ?? []
+  const news: News[] = newsResult.data?.allNews ?? []
 
   const canCreate = can('news.create')
   const canEdit = can('news.update')
@@ -25,7 +31,7 @@ export default function NewsPage() {
 
   // News form state
   const [showNewsForm, setShowNewsForm] = useState(false)
-  const [editingNews, setEditingNews] = useState<any>(null)
+  const [editingNews, setEditingNews] = useState<News | null>(null)
   const [newsForm, setNewsForm] = useState({ title: '', content: '', imageUrl: '' })
   const [newsFormError, setNewsFormError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -37,7 +43,7 @@ export default function NewsPage() {
     setShowNewsForm(true)
   }
 
-  const handleEditNews = (item: any) => {
+  const handleEditNews = (item: News) => {
     setEditingNews(item)
     setNewsForm({ title: item.title, content: item.content, imageUrl: item.imageUrl || '' })
     setNewsFormError(null)
@@ -79,8 +85,8 @@ export default function NewsPage() {
       setShowNewsForm(false)
       setEditingNews(null)
       setNewsForm({ title: '', content: '', imageUrl: '' })
-    } catch (err: any) {
-      setNewsFormError(err.message || 'Error al guardar')
+    } catch (err: unknown) {
+      setNewsFormError(toErrorMessage(err, 'Error al guardar'))
     }
   }
 
@@ -92,8 +98,8 @@ export default function NewsPage() {
     if (!deleteConfirm) return
     try {
       await deleteNewsMutation({ id: deleteConfirm })
-    } catch (err: any) {
-      setNewsFormError(err.message || 'Error al eliminar')
+    } catch (err: unknown) {
+      setNewsFormError(toErrorMessage(err, 'Error al eliminar'))
     }
     setDeleteConfirm(null)
   }
@@ -205,50 +211,52 @@ export default function NewsPage() {
             No hay noticias. Haz clic en 'Añadir Noticia' para crear una.
           </p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: theme.colors.border }}>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Título</th>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Contenido</th>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Fecha</th>
-                <th style={{ padding: theme.spacing.sm, textAlign: 'right', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {news.map((item) => (
-                <tr key={item.id} onClick={() => navigate(`/news/${item.id}?from=admin`)} style={{ cursor: 'pointer', borderBottom: `1px solid ${theme.colors.border}` }}>
-                  <td style={{ padding: theme.spacing.sm, color: theme.colors.text }}>{item.title}</td>
-                  <td style={{ padding: theme.spacing.sm, color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {item.content}
-                  </td>
-                  <td style={{ padding: theme.spacing.sm, color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>
-                    {new Date(item.createdAt).toLocaleDateString('es-ES')}
-                  </td>
-                  <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
-                    {canEdit && (
-                      <Button
-                        data-testid={`edit-news-btn-${item.id}`}
-                        onClick={() => handleEditNews(item)}
-                        style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
-                      >
-                        Editar
-                      </Button>
-                    )}
-                    {canDelete && (
-                      <Button
-                        data-testid={`delete-news-btn-${item.id}`}
-                        onClick={() => handleDeleteNewsClick(item.id)}
-                        variant="secondary"
-                        style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
-                      >
-                        Eliminar
-                      </Button>
-                    )}
-                  </td>
+          <div className="table-scroll">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th className="admin-th">Título</th>
+                  <th className="admin-th">Contenido</th>
+                  <th className="admin-th">Fecha</th>
+                  <th className="admin-th text-right">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {news.map((item) => (
+                  <tr key={item.id} onClick={() => navigate(`/news/${item.id}?from=admin`)} className="admin-row cursor-pointer">
+                    <td className="admin-td font-medium text-slate-800">{item.title}</td>
+                    <td className="admin-td max-w-[240px] truncate text-xs text-slate-500">
+                      {item.content}
+                    </td>
+                    <td className="admin-td text-xs text-slate-500">
+                      {new Date(item.createdAt).toLocaleDateString('es-ES')}
+                    </td>
+                    <td className="admin-td text-right">
+                      {canEdit && (
+                        <Button
+                          data-testid={`edit-news-btn-${item.id}`}
+                          onClick={() => handleEditNews(item)}
+                          style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                        >
+                          Editar
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          data-testid={`delete-news-btn-${item.id}`}
+                          onClick={() => handleDeleteNewsClick(item.id)}
+                          variant="secondary"
+                          style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                        >
+                          Eliminar
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Panel>
     </div>

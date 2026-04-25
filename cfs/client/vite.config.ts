@@ -1,6 +1,7 @@
-import { defineConfig, loadEnv } from 'vite'
-import path from 'path'
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
+import { defineConfig, loadEnv } from 'vite'
 
 // Load env variables from parent directory (monorepo structure)
 const env = loadEnv('development', path.resolve(__dirname, '..'), '')
@@ -10,7 +11,7 @@ const API_URL = env.VITE_API_URL || 'http://localhost:4000'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
     proxy: {
       '/api': {

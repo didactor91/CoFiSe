@@ -1,9 +1,23 @@
 import { useState } from 'react'
-import { useAuth } from '../../hooks/useAuth'
-import { useUsersQuery, useRolesQuery } from '../../graphql/queries'
-import { useCreateUserMutation, useDeleteUserMutation, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from '../../graphql/mutations'
+
 import RoleForm from '../../components/admin/RoleForm'
+import type { User } from '../../graphql/generated-types'
+import { useCreateUserMutation, useDeleteUserMutation, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from '../../graphql/mutations'
+import { useUsersQuery, useRolesQuery } from '../../graphql/queries'
+import { useAuth } from '../../hooks/useAuth'
+import { Button } from '../../shared/ui/Button'
+import { Panel } from '../../shared/ui/Panel'
 import theme from '../../theme'
+
+interface RoleItem {
+  id: string
+  name: string
+  permissions: string[]
+}
+
+function toErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback
+}
 
 export default function UsersPage() {
   const { user, can } = useAuth()
@@ -15,8 +29,8 @@ export default function UsersPage() {
   const [, updateRoleMutation] = useUpdateRoleMutation()
   const [, deleteRoleMutation] = useDeleteRoleMutation()
 
-  const users = usersResult.data?.users ?? []
-  const roles = rolesResult.data?.roles ?? []
+  const users: User[] = usersResult.data?.users ?? []
+  const roles: RoleItem[] = rolesResult.data?.roles ?? []
 
   // Permissions
   const canManageUsers = can('user.create') && can('user.delete')
@@ -32,7 +46,7 @@ export default function UsersPage() {
 
   // Role form state
   const [showRoleForm, setShowRoleForm] = useState(false)
-  const [editingRole, setEditingRole] = useState<any>(null)
+  const [editingRole, setEditingRole] = useState<RoleItem | null>(null)
 
   const isSystemRole = (name: string) => name === 'ADMIN' || name === 'STAFF'
 
@@ -51,8 +65,8 @@ export default function UsersPage() {
       setNewUserPassword('')
       setNewUserRole('STAFF')
       setShowUserForm(false)
-    } catch (err: any) {
-      setCreateError(err.message || 'Error al crear usuario')
+    } catch (err: unknown) {
+      setCreateError(toErrorMessage(err, 'Error al crear usuario'))
     }
   }
 
@@ -68,12 +82,12 @@ export default function UsersPage() {
       if (result.error) {
         setDeleteError(result.error.message)
       }
-    } catch (err: any) {
-      setDeleteError(err.message || 'Error al eliminar usuario')
+    } catch (err: unknown) {
+      setDeleteError(toErrorMessage(err, 'Error al eliminar usuario'))
     }
   }
 
-  const handleEditRole = (role: any) => {
+  const handleEditRole = (role: RoleItem) => {
     setEditingRole(role)
     setShowRoleForm(true)
   }
@@ -85,8 +99,8 @@ export default function UsersPage() {
       if (result.error) {
         alert('Error: ' + result.error.message)
       }
-    } catch (err: any) {
-      alert('Error: ' + err.message)
+    } catch (err: unknown) {
+      alert('Error: ' + toErrorMessage(err, 'Error al eliminar rol'))
     }
   }
 
@@ -107,55 +121,29 @@ export default function UsersPage() {
       }
       setShowRoleForm(false)
       setEditingRole(null)
-    } catch (err: any) {
-      alert('Error: ' + err.message)
+    } catch (err: unknown) {
+      alert('Error: ' + toErrorMessage(err, 'Error al guardar rol'))
     }
   }
 
   return (
     <div data-testid="users-page">
-      {/* Users Section */}
       <section style={{ marginBottom: theme.spacing['2xl'] }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
-          <h1 style={{
-            color: theme.colors.text,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.semibold,
-          }}>
-            Gestión de Usuarios
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Gestión de Usuarios</h1>
           {canManageUsers && !showUserForm && (
-            <button
+            <Button
               onClick={() => setShowUserForm(true)}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.accent,
-                color: theme.colors.background,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
             >
               Añadir Usuario
-            </button>
+            </Button>
           )}
         </div>
 
         {showUserForm && canManageUsers && (
-          <form
-            onSubmit={handleCreateUser}
-            data-testid="create-user-form"
-            style={{
-              background: theme.colors.surface,
-              borderRadius: theme.borderRadius.md,
-              border: `1px solid ${theme.colors.border}`,
-              padding: theme.spacing.lg,
-              marginBottom: theme.spacing.lg,
-            }}
-          >
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: theme.spacing.md }}>
+          <Panel style={{ marginBottom: theme.spacing.lg }}>
+            <form onSubmit={handleCreateUser} data-testid="create-user-form">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
                 <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
                   Email *
@@ -230,113 +218,72 @@ export default function UsersPage() {
               </p>
             )}
             <div style={{ display: 'flex', gap: theme.spacing.sm, marginTop: theme.spacing.md }}>
-              <button
-                type="submit"
-                style={{
-                  padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                  background: theme.colors.accent,
-                  color: theme.colors.background,
-                  border: 'none',
-                  borderRadius: theme.borderRadius.sm,
-                  cursor: 'pointer',
-                  fontWeight: theme.typography.fontWeight.semibold,
-                  fontSize: theme.typography.fontSize.sm,
-                }}
-              >
+              <Button type="submit">
                 Crear Usuario
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowUserForm(false)}
-                style={{
-                  padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                  background: theme.colors.border,
-                  color: theme.colors.text,
-                  border: 'none',
-                  borderRadius: theme.borderRadius.sm,
-                  cursor: 'pointer',
-                  fontWeight: theme.typography.fontWeight.semibold,
-                  fontSize: theme.typography.fontSize.sm,
-                }}
-              >
+              </Button>
+              <Button type="button" onClick={() => setShowUserForm(false)} variant="secondary">
                 Cancelar
-              </button>
+              </Button>
             </div>
-          </form>
+            </form>
+          </Panel>
         )}
 
-        <div
-          style={{
-            background: theme.colors.surface,
-            borderRadius: theme.borderRadius.md,
-            border: `1px solid ${theme.colors.border}`,
-            overflow: 'hidden',
-          }}
-        >
+        <Panel style={{ overflow: 'hidden' }}>
           {users.length === 0 ? (
             <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
               No hay usuarios
             </p>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: theme.colors.border }}>
-                  <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Email</th>
-                  <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Rol</th>
-                  <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Fecha</th>
-                  <th style={{ padding: theme.spacing.sm, textAlign: 'right', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u.id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
-                    <td style={{ padding: theme.spacing.sm, color: theme.colors.text }}>{u.email}</td>
-                    <td style={{ padding: theme.spacing.sm }}>
-                      <span
-                        style={{
-                          padding: `${theme.spacing.xs} ${theme.spacing.xs}`,
-                          background: u.role === 'ADMIN' ? theme.colors.accent : theme.colors.border,
-                          color: u.role === 'ADMIN' ? theme.colors.background : theme.colors.text,
-                          borderRadius: theme.borderRadius.sm,
-                          fontSize: theme.typography.fontSize.xs,
-                          fontWeight: theme.typography.fontWeight.semibold,
-                        }}
-                      >
-                        {u.role === 'ADMIN' ? 'Admin' : 'Staff'}
-                      </span>
-                    </td>
-                    <td style={{ padding: theme.spacing.sm, color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>
-                      {new Date(u.createdAt).toLocaleDateString('es-ES')}
-                    </td>
-                    <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
-                      {u.id !== user?.id && canManageUsers && (
-                        <button
-                          data-testid="delete-user-btn"
-                          onClick={() => handleDeleteUser(u.id)}
-                          style={{
-                            padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                            background: theme.colors.border,
-                            color: theme.colors.text,
-                            border: 'none',
-                            borderRadius: theme.borderRadius.sm,
-                            cursor: 'pointer',
-                            fontSize: theme.typography.fontSize.xs,
-                            fontWeight: theme.typography.fontWeight.semibold,
-                          }}
-                        >
-                          Eliminar
-                        </button>
-                      )}
-                    </td>
+            <div className="table-scroll">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th className="admin-th">Email</th>
+                    <th className="admin-th">Rol</th>
+                    <th className="admin-th">Fecha</th>
+                    <th className="admin-th text-right">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.id} className="admin-row">
+                      <td className="admin-td font-medium text-slate-800">{u.email}</td>
+                      <td className="admin-td">
+                        <span
+                          className={`rounded-md px-2 py-1 text-xs font-semibold ${
+                            u.role === 'ADMIN'
+                              ? 'bg-slate-900 text-white'
+                              : 'bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {u.role === 'ADMIN' ? 'Admin' : 'Staff'}
+                        </span>
+                      </td>
+                      <td className="admin-td text-xs text-slate-500">
+                        {new Date(u.createdAt).toLocaleDateString('es-ES')}
+                      </td>
+                      <td className="admin-td text-right">
+                        {u.id !== user?.id && canManageUsers && (
+                          <Button
+                            data-testid="delete-user-btn"
+                            onClick={() => handleDeleteUser(u.id)}
+                            variant="secondary"
+                            style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                          >
+                            Eliminar
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-        </div>
+        </Panel>
       </section>
 
-      {/* Roles Section - Admin only */}
       {canManageRoles && (
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
@@ -347,21 +294,11 @@ export default function UsersPage() {
             }}>
               Gestión de Roles
             </h2>
-            <button
+            <Button
               onClick={() => { setEditingRole(null); setShowRoleForm(true) }}
-              style={{
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                background: theme.colors.accent,
-                color: theme.colors.background,
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-                fontWeight: theme.typography.fontWeight.semibold,
-                fontSize: theme.typography.fontSize.sm,
-              }}
             >
               Añadir Rol
-            </button>
+            </Button>
           </div>
 
           {showRoleForm && (
@@ -372,84 +309,61 @@ export default function UsersPage() {
             />
           )}
 
-          <div
-            style={{
-              background: theme.colors.surface,
-              borderRadius: theme.borderRadius.md,
-              border: `1px solid ${theme.colors.border}`,
-              overflow: 'hidden',
-            }}
-          >
+          <Panel style={{ overflow: 'hidden' }}>
             {roles.length === 0 ? (
               <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
                 No hay roles
               </p>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: theme.colors.border }}>
-                    <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Nombre</th>
-                    <th style={{ padding: theme.spacing.sm, textAlign: 'left', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Permisos</th>
-                    <th style={{ padding: theme.spacing.sm, textAlign: 'right', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {roles.map((role) => (
-                    <tr key={role.id} style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
-                      <td style={{ padding: theme.spacing.sm, color: theme.colors.text, fontWeight: theme.typography.fontWeight.medium }}>
-                        {role.name}
-                        {isSystemRole(role.name) && (
-                          <span style={{ marginLeft: theme.spacing.xs, fontSize: theme.typography.fontSize.xs, color: theme.colors.textSecondary }}>
-                            (sistema)
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ padding: theme.spacing.sm, color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs }}>
-                        {role.permissions.length} permisos
-                      </td>
-                      <td style={{ padding: theme.spacing.sm, textAlign: 'right' }}>
-                        {!isSystemRole(role.name) && (
-                          <>
-                            <button
-                              onClick={() => handleEditRole(role)}
-                              style={{
-                                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                                background: theme.colors.accent,
-                                color: theme.colors.background,
-                                border: 'none',
-                                borderRadius: theme.borderRadius.sm,
-                                cursor: 'pointer',
-                                fontSize: theme.typography.fontSize.xs,
-                                fontWeight: theme.typography.fontWeight.semibold,
-                                marginRight: theme.spacing.xs,
-                              }}
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteRole(role.id)}
-                              style={{
-                                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                                background: theme.colors.error,
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: theme.borderRadius.sm,
-                                cursor: 'pointer',
-                                fontSize: theme.typography.fontSize.xs,
-                                fontWeight: theme.typography.fontWeight.semibold,
-                              }}
-                            >
-                              Eliminar
-                            </button>
-                          </>
-                        )}
-                      </td>
+              <div className="table-scroll">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th className="admin-th">Nombre</th>
+                      <th className="admin-th">Permisos</th>
+                      <th className="admin-th text-right">Acciones</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {roles.map((role) => (
+                      <tr key={role.id} className="admin-row">
+                        <td className="admin-td font-medium text-slate-800">
+                          {role.name}
+                          {isSystemRole(role.name) && (
+                            <span className="ml-1 text-xs text-slate-500">
+                              (sistema)
+                            </span>
+                          )}
+                        </td>
+                        <td className="admin-td text-xs text-slate-500">
+                          {role.permissions.length} permisos
+                        </td>
+                        <td className="admin-td text-right">
+                          {!isSystemRole(role.name) && (
+                            <>
+                              <Button
+                                onClick={() => handleEditRole(role)}
+                                style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteRole(role.id)}
+                                variant="danger"
+                                style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                              >
+                                Eliminar
+                              </Button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
-          </div>
+          </Panel>
         </section>
       )}
     </div>

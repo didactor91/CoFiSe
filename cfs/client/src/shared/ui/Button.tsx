@@ -1,5 +1,4 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import theme from '../../theme'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
@@ -7,25 +6,21 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function Button({ variant = 'primary', children, style, ...props }: ButtonProps) {
-  const palette = {
-    primary: { background: theme.colors.accent, color: theme.colors.background },
-    secondary: { background: theme.colors.border, color: theme.colors.text },
-    danger: { background: theme.colors.error, color: '#fff' },
-    ghost: { background: 'transparent', color: theme.colors.accent, border: `1px solid ${theme.colors.accent}` },
+  const classes = {
+    primary: 'btn-primary',
+    secondary: 'btn-secondary',
+    danger:
+      'rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200',
+    ghost:
+      'rounded-xl border border-slate-300 bg-transparent px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200',
   }[variant]
 
   return (
     <button
       {...props}
+      className={classes}
       style={{
-        padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-        border: variant === 'ghost' ? palette.border : 'none',
-        borderRadius: theme.borderRadius.sm,
         cursor: props.disabled ? 'not-allowed' : 'pointer',
-        fontWeight: theme.typography.fontWeight.semibold,
-        fontSize: theme.typography.fontSize.sm,
-        background: palette.background,
-        color: palette.color,
         ...style,
       }}
     >

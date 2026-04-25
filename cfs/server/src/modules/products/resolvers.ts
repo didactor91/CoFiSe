@@ -1,11 +1,11 @@
 import { db } from '../../db/index.js'
+import { requirePermission, requireStaff, type Context } from '../shared/guards.js'
 import {
     optionValueFromRow,
     productFromRow,
     productOptionFromRow,
     productOptionTypeFromName,
 } from '../shared/mappers.js'
-import { requirePermission, requireStaff, type Context } from '../shared/guards.js'
 
 export const productsResolvers = {
     Query: {

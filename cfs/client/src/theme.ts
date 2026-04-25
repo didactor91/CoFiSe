@@ -4,17 +4,17 @@
 export const theme = {
   colors: {
     // Backgrounds
-    background: '#0a0a0a',      // Main dark background
-    surface: '#141414',         // Card/tile backgrounds
-    border: '#262626',          // Borders and dividers
+    background: '#f8fafc',
+    surface: '#ffffff',
+    border: '#e2e8f0',
 
     // Accent
-    accent: '#d4af37',          // Gold - primary accent color
-    accentHover: '#c9a132',     // Gold hover state
+    accent: '#0f172a',
+    accentHover: '#334155',
 
     // Text
-    text: '#f5f5f5',            // Primary text
-    textSecondary: '#a0a0a0',    // Secondary/muted text
+    text: '#0f172a',
+    textSecondary: '#64748b',
 
     // Semantic
     success: '#22c55e',          // Green - available stock, success states
@@ -22,8 +22,8 @@ export const theme = {
     warning: '#f59e0b',          // Orange - warnings
 
     // UI States
-    disabled: '#4a4a4a',        // Disabled button background
-    disabledText: '#888888',     // Disabled button text
+    disabled: '#cbd5e1',
+    disabledText: '#64748b',
   },
 
   typography: {

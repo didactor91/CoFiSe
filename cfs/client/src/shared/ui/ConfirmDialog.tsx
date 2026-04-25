@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import theme from '../../theme'
+
 import { Button } from './Button'
 import { Panel } from './Panel'
 
@@ -21,16 +21,10 @@ export function ConfirmDialog({
   testId,
 }: ConfirmDialogProps) {
   return (
-    <Panel
-      style={{
-        border: `1px solid ${theme.colors.error}`,
-        padding: theme.spacing.lg,
-        marginBottom: theme.spacing.lg,
-      }}
-    >
+    <Panel style={{ borderColor: '#fecaca' }}>
       <div data-testid={testId}>
-        <p style={{ color: theme.colors.text, marginBottom: theme.spacing.md }}>{message}</p>
-        <div style={{ display: 'flex', gap: theme.spacing.sm }}>
+        <p className="mb-4 text-slate-700">{message}</p>
+        <div className="flex gap-2">
           <Button onClick={onConfirm} variant="danger">{confirmLabel}</Button>
           <Button onClick={onCancel} variant="secondary">{cancelLabel}</Button>
         </div>

@@ -1,7 +1,9 @@
 import bcrypt from 'bcrypt'
+
+import config from '../../config.js'
 import { db } from '../../db/index.js'
-import { userFromRow } from '../shared/mappers.js'
 import { requireAuth, type Context } from '../shared/guards.js'
+import { userFromRow } from '../shared/mappers.js'
 
 interface RefreshTokenPayload {
     id: number
@@ -28,7 +30,10 @@ export const authResolvers = {
             }
 
             const token = await ctx.reply.jwtSign({ id: user.id, email: user.email, role: user.role.toUpperCase() })
-            const refreshToken = await ctx.reply.jwtSign({ id: user.id, type: 'refresh' }, { expiresIn: '30d' })
+            const refreshToken = await ctx.reply.jwtSign(
+                { id: user.id, type: 'refresh' },
+                { expiresIn: config.jwt.refreshExpiresIn }
+            )
 
             return {
                 token,
@@ -50,7 +55,10 @@ export const authResolvers = {
                 }
 
                 const token = await ctx.reply.jwtSign({ id: user.id, email: user.email, role: user.role.toUpperCase() })
-                const newRefreshToken = await ctx.reply.jwtSign({ id: user.id, type: 'refresh' }, { expiresIn: '30d' })
+                const newRefreshToken = await ctx.reply.jwtSign(
+                    { id: user.id, type: 'refresh' },
+                    { expiresIn: config.jwt.refreshExpiresIn }
+                )
 
                 return {
                     token,

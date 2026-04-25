@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import LoginForm from '../components/LoginForm'
 import { useAuth } from '../hooks/useAuth'
 
@@ -21,14 +22,7 @@ export default function Login() {
   return (
     <div
       data-testid="login-page"
-      style={{
-        minHeight: '100vh',
-        background: '#0a0a0a',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem',
-      }}
+      className="flex min-h-svh items-center justify-center px-4 py-8 sm:px-6"
     >
       <LoginForm onSuccess={handleSuccess} />
     </div>

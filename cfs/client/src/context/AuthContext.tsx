@@ -1,17 +1,20 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useContext,
   useState,
   useCallback,
   useEffect,
+  useRef,
+  type ReactNode,
 } from 'react'
-import type { ReactNode } from 'react'
-import type { User } from '../graphql/generated-types'
+
+import { hasPermission as serverHasPermission, type Permission } from '../auth/permissions'
 import { graphqlClient } from '../graphql/client'
+import type { User } from '../graphql/generated-types'
 import { LOGIN_MUTATION, REFRESH_TOKEN_MUTATION } from '../graphql/mutations'
 import { ME_QUERY } from '../graphql/queries'
 import { setAuthToken, setRefreshToken, removeAllAuthTokens, getAuthToken, getRefreshToken } from '../utils/cookies'
-import { hasPermission as serverHasPermission, type Permission } from '../auth/permissions'
 
 interface AuthContextValue {
   user: User | null
@@ -27,92 +30,87 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [token, setToken] = useState<string | null>(() => getAuthToken())
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    return Boolean(getAuthToken() || getRefreshToken())
+  })
+  const hasInitialized = useRef(false)
 
-  // Initialize auth state from localStorage on mount
-  useEffect(() => {
-    const storedToken = getAuthToken()
-    const storedRefreshToken = getRefreshToken()
-
-    if (storedToken) {
-      setToken(storedToken)
-      if (storedRefreshToken) {
-        refreshAccessToken(storedRefreshToken)
-      } else {
-        validateTokenAndFetchUser()
-      }
-    } else if (storedRefreshToken) {
-      refreshAccessToken(storedRefreshToken)
-    } else {
-      setIsLoading(false)
-    }
+  const clearAuthState = useCallback(() => {
+    removeAllAuthTokens()
+    setUser(null)
+    setToken(null)
+    setIsLoading(false)
   }, [])
 
-  const validateTokenAndFetchUser = async () => {
+  const refreshAccessToken = useCallback(async (refreshToken: string) => {
+    try {
+      const result = await graphqlClient.mutation(REFRESH_TOKEN_MUTATION, { refreshToken }).toPromise()
+
+      if (result.error || !result.data?.refreshToken) {
+        clearAuthState()
+        return
+      }
+
+      const { token: newToken, refreshToken: newRefreshToken, user: newUser } = result.data.refreshToken
+      setToken(newToken)
+      setUser(newUser)
+      setAuthToken(newToken)
+      setRefreshToken(newRefreshToken)
+      setIsLoading(false)
+    } catch {
+      clearAuthState()
+    }
+  }, [clearAuthState])
+
+  const validateTokenAndFetchUser = useCallback(async () => {
     try {
       const result = await graphqlClient.query(ME_QUERY, {}).toPromise()
 
       if (result.error || !result.data?.me) {
         const storedRefreshToken = getRefreshToken()
         if (storedRefreshToken) {
-          refreshAccessToken(storedRefreshToken)
+          await refreshAccessToken(storedRefreshToken)
         } else {
-          removeAllAuthTokens()
-          setUser(null)
-          setToken(null)
-          setIsLoading(false)
+          clearAuthState()
         }
         return
       }
 
       setUser(result.data.me)
       setIsLoading(false)
-    } catch (err) {
+    } catch {
       const storedRefreshToken = getRefreshToken()
       if (storedRefreshToken) {
-        refreshAccessToken(storedRefreshToken)
+        await refreshAccessToken(storedRefreshToken)
       } else {
-        removeAllAuthTokens()
-        setUser(null)
-        setToken(null)
-        setIsLoading(false)
+        clearAuthState()
       }
     }
-  }
+  }, [clearAuthState, refreshAccessToken])
 
-  const refreshAccessToken = async (refreshToken: string) => {
-    try {
-      const result = await graphqlClient.mutation(REFRESH_TOKEN_MUTATION, { refreshToken }).toPromise()
-      
-      if (result.error) {
-        removeAllAuthTokens()
-        setUser(null)
-        setToken(null)
-        setIsLoading(false)
-        return
-      }
-      
-      if (result.data?.refreshToken) {
-        const { token: newToken, refreshToken: newRefreshToken, user: newUser } = result.data.refreshToken
-        setToken(newToken)
-        setUser(newUser)
-        setAuthToken(newToken)
-        setRefreshToken(newRefreshToken)
-        setIsLoading(false)
-      } else {
-        removeAllAuthTokens()
-        setUser(null)
-        setToken(null)
-        setIsLoading(false)
-      }
-    } catch (err) {
-      removeAllAuthTokens()
-      setUser(null)
-      setToken(null)
-      setIsLoading(false)
+  // Initialize auth state on mount and token changes.
+  useEffect(() => {
+    if (hasInitialized.current) {
+      return
     }
-  }
+    hasInitialized.current = true
+
+    const storedRefreshToken = getRefreshToken()
+    if (token) {
+      if (storedRefreshToken) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void refreshAccessToken(storedRefreshToken)
+      } else {
+        void validateTokenAndFetchUser()
+      }
+      return
+    }
+
+    if (storedRefreshToken) {
+      void refreshAccessToken(storedRefreshToken)
+    }
+  }, [token, refreshAccessToken, validateTokenAndFetchUser])
 
   const login = useCallback(async (email: string, password: string) => {
     const result = await graphqlClient.mutation(LOGIN_MUTATION, { email, password }).toPromise()
