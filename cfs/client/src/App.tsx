@@ -7,6 +7,8 @@ import AdminLayout from './pages/admin/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'
 import EventsPage from './pages/admin/EventsPage'
 import NewsPage from './pages/admin/NewsPage'
+import ProductReservationsPage from './pages/admin/ProductReservationsPage'
+import ProductsLayoutPage from './pages/admin/ProductsLayoutPage'
 import ProductsPage from './pages/admin/ProductsPage'
 import UsersPage from './pages/admin/UsersPage'
 import Catalog from './pages/Catalog'
@@ -53,7 +55,10 @@ export function AppRoutes() {
         }
       >
         <Route index element={<Dashboard />} />
-        <Route path="products" element={<ProductsPage />} />
+        <Route path="products" element={<ProductsLayoutPage />}>
+          <Route index element={<ProductsPage />} />
+          <Route path="reservas" element={<ProductReservationsPage />} />
+        </Route>
         <Route path="news" element={<NewsPage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="users" element={<UsersPage />} />

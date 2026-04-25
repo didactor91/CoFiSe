@@ -13,6 +13,12 @@ type ReservationItemRow = {
     unit_price: number
 }
 
+type UpdateReservationItemInput = {
+    productId: string
+    quantity: number
+    optionValueId?: string | null
+}
+
 function getReservationWithProduct(id: string) {
     return db.prepare(`
         SELECT r.*, p.name as product_name, p.description as product_description, 
@@ -207,6 +213,104 @@ export const reservationsResolvers = {
                 updatedAt: now,
                 product: productFromRow(product),
             }
+        },
+
+        updateReservation: (_: any, args: { id: string; input: { name?: string; email?: string; phone?: string; notes?: string | null; items?: UpdateReservationItemInput[] } }, ctx: Context) => {
+            requirePermission(ctx, 'reservation.update')
+            const existing = getReservationWithProduct(args.id)
+            if (!existing) throw new Error('Reservation not found')
+
+            const previousItems = getReservationItems(args.id, existing)
+            const nextItemsInput = args.input.items?.length
+                ? args.input.items
+                : previousItems.map((item) => ({
+                    productId: item.product_id.toString(),
+                    quantity: item.quantity,
+                    optionValueId: item.option_value_id ? item.option_value_id.toString() : null,
+                }))
+
+            if (!nextItemsInput.length) {
+                throw new Error('Reservation must contain at least one item')
+            }
+
+            const normalizedItems: ReservationItemRow[] = nextItemsInput.map((item) => {
+                const quantity = Number(item.quantity)
+                if (!Number.isInteger(quantity) || quantity <= 0) {
+                    throw new Error('Reservation item quantity must be greater than 0')
+                }
+
+                const product = db
+                    .prepare(`SELECT id, name, price FROM products WHERE id = ?`)
+                    .get(item.productId) as { id: number; name: string; price: number } | undefined
+
+                if (!product) throw new Error('Product not found')
+
+                let optionValueId: number | null = null
+                let optionValue: string | null = null
+
+                if (item.optionValueId) {
+                    const option = db.prepare(`
+                        SELECT ov.id, ov.value, po.product_id
+                        FROM option_values ov
+                        JOIN product_options po ON po.id = ov.option_id
+                        WHERE ov.id = ?
+                    `).get(item.optionValueId) as { id: number; value: string; product_id: number } | undefined
+
+                    if (!option) throw new Error('Option value not found')
+                    if (option.product_id !== product.id) throw new Error('Option value does not belong to selected product')
+                    optionValueId = option.id
+                    optionValue = option.value
+                }
+
+                return {
+                    id: 0,
+                    reservation_id: Number(args.id),
+                    product_id: product.id,
+                    product_name: product.name,
+                    option_value_id: optionValueId,
+                    option_value: optionValue,
+                    quantity,
+                    unit_price: product.price,
+                }
+            })
+
+            const totalQuantity = normalizedItems.reduce((acc, item) => acc + item.quantity, 0)
+            const primaryProductId = normalizedItems[0].product_id
+            const now = new Date().toISOString()
+            const previousStatus = existing.status
+            const nextName = args.input.name ?? existing.name
+            const nextEmail = args.input.email ?? existing.email
+            const nextPhone = args.input.phone ?? existing.phone
+            const nextNotes = args.input.notes ?? existing.notes
+
+            const tx = db.transaction(() => {
+                if (previousStatus === 'confirmed') {
+                    applyStockDelta(previousItems, 1)
+                }
+
+                db.prepare(`
+                    UPDATE reservations
+                    SET product_id = ?, quantity = ?, name = ?, email = ?, phone = ?, notes = ?, updated_at = ?
+                    WHERE id = ?
+                `).run(primaryProductId, totalQuantity, nextName, nextEmail, nextPhone, nextNotes, now, args.id)
+
+                db.prepare(`DELETE FROM reservation_items WHERE reservation_id = ?`).run(args.id)
+                const insertReservationItem = db.prepare(`
+                    INSERT INTO reservation_items (reservation_id, product_id, option_value_id, quantity, unit_price)
+                    VALUES (?, ?, ?, ?, ?)
+                `)
+                for (const item of normalizedItems) {
+                    insertReservationItem.run(args.id, item.product_id, item.option_value_id, item.quantity, item.unit_price)
+                }
+
+                if (previousStatus === 'confirmed') {
+                    applyStockDelta(normalizedItems, -1)
+                }
+            })
+            tx()
+
+            const updated = getReservationWithProduct(args.id)
+            return reservationFromRow(updated, true)
         },
 
         updateReservationStatus: (_: any, args: { id: string; status: string }, ctx: Context) => {
