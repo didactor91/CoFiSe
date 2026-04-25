@@ -9,8 +9,8 @@ const mockUser = { id: '1', email: 'admin@test.com', role: 'ADMIN' as const, cre
 
 // Mock data
 const mockNews = [
-  { id: '1', title: 'News 1', content: 'Content 1', imageUrl: null, createdAt: '', updatedAt: '' },
-  { id: '2', title: 'News 2', content: 'Content 2', imageUrl: null, createdAt: '', updatedAt: '' },
+  { id: '1', title: 'News 1', content: 'Content 1', imageUrl: null, published: true, createdAt: '', updatedAt: '' },
+  { id: '2', title: 'News 2', content: 'Content 2', imageUrl: null, published: false, createdAt: '', updatedAt: '' },
 ]
 const mockProducts = [
   { id: '1', name: 'Product 1', description: 'Desc 1', price: 10, stock: 5, imageUrl: null, createdAt: '', updatedAt: '', limitedStock: true, options: [] },

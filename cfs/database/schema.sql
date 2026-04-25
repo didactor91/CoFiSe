@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS news (
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     image_url TEXT,
+    is_published INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

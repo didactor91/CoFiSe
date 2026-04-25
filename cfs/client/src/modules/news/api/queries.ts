@@ -9,6 +9,7 @@ export const NEWS_QUERY = `
       title
       content
       imageUrl
+      published
       createdAt
       updatedAt
     }
@@ -22,6 +23,7 @@ export const NEWS_ITEM_QUERY = `
       title
       content
       imageUrl
+      published
       createdAt
       updatedAt
     }
@@ -35,6 +37,7 @@ export const ALL_NEWS_QUERY = `
       title
       content
       imageUrl
+      published
       createdAt
       updatedAt
     }

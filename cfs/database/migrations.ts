@@ -158,6 +158,40 @@ const migrations: Migration[] = [
       DROP INDEX IF EXISTS idx_reservation_items_reservation;
       DROP INDEX IF EXISTS idx_reservations_ip_created;
     `
+  },
+  {
+    version: 3,
+    name: 'news_publish_state',
+    up: `
+      CREATE TABLE IF NOT EXISTS news_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          image_url TEXT,
+          is_published INTEGER NOT NULL DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      INSERT INTO news_new (id, title, content, image_url, created_at, updated_at)
+      SELECT id, title, content, image_url, created_at, updated_at FROM news;
+      DROP TABLE news;
+      ALTER TABLE news_new RENAME TO news;
+      CREATE INDEX IF NOT EXISTS idx_news_created_at ON news(created_at);
+    `,
+    down: `
+      CREATE TABLE IF NOT EXISTS news_old (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          image_url TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      INSERT INTO news_old (id, title, content, image_url, created_at, updated_at)
+      SELECT id, title, content, image_url, created_at, updated_at FROM news;
+      DROP TABLE news;
+      ALTER TABLE news_old RENAME TO news;
+    `
   }
 ]
 

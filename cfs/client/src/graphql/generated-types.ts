@@ -23,6 +23,7 @@ export interface News {
   title: string;
   content: string;
   imageUrl?: string | null;
+  published: boolean;
   createdAt: DateTime;
   updatedAt: DateTime;
 }
@@ -205,6 +206,14 @@ export interface UpdateNewsMutationResult {
 
 export interface DeleteNewsMutationResult {
   deleteNews: boolean;
+}
+
+export interface PublishNewsMutationResult {
+  publishNews: News;
+}
+
+export interface UnpublishNewsMutationResult {
+  unpublishNews: News;
 }
 
 export interface CreateProductMutationResult {

@@ -9,6 +9,7 @@ interface News {
   title: string
   content: string
   imageUrl?: string | null
+  published: boolean
   createdAt: string
   updatedAt: string
 }
@@ -61,6 +62,7 @@ const mockNews: News[] = [
     title: 'Noticia 1',
     content: 'Contenido de la noticia 1',
     imageUrl: null,
+    published: true,
     createdAt: '2026-04-20T10:00:00Z',
     updatedAt: '2026-04-20T10:00:00Z',
   },
@@ -69,6 +71,7 @@ const mockNews: News[] = [
     title: 'Noticia 2',
     content: 'Contenido de la noticia 2',
     imageUrl: null,
+    published: true,
     createdAt: '2026-04-21T10:00:00Z',
     updatedAt: '2026-04-21T10:00:00Z',
   },

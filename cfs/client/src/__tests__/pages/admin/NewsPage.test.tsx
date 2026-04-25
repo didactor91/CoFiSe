@@ -8,8 +8,8 @@ import { AuthProvider } from '../../../context/AuthContext'
 let mockUser: { id: string; email: string; role: 'ADMIN' | 'STAFF'; createdAt: string } | null = null
 let mockCan: string[] = []
 const mockNews = [
-  { id: '1', title: 'News 1', content: 'Content 1', imageUrl: null, createdAt: '', updatedAt: '' },
-  { id: '2', title: 'News 2', content: 'Content 2', imageUrl: null, createdAt: '', updatedAt: '' },
+  { id: '1', title: 'News 1', content: 'Content 1', imageUrl: null, published: true, createdAt: '', updatedAt: '' },
+  { id: '2', title: 'News 2', content: 'Content 2', imageUrl: null, published: false, createdAt: '', updatedAt: '' },
 ]
 
 vi.mock('../../../context/AuthContext', () => ({
@@ -40,6 +40,14 @@ vi.mock('../../../graphql/mutations', () => ({
     { fetching: false, error: null },
   ],
   useDeleteNewsMutation: () => [
+    (() => {}) as any,
+    { fetching: false, error: null },
+  ],
+  usePublishNewsMutation: () => [
+    (() => {}) as any,
+    { fetching: false, error: null },
+  ],
+  useUnpublishNewsMutation: () => [
     (() => {}) as any,
     { fetching: false, error: null },
   ],
