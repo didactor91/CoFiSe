@@ -1,6 +1,10 @@
 import { useQuery, type UseQueryResponse } from 'urql'
 
-import type { ReservationStatus, ReservationsQueryResult } from '../../../graphql/generated-types'
+import type {
+    ReservationMetricsQueryResult,
+    ReservationStatus,
+    ReservationsQueryResult,
+} from '../../../graphql/generated-types'
 
 export const RESERVATIONS_QUERY = `
   query Reservations($status: ReservationStatus) {
@@ -15,6 +19,16 @@ export const RESERVATIONS_QUERY = `
       status
       createdAt
       updatedAt
+      items {
+        id
+        reservationId
+        productId
+        productName
+        optionValueId
+        optionValue
+        quantity
+        unitPrice
+      }
       product {
         id
         name
@@ -34,6 +48,33 @@ export function useReservationsQuery(options?: {
 }): UseQueryResponse<ReservationsQueryResult> {
     return useQuery<ReservationsQueryResult>({
         query: RESERVATIONS_QUERY,
+        variables: options?.status ? { status: options.status } : {},
+    })
+}
+
+export const RESERVATION_METRICS_QUERY = `
+  query ReservationMetrics($status: ReservationStatus) {
+    reservationMetrics(status: $status) {
+      totalReservations
+      totalUnits
+      byProduct {
+        productId
+        productName
+        quantity
+      }
+      bySize {
+        size
+        quantity
+      }
+    }
+  }
+`
+
+export function useReservationMetricsQuery(options?: {
+    status?: ReservationStatus
+}): UseQueryResponse<ReservationMetricsQueryResult> {
+    return useQuery<ReservationMetricsQueryResult>({
+        query: RESERVATION_METRICS_QUERY,
         variables: options?.status ? { status: options.status } : {},
     })
 }
