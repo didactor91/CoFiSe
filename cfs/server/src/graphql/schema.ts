@@ -182,6 +182,7 @@ export const typeDefs = gql`
 
     # Reservations (Staff or Admin)
     updateReservationStatus(id: ID!, status: ReservationStatus!): Reservation!
+    updateReservation(id: ID!, input: UpdateReservationInput!): Reservation!
 
     # Admin only
     createUser(input: CreateUserInput!): User!
@@ -199,6 +200,20 @@ export const typeDefs = gql`
     email: String!
     phone: String!
     notes: String
+  }
+
+  input UpdateReservationInput {
+    name: String
+    email: String
+    phone: String
+    notes: String
+    items: [UpdateReservationItemInput!]
+  }
+
+  input UpdateReservationItemInput {
+    productId: ID!
+    quantity: Int!
+    optionValueId: ID
   }
 
   input CreateNewsInput {
