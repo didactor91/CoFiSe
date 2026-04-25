@@ -61,11 +61,42 @@ export const typeDefs = gql`
     phone: String!
     notes: String
     status: ReservationStatus!
+    items: [ReservationItem!]!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
 
+  type ReservationItem {
+    id: ID!
+    reservationId: ID!
+    productId: ID!
+    productName: String!
+    optionValueId: ID
+    optionValue: String
+    quantity: Int!
+    unitPrice: Float!
+  }
+
+  type ReservationProductTotal {
+    productId: ID!
+    productName: String!
+    quantity: Int!
+  }
+
+  type ReservationSizeTotal {
+    size: String!
+    quantity: Int!
+  }
+
+  type ReservationMetrics {
+    totalReservations: Int!
+    totalUnits: Int!
+    byProduct: [ReservationProductTotal!]!
+    bySize: [ReservationSizeTotal!]!
+  }
+
   enum ReservationStatus {
+    PENDING_UNVERIFIED
     PENDING
     CONFIRMED
     CANCELLED
@@ -110,6 +141,7 @@ export const typeDefs = gql`
     allNews: [News!]!
     allEvents: [Event!]!
     reservations(status: ReservationStatus): [Reservation!]!
+    reservationMetrics(status: ReservationStatus): ReservationMetrics!
     reservation(id: ID!): Reservation
     productOptions(productId: ID!): [ProductOption!]!
 

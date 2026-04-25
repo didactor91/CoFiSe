@@ -1,6 +1,9 @@
 import { useMutation, type UseMutationResponse } from 'urql'
 
-import type { CreateReservationMutationResult } from '../../../graphql/generated-types'
+import type {
+    CreateReservationMutationResult,
+    UpdateReservationStatusMutationResult,
+} from '../../../graphql/generated-types'
 
 export const CREATE_RESERVATION_MUTATION = `
   mutation CreateReservation($input: CreateReservationInput!) {
@@ -21,4 +24,18 @@ export const CREATE_RESERVATION_MUTATION = `
 
 export function useCreateReservationMutation(): UseMutationResponse<CreateReservationMutationResult> {
     return useMutation<CreateReservationMutationResult>(CREATE_RESERVATION_MUTATION)
+}
+
+export const UPDATE_RESERVATION_STATUS_MUTATION = `
+  mutation UpdateReservationStatus($id: ID!, $status: ReservationStatus!) {
+    updateReservationStatus(id: $id, status: $status) {
+      id
+      status
+      updatedAt
+    }
+  }
+`
+
+export function useUpdateReservationStatusMutation(): UseMutationResponse<UpdateReservationStatusMutationResult> {
+    return useMutation<UpdateReservationStatusMutationResult>(UPDATE_RESERVATION_STATUS_MUTATION)
 }

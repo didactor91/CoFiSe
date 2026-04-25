@@ -1,4 +1,5 @@
 export enum ReservationStatus {
+  PendingUnverified = 'PENDING_UNVERIFIED',
   Pending = 'PENDING',
   Confirmed = 'CONFIRMED',
   Cancelled = 'CANCELLED',
@@ -65,8 +66,38 @@ export interface Reservation {
   phone: string;
   notes?: string | null;
   status: ReservationStatus;
+  items: ReservationItem[];
   createdAt: DateTime;
   updatedAt: DateTime;
+}
+
+export interface ReservationItem {
+  id: string;
+  reservationId: string;
+  productId: string;
+  productName: string;
+  optionValueId?: string | null;
+  optionValue?: string | null;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface ReservationProductTotal {
+  productId: string;
+  productName: string;
+  quantity: number;
+}
+
+export interface ReservationSizeTotal {
+  size: string;
+  quantity: number;
+}
+
+export interface ReservationMetrics {
+  totalReservations: number;
+  totalUnits: number;
+  byProduct: ReservationProductTotal[];
+  bySize: ReservationSizeTotal[];
 }
 
 export interface User {
@@ -230,6 +261,10 @@ export interface ReservationsQueryResult {
 
 export interface ReservationQueryResult {
   reservation: Reservation | null;
+}
+
+export interface ReservationMetricsQueryResult {
+  reservationMetrics: ReservationMetrics;
 }
 
 export interface UsersQueryResult {
