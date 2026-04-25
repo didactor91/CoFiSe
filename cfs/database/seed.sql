@@ -46,10 +46,10 @@ INSERT INTO products (name, description, price, stock, image_url) VALUES
     ('Agua de Valencia', 'Refreshing orange juice with cava and vodka', 12.00, 40, '/images/products/agua-valencia.jpg');
 
 -- Seed Sample News (3 items)
-INSERT INTO news (title, content, image_url) VALUES
-    ('¡Vuelve la Fiesta de Seno!', 'Nos complace anunciar que este año recuperamos nuestras fiestas patronales con un programa lleno de actividades para todas las edades. Habrá música, gastronomía tradicional y actividades infantiles.', '/images/news/fiesta2026.jpg'),
-    ('Nuevo Horario de la Barra', 'A partir de este fin de semana, la barra del local permanecerá abierta de 18:00 a 02:00 todos los viernes y sábados. ¡Os esperamos!', '/images/news/barra-horario.jpg'),
-    ('Reserva tu Mesa', 'Ya puedes reservar mesas para grupos grandes. Contacta con nosotros a través del formulario de reservas o llama al teléfono del local. Sugerencias y grupos de más de 10 personas con reserva anticipada.', '/images/news/reserva-mesa.jpg');
+INSERT INTO news (title, content, image_url, is_published) VALUES
+    ('¡Vuelve la Fiesta de Seno!', 'Nos complace anunciar que este año recuperamos nuestras fiestas patronales con un programa lleno de actividades para todas las edades. Habrá música, gastronomía tradicional y actividades infantiles.', '/images/news/fiesta2026.jpg', 1),
+    ('Nuevo Horario de la Barra', 'A partir de este fin de semana, la barra del local permanecerá abierta de 18:00 a 02:00 todos los viernes y sábados. ¡Os esperamos!', '/images/news/barra-horario.jpg', 1),
+    ('Reserva tu Mesa', 'Ya puedes reservar mesas para grupos grandes. Contacta con nosotros a través del formulario de reservas o llama al teléfono del local. Sugerencias y grupos de más de 10 personas con reserva anticipada.', '/images/news/reserva-mesa.jpg', 1);
 
 -- Seed Sample Events (3 items)
 INSERT INTO events (name, description, location, start_time, end_time) VALUES

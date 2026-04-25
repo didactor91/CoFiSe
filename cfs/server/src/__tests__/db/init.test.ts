@@ -45,13 +45,14 @@ describe('Database Initialization', () => {
       expect(tables).toBeDefined()
       
       const columns = db.prepare("PRAGMA table_info(news)").all() as Array<{name: string, type: string}>
-      expect(columns.length).toBe(6)
+      expect(columns.length).toBe(7)
       
       const columnNames = columns.map(c => c.name)
       expect(columnNames).toContain('id')
       expect(columnNames).toContain('title')
       expect(columnNames).toContain('content')
       expect(columnNames).toContain('image_url')
+      expect(columnNames).toContain('is_published')
       expect(columnNames).toContain('created_at')
       expect(columnNames).toContain('updated_at')
     })

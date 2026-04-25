@@ -4,6 +4,7 @@ export function newsFromRow(row: any) {
         title: row.title,
         content: row.content,
         imageUrl: row.image_url,
+        published: !!row.is_published,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     }

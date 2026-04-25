@@ -9,6 +9,7 @@ interface News {
   title: string
   content: string
   imageUrl?: string | null
+  published: boolean
   createdAt: string
   updatedAt: string
 }
@@ -63,6 +64,7 @@ const mockNewsItem: News = {
   title: 'Nueva-noticia',
   content: 'Contenido de prueba con varias líneas',
   imageUrl: null,
+  published: true,
   createdAt: '2026-04-24T10:00:00.000Z',
   updatedAt: '2026-04-24T10:00:00.000Z',
 }

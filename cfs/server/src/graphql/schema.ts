@@ -8,6 +8,7 @@ export const typeDefs = gql`
     title: String!
     content: String!
     imageUrl: String
+    published: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -160,6 +161,8 @@ export const typeDefs = gql`
     # News (Staff or Admin)
     createNews(input: CreateNewsInput!): News!
     updateNews(id: ID!, input: UpdateNewsInput!): News!
+    publishNews(id: ID!): News!
+    unpublishNews(id: ID!): News!
     deleteNews(id: ID!): Boolean!
 
     # Events (Staff or Admin)

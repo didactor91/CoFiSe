@@ -8,6 +8,7 @@ describe('NewsCard Component', () => {
     title: 'Noticia de Prueba',
     content: 'Este es el contenido completo de la noticia de prueba.',
     imageUrl: null,
+    published: true,
     createdAt: '2026-04-20T10:00:00Z',
     updatedAt: '2026-04-20T10:00:00Z',
   }

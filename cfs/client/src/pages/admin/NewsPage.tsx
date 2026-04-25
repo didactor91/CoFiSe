@@ -2,7 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import type { News } from '../../graphql/generated-types'
-import { useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation } from '../../graphql/mutations'
+import {
+  useCreateNewsMutation,
+  useUpdateNewsMutation,
+  usePublishNewsMutation,
+  useUnpublishNewsMutation,
+  useDeleteNewsMutation,
+} from '../../graphql/mutations'
 import { useAllNewsQuery } from '../../graphql/queries'
 import { useAuth } from '../../hooks/useAuth'
 import { Button } from '../../shared/ui/Button'
@@ -21,6 +27,8 @@ export default function NewsPage() {
   const [newsResult] = useAllNewsQuery()
   const [, createNewsMutation] = useCreateNewsMutation()
   const [, updateNewsMutation] = useUpdateNewsMutation()
+  const [, publishNewsMutation] = usePublishNewsMutation()
+  const [, unpublishNewsMutation] = useUnpublishNewsMutation()
   const [, deleteNewsMutation] = useDeleteNewsMutation()
 
   const news: News[] = newsResult.data?.allNews ?? []
@@ -92,6 +100,20 @@ export default function NewsPage() {
 
   const handleDeleteNewsClick = (id: string) => {
     setDeleteConfirm(id)
+  }
+
+  const handleTogglePublished = async (item: News) => {
+    try {
+      const result = item.published
+        ? await unpublishNewsMutation({ id: item.id })
+        : await publishNewsMutation({ id: item.id })
+
+      if (result.error) {
+        setNewsFormError(result.error.message)
+      }
+    } catch (err: unknown) {
+      setNewsFormError(toErrorMessage(err, 'Error al actualizar el estado de publicación'))
+    }
   }
 
   const handleConfirmDelete = async () => {
@@ -217,6 +239,7 @@ export default function NewsPage() {
                 <tr>
                   <th className="admin-th">Título</th>
                   <th className="admin-th">Contenido</th>
+                  <th className="admin-th">Estado</th>
                   <th className="admin-th">Fecha</th>
                   <th className="admin-th text-right">Acciones</th>
                 </tr>
@@ -228,14 +251,40 @@ export default function NewsPage() {
                     <td className="admin-td max-w-[240px] truncate text-xs text-slate-500">
                       {item.content}
                     </td>
+                    <td className="admin-td text-xs">
+                      <span className={item.published ? 'text-emerald-600' : 'text-slate-500'}>
+                        {item.published ? 'Publicada' : 'Borrador'}
+                      </span>
+                    </td>
                     <td className="admin-td text-xs text-slate-500">
                       {new Date(item.createdAt).toLocaleDateString('es-ES')}
                     </td>
                     <td className="admin-td text-right">
                       {canEdit && (
                         <Button
+                          data-testid={`toggle-news-published-btn-${item.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            void handleTogglePublished(item)
+                          }}
+                          style={{
+                            marginRight: theme.spacing.xs,
+                            padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                            background: item.published ? '#dc2626' : '#16a34a',
+                            borderColor: item.published ? '#dc2626' : '#16a34a',
+                            color: '#ffffff',
+                          }}
+                        >
+                          {item.published ? 'Despublicar' : 'Publicar'}
+                        </Button>
+                      )}
+                      {canEdit && (
+                        <Button
                           data-testid={`edit-news-btn-${item.id}`}
-                          onClick={() => handleEditNews(item)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEditNews(item)
+                          }}
                           style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                         >
                           Editar
@@ -244,7 +293,10 @@ export default function NewsPage() {
                       {canDelete && (
                         <Button
                           data-testid={`delete-news-btn-${item.id}`}
-                          onClick={() => handleDeleteNewsClick(item.id)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteNewsClick(item.id)
+                          }}
                           variant="secondary"
                           style={{ padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                         >
