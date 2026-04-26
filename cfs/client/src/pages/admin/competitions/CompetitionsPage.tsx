@@ -2,14 +2,16 @@ import { useState } from 'react'
 
 import { useAuth } from '../../../hooks/useAuth'
 import {
-  useAllCompetitionsQuery,
+  useCompetitionsQuery,
+} from '../../../modules/competitions/api/queries'
+import {
   useCreateCompetitionMutation,
   useUpdateCompetitionMutation,
   useDeleteCompetitionMutation,
   useAddParticipantsMutation,
   useGenerateBracketMutation,
   useSetMatchResultMutation,
-} from '../../../modules/competitions/api/queries'
+} from '../../../modules/competitions/api/mutations'
 import type { Competition, Match } from '../../../modules/competitions/api/queries'
 import { Button } from '../../../shared/ui/Button'
 import { ConfirmDialog } from '../../../shared/ui/ConfirmDialog'
@@ -31,7 +33,7 @@ function toErrorMessage(err: unknown, fallback: string): string {
 
 export default function CompetitionsPage() {
   const { can } = useAuth()
-  const [competitionsResult, refetchCompetitions] = useAllCompetitionsQuery()
+  const [competitionsResult, refetchCompetitions] = useCompetitionsQuery()
   const [, createCompetitionMutation] = useCreateCompetitionMutation()
   const [, updateCompetitionMutation] = useUpdateCompetitionMutation()
   const [, deleteCompetitionMutation] = useDeleteCompetitionMutation()
@@ -39,7 +41,7 @@ export default function CompetitionsPage() {
   const [, generateBracketMutation] = useGenerateBracketMutation()
   const [, setMatchResultMutation] = useSetMatchResultMutation()
 
-  const competitions: Competition[] = competitionsResult.data?.allCompetitions ?? []
+  const competitions: Competition[] = competitionsResult.data?.competitions ?? []
 
   const canCreate = can('competition.create')
   const canEdit = can('competition.update')
