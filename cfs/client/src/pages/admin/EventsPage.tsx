@@ -20,7 +20,6 @@ export default function EventsPage() {
   const navigate = useNavigate()
   const { can } = useAuth()
   const [eventsResult] = useAllEventsQuery()
-  const [, createEventMutation] = useCreateEventMutation()
   const [, updateEventMutation] = useUpdateEventMutation()
   const [, deleteEventMutation] = useDeleteEventMutation()
 
@@ -42,19 +41,11 @@ export default function EventsPage() {
   const canEdit = can('event.update')
   const canDelete = can('event.delete') // ADMIN only
 
-  // Event form state
-  const [showEventForm, setShowEventForm] = useState(false)
+  // Event form state (edit only, create moved to /new)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [eventForm, setEventForm] = useState({ name: '', description: '', location: '', startTime: '', endTime: '', imageUrl: '' })
   const [eventFormError, setEventFormError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-
-  const handleAddEvent = () => {
-    setEditingEvent(null)
-    setEventForm({ name: '', description: '', location: '', startTime: '', endTime: '', imageUrl: '' })
-    setEventFormError(null)
-    setShowEventForm(true)
-  }
 
   const handleEditEvent = (item: Event) => {
     setEditingEvent(item)
@@ -67,12 +58,13 @@ export default function EventsPage() {
       imageUrl: item.imageUrl || ''
     })
     setEventFormError(null)
-    setShowEventForm(true)
   }
 
   const handleEventFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setEventFormError(null)
+
+    if (!editingEvent) return
 
     if (!eventForm.name.trim()) {
       setEventFormError('El nombre es requerido')
@@ -100,39 +92,21 @@ export default function EventsPage() {
     }
 
     try {
-      if (editingEvent) {
-        const result = await updateEventMutation({
-          id: editingEvent.id,
-          input: {
-            name: eventForm.name,
-            description: eventForm.description || undefined,
-            location: eventForm.location,
-            startTime: new Date(eventForm.startTime).toISOString(),
-            endTime: new Date(eventForm.endTime).toISOString(),
-            imageUrl: eventForm.imageUrl || undefined
-          }
-        })
-        if (result.error) {
-          setEventFormError(result.error.message)
-          return
+      const result = await updateEventMutation({
+        id: editingEvent.id,
+        input: {
+          name: eventForm.name,
+          description: eventForm.description || undefined,
+          location: eventForm.location,
+          startTime: new Date(eventForm.startTime).toISOString(),
+          endTime: new Date(eventForm.endTime).toISOString(),
+          imageUrl: eventForm.imageUrl || undefined
         }
-      } else {
-        const result = await createEventMutation({
-          input: {
-            name: eventForm.name,
-            description: eventForm.description || undefined,
-            location: eventForm.location,
-            startTime: new Date(eventForm.startTime).toISOString(),
-            endTime: new Date(eventForm.endTime).toISOString(),
-            imageUrl: eventForm.imageUrl || undefined
-          }
-        })
-        if (result.error) {
-          setEventFormError(result.error.message)
-          return
-        }
+      })
+      if (result.error) {
+        setEventFormError(result.error.message)
+        return
       }
-      setShowEventForm(false)
       setEditingEvent(null)
       setEventForm({ name: '', description: '', location: '', startTime: '', endTime: '', imageUrl: '' })
     } catch (err: unknown) {
@@ -158,10 +132,10 @@ export default function EventsPage() {
     <div data-testid="events-page">
       <PageHeader
         title="Gestión de Eventos"
-        action={canCreate ? <Button onClick={handleAddEvent}>Añadir Evento</Button> : undefined}
+        action={canCreate ? <Button onClick={() => navigate('/admin/events/new')}>Añadir Evento</Button> : undefined}
       />
 
-      {showEventForm && (
+      {editingEvent && (
         <Panel style={{ padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
         <form
           onSubmit={handleEventFormSubmit}
@@ -290,9 +264,9 @@ export default function EventsPage() {
           )}
           <div style={{ display: 'flex', gap: theme.spacing.sm, marginTop: theme.spacing.md }}>
             <Button type="submit">
-              {editingEvent ? 'Actualizar' : 'Crear'}
+              Actualizar
             </Button>
-            <Button type="button" variant="secondary" onClick={() => { setShowEventForm(false); setEditingEvent(null); }}>
+            <Button type="button" variant="secondary" onClick={() => { setEditingEvent(null); }}>
               Cancelar
             </Button>
           </div>

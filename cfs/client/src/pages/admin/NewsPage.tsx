@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { ImageUpload } from '../../components/ImageUpload'
 import type { News } from '../../graphql/generated-types'
 import {
-  useCreateNewsMutation,
   useUpdateNewsMutation,
   usePublishNewsMutation,
   useUnpublishNewsMutation,
@@ -26,7 +24,6 @@ export default function NewsPage() {
   const navigate = useNavigate()
   const { can } = useAuth()
   const [newsResult] = useAllNewsQuery()
-  const [, createNewsMutation] = useCreateNewsMutation()
   const [, updateNewsMutation] = useUpdateNewsMutation()
   const [, publishNewsMutation] = usePublishNewsMutation()
   const [, unpublishNewsMutation] = useUnpublishNewsMutation()
@@ -49,30 +46,23 @@ export default function NewsPage() {
   const canEdit = can('news.update')
   const canDelete = can('news.delete')
 
-  // News form state
-  const [showNewsForm, setShowNewsForm] = useState(false)
+  // News form state (edit only, create moved to /new)
   const [editingNews, setEditingNews] = useState<News | null>(null)
   const [newsForm, setNewsForm] = useState({ title: '', content: '', imageUrl: '' })
   const [newsFormError, setNewsFormError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
-  const handleAddNews = () => {
-    setEditingNews(null)
-    setNewsForm({ title: '', content: '', imageUrl: '' })
-    setNewsFormError(null)
-    setShowNewsForm(true)
-  }
-
   const handleEditNews = (item: News) => {
     setEditingNews(item)
     setNewsForm({ title: item.title, content: item.content, imageUrl: item.imageUrl || '' })
     setNewsFormError(null)
-    setShowNewsForm(true)
   }
 
   const handleNewsFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setNewsFormError(null)
+
+    if (!editingNews) return
 
     if (!newsForm.title.trim()) {
       setNewsFormError('El título es requerido')
@@ -84,25 +74,14 @@ export default function NewsPage() {
     }
 
     try {
-      if (editingNews) {
-        const result = await updateNewsMutation({
-          id: editingNews.id,
-          input: { title: newsForm.title, content: newsForm.content, imageUrl: newsForm.imageUrl || undefined }
-        })
-        if (result.error) {
-          setNewsFormError(result.error.message)
-          return
-        }
-      } else {
-        const result = await createNewsMutation({
-          input: { title: newsForm.title, content: newsForm.content, imageUrl: newsForm.imageUrl || undefined }
-        })
-        if (result.error) {
-          setNewsFormError(result.error.message)
-          return
-        }
+      const result = await updateNewsMutation({
+        id: editingNews.id,
+        input: { title: newsForm.title, content: newsForm.content, imageUrl: newsForm.imageUrl || undefined }
+      })
+      if (result.error) {
+        setNewsFormError(result.error.message)
+        return
       }
-      setShowNewsForm(false)
       setEditingNews(null)
       setNewsForm({ title: '', content: '', imageUrl: '' })
     } catch (err: unknown) {
@@ -142,10 +121,10 @@ export default function NewsPage() {
     <div data-testid="news-page">
       <PageHeader
         title="Gestión de Noticias"
-        action={canCreate ? <Button onClick={handleAddNews}>Añadir Noticia</Button> : undefined}
+        action={canCreate ? <Button onClick={() => navigate('/admin/news/new')}>Añadir Noticia</Button> : undefined}
       />
 
-      {showNewsForm && (
+      {editingNews && (
         <Panel style={{ padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
         <form
           onSubmit={handleNewsFormSubmit}
@@ -193,13 +172,6 @@ export default function NewsPage() {
               }}
             />
           </div>
-          {/* Image */}
-          <ImageUpload
-            entityType="NEWS"
-            entityId={editingNews?.id}
-            currentImageUrl={newsForm.imageUrl}
-            onUploadComplete={(imageUrl) => setNewsForm(prev => ({ ...prev, imageUrl }))}
-          />
           {newsFormError && (
             <p style={{ color: theme.colors.error, marginBottom: theme.spacing.md, fontSize: theme.typography.fontSize.sm }}>
               {newsFormError}
@@ -207,9 +179,9 @@ export default function NewsPage() {
           )}
           <div style={{ display: 'flex', gap: theme.spacing.sm }}>
             <Button type="submit">
-              {editingNews ? 'Actualizar' : 'Crear'}
+              Actualizar
             </Button>
-            <Button type="button" variant="secondary" onClick={() => { setShowNewsForm(false); setEditingNews(null); }}>
+            <Button type="button" variant="secondary" onClick={() => { setEditingNews(null); }}>
               Cancelar
             </Button>
           </div>

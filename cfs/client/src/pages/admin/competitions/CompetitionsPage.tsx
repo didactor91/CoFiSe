@@ -1,11 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../../../hooks/useAuth'
 import {
   useCompetitionsQuery,
 } from '../../../modules/competitions/api/queries'
 import {
-  useCreateCompetitionMutation,
   useUpdateCompetitionMutation,
   useDeleteCompetitionMutation,
   useAddParticipantsMutation,
@@ -32,9 +32,9 @@ function toErrorMessage(err: unknown, fallback: string): string {
 }
 
 export default function CompetitionsPage() {
+  const navigate = useNavigate()
   const { can } = useAuth()
   const [competitionsResult, refetchCompetitions] = useCompetitionsQuery()
-  const [, createCompetitionMutation] = useCreateCompetitionMutation()
   const [, updateCompetitionMutation] = useUpdateCompetitionMutation()
   const [, deleteCompetitionMutation] = useDeleteCompetitionMutation()
   const [, addParticipantsMutation] = useAddParticipantsMutation()
@@ -56,8 +56,7 @@ export default function CompetitionsPage() {
       )
     : competitions
 
-  // Form state
-  const [showForm, setShowForm] = useState(false)
+  // Edit form state (create moved to /new)
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -71,42 +70,29 @@ export default function CompetitionsPage() {
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
-  // Competition form submit
+  // Competition form submit (edit only)
   const handleCompetitionFormSubmit = async (data: {
     name: string
     description: string
     matchType: 'SINGLE_LEG' | 'HOME_AND_AWAY'
   }) => {
     setFormError(null)
+
+    if (!editingCompetition) return
+
     try {
-      if (editingCompetition) {
-        const result = await updateCompetitionMutation({
-          id: editingCompetition.id,
-          input: {
-            name: data.name,
-            description: data.description || undefined,
-            matchType: data.matchType,
-          },
-        })
-        if (result.error) {
-          setFormError(result.error.message)
-          return
-        }
-      } else {
-        const result = await createCompetitionMutation({
-          input: {
-            name: data.name,
-            description: data.description || undefined,
-            matchType: data.matchType,
-            participantCount: 8, // default
-          },
-        })
-        if (result.error) {
-          setFormError(result.error.message)
-          return
-        }
+      const result = await updateCompetitionMutation({
+        id: editingCompetition.id,
+        input: {
+          name: data.name,
+          description: data.description || undefined,
+          matchType: data.matchType,
+        },
+      })
+      if (result.error) {
+        setFormError(result.error.message)
+        return
       }
-      setShowForm(false)
       setEditingCompetition(null)
       await refetchCompetitions()
     } catch (err: unknown) {
@@ -117,7 +103,6 @@ export default function CompetitionsPage() {
   // Edit competition
   const handleEditCompetition = (competition: Competition) => {
     setEditingCompetition(competition)
-    setShowForm(true)
   }
 
   // Delete competition
@@ -219,29 +204,29 @@ export default function CompetitionsPage() {
       <PageHeader
         title="Gestión de Competiciones"
         action={canCreate ? (
-          <Button onClick={() => { setEditingCompetition(null); setShowForm(true) }}>
+          <Button onClick={() => navigate('/admin/competitions/new')}>
             Nueva Competición
           </Button>
         ) : undefined}
       />
 
-      {/* Competition Form */}
-      {showForm && (
+      {/* Competition Edit Form */}
+      {editingCompetition && (
         <Panel style={{ padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
           <h3 style={{ marginBottom: '1rem', fontWeight: 600 }}>
-            {editingCompetition ? 'Editar Competición' : 'Nueva Competición'}
+            Editar Competición
           </h3>
           <CompetitionForm
-            initialData={editingCompetition ? {
+            initialData={{
               id: editingCompetition.id,
               name: editingCompetition.name,
               description: editingCompetition.description ?? '',
               matchType: editingCompetition.matchType,
-            } : undefined}
+            }}
             onSubmit={handleCompetitionFormSubmit}
-            onCancel={() => { setShowForm(false); setEditingCompetition(null) }}
+            onCancel={() => setEditingCompetition(null)}
             error={formError}
-            submitLabel={editingCompetition ? 'Actualizar' : 'Crear'}
+            submitLabel="Actualizar"
           />
         </Panel>
       )}

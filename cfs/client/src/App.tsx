@@ -4,12 +4,16 @@ import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { useAuth } from './hooks/useAuth'
 import AdminLayout from './pages/admin/AdminLayout'
+import CompetitionNewPage from './pages/admin/competitions/CompetitionNewPage'
 import CompetitionsPage from './pages/admin/competitions/CompetitionsPage'
 import Dashboard from './pages/admin/Dashboard'
+import EventNewPage from './pages/admin/events/EventNewPage'
 import EventsPage from './pages/admin/EventsPage'
+import NewsNewPage from './pages/admin/news/NewsNewPage'
 import NewsPage from './pages/admin/NewsPage'
 import ProductReservationsPage from './pages/admin/ProductReservationsPage'
 import ProductsLayoutPage from './pages/admin/ProductsLayoutPage'
+import ProductNewPage from './pages/admin/products/ProductNewPage'
 import ProductsPage from './pages/admin/ProductsPage'
 import UsersPage from './pages/admin/UsersPage'
 import Catalog from './pages/Catalog'
@@ -60,11 +64,15 @@ export function AppRoutes() {
         <Route index element={<Dashboard />} />
         <Route path="products" element={<ProductsLayoutPage />}>
           <Route index element={<ProductsPage />} />
+          <Route path="new" element={<ProductNewPage />} />
           <Route path="reservas" element={<ProductReservationsPage />} />
         </Route>
         <Route path="news" element={<NewsPage />} />
+        <Route path="news/new" element={<NewsNewPage />} />
         <Route path="events" element={<EventsPage />} />
+        <Route path="events/new" element={<EventNewPage />} />
         <Route path="competitions" element={<CompetitionsPage />} />
+        <Route path="competitions/new" element={<CompetitionNewPage />} />
         <Route path="users" element={<UsersPage />} />
       </Route>
     </Routes>
