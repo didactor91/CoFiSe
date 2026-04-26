@@ -16,9 +16,11 @@ describe('Vite Configuration', () => {
           },
         },
       })
-      
+
       // Access the server proxy configuration
-      const serverConfig = config.server as { proxy: Record<string, { target: string; changeOrigin: boolean }> }
+      const serverConfig = config.server as {
+        proxy: Record<string, { target: string; changeOrigin: boolean }>
+      }
       expect(serverConfig.proxy['/api']).toBeDefined()
       expect(serverConfig.proxy['/api'].target).toBe('http://localhost:4000')
       expect(serverConfig.proxy['/api'].changeOrigin).toBe(true)
@@ -32,7 +34,7 @@ describe('Vite Configuration', () => {
           environment: 'jsdom',
         },
       })
-      
+
       const testConfig = config.test as { globals: boolean; environment: string }
       expect(testConfig.globals).toBe(true)
       expect(testConfig.environment).toBe('jsdom')

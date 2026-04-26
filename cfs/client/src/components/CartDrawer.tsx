@@ -12,17 +12,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     return null
   }
 
-  const totalPrice = items.reduce(
-    (sum, item) => sum + item.productPrice * item.quantity,
-    0
-  )
+  const totalPrice = items.reduce((sum, item) => sum + item.productPrice * item.quantity, 0)
 
   return (
     <>
-      <div
-        onClick={onClose}
-        className="fixed inset-0 z-[999] bg-slate-900/45 backdrop-blur-sm"
-      />
+      <div onClick={onClose} className="fixed inset-0 z-[999] bg-slate-900/45 backdrop-blur-sm" />
 
       <div
         data-testid="cart-drawer"
@@ -41,7 +35,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         <div className="flex-1 space-y-3 overflow-y-auto p-4 sm:p-5">
           {items.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">Tu carrito está vacío</p>
+            <p className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+              Tu carrito está vacío
+            </p>
           ) : (
             <div className="flex flex-col gap-3">
               {items.map((item) => (
@@ -52,7 +48,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 >
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span className="font-semibold text-slate-800">{item.productName}</span>
-                    <span className="font-semibold text-slate-900">{(item.productPrice * item.quantity).toFixed(2)}€</span>
+                    <span className="font-semibold text-slate-900">
+                      {(item.productPrice * item.quantity).toFixed(2)}€
+                    </span>
                   </div>
 
                   {item.optionValueName && (
@@ -68,7 +66,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       >
                         -
                       </button>
-                      <span className="min-w-6 text-center text-sm text-slate-800">{item.quantity}</span>
+                      <span className="min-w-6 text-center text-sm text-slate-800">
+                        {item.quantity}
+                      </span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         aria-label="+"
@@ -102,9 +102,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 Total: {totalPrice.toFixed(2)}€
               </span>
             </div>
-            <button className="btn-primary w-full">
-              Ir al Checkout
-            </button>
+            <button className="btn-primary w-full">Ir al Checkout</button>
           </div>
         )}
       </div>

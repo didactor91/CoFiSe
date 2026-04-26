@@ -3,17 +3,16 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { ImageUpload } from '../components/ImageUpload'
 import type {
-  CreateProductMutationResult,
   CreateProductOptionMutationResult,
   OptionValue,
 } from '../graphql/generated-types'
-import { useProductQuery } from '../graphql/queries'
 import {
   useUpdateProductMutation,
   useCreateProductOptionMutation,
   useAddOptionValuesMutation,
   useDeleteProductOptionMutation,
 } from '../graphql/mutations'
+import { useProductQuery } from '../graphql/queries'
 import { useAuth } from '../hooks/useAuth'
 import { Button } from '../shared/ui/Button'
 import { Panel } from '../shared/ui/Panel'

@@ -38,7 +38,7 @@ const renderWithRouter = (initialRoute: string) => {
   return render(
     <MemoryRouter initialEntries={[initialRoute]}>
       <AppRoutes />
-    </MemoryRouter>
+    </MemoryRouter>,
   )
 }
 

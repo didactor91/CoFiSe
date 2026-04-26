@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { ImageUpload } from '../../../components/ImageUpload'
 import type {
-  CreateProductMutationResult,
   CreateProductOptionMutationResult,
-  OptionValue,
 } from '../../../graphql/generated-types'
 import {
   useCreateProductMutation,

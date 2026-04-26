@@ -30,8 +30,8 @@ describe('.env.example Environment Configuration', () => {
   })
 
   it('.env.example has placeholder values (not empty)', () => {
-    const lines = envContent.split('\n').filter(line => line.includes('='))
-    lines.forEach(line => {
+    const lines = envContent.split('\n').filter((line) => line.includes('='))
+    lines.forEach((line) => {
       const [key, value] = line.split('=')
       expect(value.trim().length).toBeGreaterThan(0)
     })

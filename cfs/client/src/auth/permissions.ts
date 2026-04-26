@@ -1,31 +1,31 @@
 /**
  * Permission System for CFS (Frontend)
- * 
+ *
  * Permissions follow the format: resource.action
  * Must stay in sync with server permissions
  */
 
 // Available permissions
-export type Permission = 
+export type Permission =
   // News permissions
   | 'news.read'
   | 'news.create'
   | 'news.update'
   | 'news.delete'
   | 'news.manage'
-  
+
   // Product permissions
   | 'product.read'
   | 'product.create'
   | 'product.update'
   | 'product.delete'
   | 'product.manage'
-  
+
   // Reservation permissions
   | 'reservation.read'
   | 'reservation.update'
   | 'reservation.manage'
-  
+
   // User permissions
   | 'user.read'
   | 'user.create'
@@ -46,7 +46,7 @@ export type Permission =
   | 'competition.delete'
   | 'competition.manage'
 
-// Role permissions
+  // Role permissions
   | 'role.read'
   | 'role.create'
   | 'role.update'
@@ -111,7 +111,7 @@ export const rolePermissions: Record<'ADMIN' | 'STAFF', Permission[]> = {
     'competition.create',
     'competition.update',
     // NO competition.delete - ADMIN only
-  ]
+  ],
 }
 
 /**

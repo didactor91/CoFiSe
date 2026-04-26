@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import { Button } from '../../../../shared/ui/Button'
 
 interface Participant {
@@ -16,7 +17,7 @@ interface ParticipantListProps {
 }
 
 export function ParticipantList({
-  competitionId,
+  _competitionId,
   participants,
   participantCount,
   isEditable,

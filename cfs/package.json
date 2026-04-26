@@ -12,16 +12,25 @@
     "build": "pnpm --filter client build",
     "start": "pnpm --filter server start",
     "test": "pnpm --filter client test && pnpm --filter server test",
+    "test:run": "pnpm --filter client test:run && pnpm --filter server test",
     "test:e2e": "playwright test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:client": "pnpm --filter client lint",
+    "lint:server": "pnpm --filter server lint",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
+    "format:client": "pnpm --filter client format",
+    "format:server": "pnpm --filter server format",
     "deps:cycles": "pnpm deps:cycles:client && pnpm deps:cycles:server",
     "deps:cycles:client": "madge --circular --extensions ts,tsx --ts-config ./client/tsconfig.app.json ./client/src",
     "deps:cycles:server": "madge --circular --extensions ts --ts-config ./server/tsconfig.json ./server/src",
     "security:audit": "pnpm audit --prod --audit-level=moderate",
-    "security:check": "pnpm security:audit && pnpm deps:cycles"
+    "security:check": "pnpm security:audit && pnpm deps:cycles",
+    "typecheck": "pnpm typecheck:client && pnpm typecheck:server",
+    "typecheck:client": "pnpm --filter client typecheck",
+    "typecheck:server": "pnpm --filter server typecheck",
+    "prepare": "husky install"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -36,11 +45,30 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.0.0",
     "madge": "^8.0.0",
     "prettier": "^3.8.3",
-    "typescript-eslint": "^8.59.0"
-  }
+    "pretty-quick": "^4.1.1",
+    "typescript-eslint": "^8.59.0",
+    "vitest": "^4.1.5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
+      "eslint --max-warnings=0",
+      "prettier --check"
+    ],
+    "*.{json,css,md,html,yml,yaml}": [
+      "prettier --check"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
 }

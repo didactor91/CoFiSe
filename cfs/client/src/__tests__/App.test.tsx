@@ -33,7 +33,7 @@ const renderWithRouter = (initialRoute: string) => {
   return render(
     <MemoryRouter initialEntries={[initialRoute]}>
       <AppRoutes />
-    </MemoryRouter>
+    </MemoryRouter>,
   )
 }
 
@@ -41,7 +41,7 @@ describe('App Routing', () => {
   describe('Route /', () => {
     it('should render Landing page', () => {
       renderWithRouter('/')
-      
+
       expect(screen.getByTestId('landing-page')).toBeInTheDocument()
       expect(screen.getByTestId('landing-page')).toHaveTextContent('Landing Page')
     })
@@ -50,7 +50,7 @@ describe('App Routing', () => {
   describe('Route /catalog', () => {
     it('should render Catalog page', () => {
       renderWithRouter('/catalog')
-      
+
       expect(screen.getByTestId('catalog-page')).toBeInTheDocument()
       expect(screen.getByTestId('catalog-page')).toHaveTextContent('Catalog Page')
     })
@@ -59,7 +59,7 @@ describe('App Routing', () => {
   describe('Route /login', () => {
     it('should render Login page', () => {
       renderWithRouter('/login')
-      
+
       expect(screen.getByTestId('login-page')).toBeInTheDocument()
       expect(screen.getByTestId('login-page')).toHaveTextContent('Login Page')
     })
@@ -68,7 +68,7 @@ describe('App Routing', () => {
   describe('Route /admin', () => {
     it('should redirect to /login when not authenticated', () => {
       renderWithRouter('/admin')
-      
+
       expect(screen.getByTestId('login-page')).toBeInTheDocument()
     })
   })

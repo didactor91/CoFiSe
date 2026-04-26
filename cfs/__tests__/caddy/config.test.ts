@@ -26,7 +26,7 @@ describe('Caddyfile Configuration', () => {
     expect(caddyfileContent).toMatch(/reverse_proxy\s+\/\*\s+localhost:3000/)
   })
 
-  it('Caddyfile enables TLS with Let\'s Encrypt', () => {
+  it("Caddyfile enables TLS with Let's Encrypt", () => {
     expect(caddyfileContent).toContain('tls')
     expect(caddyfileContent).toContain('issuer_acme_v2')
   })

@@ -5,7 +5,8 @@ import UsersPage from '../../../pages/admin/UsersPage'
 import { AuthProvider } from '../../../context/AuthContext'
 
 // Mutable state for controlling mock user and data
-let mockUser: { id: string; email: string; role: 'ADMIN' | 'STAFF'; createdAt: string } | null = null
+let mockUser: { id: string; email: string; role: 'ADMIN' | 'STAFF'; createdAt: string } | null =
+  null
 let mockCan: string[] = []
 const mockUsers = [
   { id: '1', email: 'admin@test.com', role: 'ADMIN', createdAt: '2026-04-01T00:00:00Z' },
@@ -39,31 +40,21 @@ vi.mock('../../../graphql/queries', () => ({
 }))
 
 vi.mock('../../../graphql/mutations', () => ({
-  useCreateUserMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useDeleteUserMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useCreateRoleMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useUpdateRoleMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useDeleteRoleMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
+  useCreateUserMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useDeleteUserMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useCreateRoleMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useUpdateRoleMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useDeleteRoleMutation: () => [(() => {}) as any, { fetching: false, error: null }],
 }))
 
 describe('UsersPage', () => {
   beforeEach(() => {
-    mockUser = { id: '1', email: 'admin@test.com', role: 'ADMIN', createdAt: '2026-04-01T00:00:00Z' }
+    mockUser = {
+      id: '1',
+      email: 'admin@test.com',
+      role: 'ADMIN',
+      createdAt: '2026-04-01T00:00:00Z',
+    }
     mockCan = ['user.read', 'user.create', 'user.delete', 'role.read', 'role.create', 'role.delete']
     vi.clearAllMocks()
   })
@@ -75,7 +66,7 @@ describe('UsersPage', () => {
           <AuthProvider>
             <UsersPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByTestId('users-page')).toBeInTheDocument()
@@ -87,7 +78,7 @@ describe('UsersPage', () => {
           <AuthProvider>
             <UsersPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('admin@test.com')).toBeInTheDocument()
@@ -100,7 +91,7 @@ describe('UsersPage', () => {
           <AuthProvider>
             <UsersPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('Gestión de Roles')).toBeInTheDocument()
@@ -114,7 +105,7 @@ describe('UsersPage', () => {
           <AuthProvider>
             <UsersPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Click "Añadir Usuario" button to show the form
@@ -132,7 +123,7 @@ describe('UsersPage', () => {
           <AuthProvider>
             <UsersPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.queryByTestId('create-user-form')).not.toBeInTheDocument()
@@ -144,7 +135,7 @@ describe('UsersPage', () => {
           <AuthProvider>
             <UsersPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('Gestión de Roles')).toBeInTheDocument()
@@ -158,7 +149,7 @@ describe('UsersPage', () => {
           <AuthProvider>
             <UsersPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.queryByText('Gestión de Roles')).not.toBeInTheDocument()
@@ -170,7 +161,7 @@ describe('UsersPage', () => {
           <AuthProvider>
             <UsersPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Only one delete button (for staff user, id 2)

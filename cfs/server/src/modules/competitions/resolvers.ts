@@ -156,7 +156,7 @@ export const competitionsResolvers = {
             }
 
             // Fisher-Yates shuffle using crypto random (production-safe)
-            const shuffled = shuffleWith(participants, cryptoRandom())
+            shuffleWith(participants, cryptoRandom())
 
             const n = participants.length
             let byeParticipant = null

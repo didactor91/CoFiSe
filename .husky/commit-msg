@@ -1,0 +1,37 @@
+#!/bin/sh
+# CFS Commit-msg Hook - validates conventional commits
+
+COMMIT_MSG=$(cat "$1")
+COMMIT_MSG_LENGTH=${#COMMIT_MSG}
+
+# Skip if empty
+if [ $COMMIT_MSG_LENGTH -eq 0 ]; then
+  exit 0
+fi
+
+# Conventional commits format: type(scope): subject
+CONVENTIONAL_REGEX="^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,}"
+
+if ! echo "$COMMIT_MSG" | grep -qE "$CONVENTIONAL_REGEX"; then
+  echo "\033[0;31m✖ Invalid commit message format\033[0m"
+  echo ""
+  echo "Expected format: type(scope): description"
+  echo ""
+  echo "Valid types:"
+  echo "  feat    - New feature"
+  echo "  fix     - Bug fix"
+  echo "  docs    - Documentation"
+  echo "  style   - Formatting, no code change"
+  echo "  refactor- Refactoring"
+  echo "  test    - Adding tests"
+  echo "  chore   - Maintenance"
+  echo "  perf    - Performance"
+  echo "  ci      - CI changes"
+  echo "  build   - Build system"
+  echo "  revert  - Revert commit"
+  echo ""
+  echo "Example: feat(auth): add JWT refresh token support"
+  exit 1
+fi
+
+echo "\033[0;32m✓ Commit message validated\033[0m"

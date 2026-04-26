@@ -2,7 +2,7 @@ import { db } from '../../db/index.js'
 import { requirePermission, type Context } from '../shared/guards.js'
 import { productFromRow, reservationFromRow } from '../shared/mappers.js'
 
-type ReservationItemRow = {
+interface ReservationItemRow {
     id: number
     reservation_id: number
     product_id: number
@@ -13,7 +13,7 @@ type ReservationItemRow = {
     unit_price: number
 }
 
-type UpdateReservationItemInput = {
+interface UpdateReservationItemInput {
     productId: string
     quantity: number
     optionValueId?: string | null

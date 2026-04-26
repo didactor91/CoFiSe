@@ -7,11 +7,19 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {
     getItem: vi.fn((key: string) => store[key] ?? null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value }),
-    removeItem: vi.fn((key: string) => { delete store[key] }),
-    clear: vi.fn(() => { store = {} }),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key]
+    }),
+    clear: vi.fn(() => {
+      store = {}
+    }),
     getStore: () => store,
-    setStore: (s: Record<string, string>) => { store = s },
+    setStore: (s: Record<string, string>) => {
+      store = s
+    },
   }
 })()
 
@@ -73,12 +81,12 @@ describe('CartContext', () => {
       renderHook(() => useCart(), { wrapper })
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'senocom_cart_session',
-        'test-uuid-1234'
+        'test-uuid-1234',
       )
     })
 
     it('should restore sessionId from localStorage if it exists', () => {
-      localStorageMock.setStore({ 'senocom_cart_session': 'existing-session-456' })
+      localStorageMock.setStore({ senocom_cart_session: 'existing-session-456' })
       const { result } = renderHook(() => useCart(), { wrapper })
       expect(result.current.sessionId).toBe('existing-session-456')
     })
@@ -102,7 +110,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p1',
           productName: 'Gorro',
-          productPrice: 15.00,
+          productPrice: 15.0,
           optionValueId: null,
           optionValueName: null,
           quantity: 1,
@@ -113,7 +121,7 @@ describe('CartContext', () => {
       expect(result.current.items[0]).toMatchObject({
         productId: 'p1',
         productName: 'Gorro',
-        productPrice: 15.00,
+        productPrice: 15.0,
         optionValueId: null,
         optionValueName: null,
         quantity: 1,
@@ -137,7 +145,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p2',
           productName: 'Corbata',
-          productPrice: 25.00,
+          productPrice: 25.0,
           optionValueId: 'ov1',
           optionValueName: 'Rojo',
           quantity: 2,
@@ -152,7 +160,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p2',
           productName: 'Corbata',
-          productPrice: 25.00,
+          productPrice: 25.0,
           optionValueId: 'ov1',
           optionValueName: 'Rojo',
           quantity: 1,
@@ -180,7 +188,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p2',
           productName: 'Corbata',
-          productPrice: 25.00,
+          productPrice: 25.0,
           optionValueId: 'ov1',
           optionValueName: 'Rojo',
           quantity: 2,
@@ -192,7 +200,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p2',
           productName: 'Corbata',
-          productPrice: 25.00,
+          productPrice: 25.0,
           optionValueId: 'ov2',
           optionValueName: 'Verde',
           quantity: 1,
@@ -200,8 +208,8 @@ describe('CartContext', () => {
       })
 
       expect(result.current.items).toHaveLength(2)
-      expect(result.current.items.find(i => i.optionValueId === 'ov1')?.quantity).toBe(2)
-      expect(result.current.items.find(i => i.optionValueId === 'ov2')?.quantity).toBe(1)
+      expect(result.current.items.find((i) => i.optionValueId === 'ov1')?.quantity).toBe(2)
+      expect(result.current.items.find((i) => i.optionValueId === 'ov2')?.quantity).toBe(1)
     })
 
     it('should persist cart to localStorage after adding item', async () => {
@@ -220,7 +228,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p1',
           productName: 'Gorro',
-          productPrice: 15.00,
+          productPrice: 15.0,
           optionValueId: null,
           optionValueName: null,
           quantity: 1,
@@ -229,7 +237,7 @@ describe('CartContext', () => {
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'senocom_cart',
-        expect.stringContaining('"productId":"p1"')
+        expect.stringContaining('"productId":"p1"'),
       )
     })
   })
@@ -251,7 +259,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p1',
           productName: 'Gorro',
-          productPrice: 15.00,
+          productPrice: 15.0,
           optionValueId: null,
           optionValueName: null,
           quantity: 1,
@@ -283,7 +291,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p1',
           productName: 'Gorro',
-          productPrice: 15.00,
+          productPrice: 15.0,
           optionValueId: null,
           optionValueName: null,
           quantity: 1,
@@ -317,7 +325,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p1',
           productName: 'Gorro',
-          productPrice: 15.00,
+          productPrice: 15.0,
           optionValueId: null,
           optionValueName: null,
           quantity: 1,
@@ -351,7 +359,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p1',
           productName: 'Gorro',
-          productPrice: 15.00,
+          productPrice: 15.0,
           optionValueId: null,
           optionValueName: null,
           quantity: 1,
@@ -362,7 +370,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p2',
           productName: 'Corbata',
-          productPrice: 25.00,
+          productPrice: 25.0,
           optionValueId: 'ov1',
           optionValueName: 'Rojo',
           quantity: 2,
@@ -394,7 +402,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p1',
           productName: 'Gorro',
-          productPrice: 15.00,
+          productPrice: 15.0,
           optionValueId: null,
           optionValueName: null,
           quantity: 2,
@@ -405,7 +413,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p2',
           productName: 'Corbata',
-          productPrice: 25.00,
+          productPrice: 25.0,
           optionValueId: 'ov1',
           optionValueName: 'Rojo',
           quantity: 3,
@@ -433,7 +441,7 @@ describe('CartContext', () => {
         result.current.addToCart({
           productId: 'p1',
           productName: 'Gorro',
-          productPrice: 15.00,
+          productPrice: 15.0,
           optionValueId: null,
           optionValueName: null,
           quantity: 2,
@@ -442,11 +450,11 @@ describe('CartContext', () => {
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'senocom_cart',
-        expect.stringContaining('"items"')
+        expect.stringContaining('"items"'),
       )
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'senocom_cart',
-        expect.stringContaining('"sessionId"')
+        expect.stringContaining('"sessionId"'),
       )
     })
 
@@ -457,7 +465,7 @@ describe('CartContext', () => {
             id: 'existing-item-1',
             productId: 'p1',
             productName: 'Gorro',
-            productPrice: 15.00,
+            productPrice: 15.0,
             optionValueId: null,
             optionValueName: null,
             quantity: 3,
@@ -467,8 +475,8 @@ describe('CartContext', () => {
       }
 
       localStorageMock.setStore({
-        'senocom_cart': JSON.stringify(storedCart),
-        'senocom_cart_session': 'restored-session-789',
+        senocom_cart: JSON.stringify(storedCart),
+        senocom_cart_session: 'restored-session-789',
       })
 
       // Mock returning that p1 exists
@@ -497,7 +505,7 @@ describe('CartContext', () => {
             id: 'item-1',
             productId: 'p1',
             productName: 'Gorro',
-            productPrice: 15.00,
+            productPrice: 15.0,
             optionValueId: null,
             optionValueName: null,
             quantity: 2,
@@ -506,7 +514,7 @@ describe('CartContext', () => {
             id: 'item-2',
             productId: 'deleted-product',
             productName: 'Deleted Product',
-            productPrice: 20.00,
+            productPrice: 20.0,
             optionValueId: null,
             optionValueName: null,
             quantity: 1,
@@ -516,16 +524,14 @@ describe('CartContext', () => {
       }
 
       localStorageMock.setStore({
-        'senocom_cart': JSON.stringify(storedCart),
-        'senocom_cart_session': 'test-session',
+        senocom_cart: JSON.stringify(storedCart),
+        senocom_cart_session: 'test-session',
       })
 
       // Mock graphql client to return only p1 as existing
       mockToPromise.mockResolvedValue({
         data: {
-          products: [
-            { id: 'p1' },
-          ],
+          products: [{ id: 'p1' }],
         },
         error: undefined,
       })
@@ -537,7 +543,7 @@ describe('CartContext', () => {
       })
 
       expect(result.current.items[0].productId).toBe('p1')
-      expect(result.current.items.find(i => i.productId === 'deleted-product')).toBeUndefined()
+      expect(result.current.items.find((i) => i.productId === 'deleted-product')).toBeUndefined()
     })
 
     it('should keep all items when all productIds exist in database', async () => {
@@ -547,7 +553,7 @@ describe('CartContext', () => {
             id: 'item-1',
             productId: 'p1',
             productName: 'Gorro',
-            productPrice: 15.00,
+            productPrice: 15.0,
             optionValueId: null,
             optionValueName: null,
             quantity: 2,
@@ -556,7 +562,7 @@ describe('CartContext', () => {
             id: 'item-2',
             productId: 'p2',
             productName: 'Corbata',
-            productPrice: 25.00,
+            productPrice: 25.0,
             optionValueId: 'ov1',
             optionValueName: 'Rojo',
             quantity: 1,
@@ -566,16 +572,13 @@ describe('CartContext', () => {
       }
 
       localStorageMock.setStore({
-        'senocom_cart': JSON.stringify(storedCart),
-        'senocom_cart_session': 'test-session',
+        senocom_cart: JSON.stringify(storedCart),
+        senocom_cart_session: 'test-session',
       })
 
       mockToPromise.mockResolvedValue({
         data: {
-          products: [
-            { id: 'p1' },
-            { id: 'p2' },
-          ],
+          products: [{ id: 'p1' }, { id: 'p2' }],
         },
         error: undefined,
       })
@@ -586,8 +589,8 @@ describe('CartContext', () => {
         expect(result.current.items).toHaveLength(2)
       })
 
-      expect(result.current.items.find(i => i.productId === 'p1')).toBeDefined()
-      expect(result.current.items.find(i => i.productId === 'p2')).toBeDefined()
+      expect(result.current.items.find((i) => i.productId === 'p1')).toBeDefined()
+      expect(result.current.items.find((i) => i.productId === 'p2')).toBeDefined()
     })
 
     it('should handle GraphQL query failure gracefully (fail open)', async () => {
@@ -597,7 +600,7 @@ describe('CartContext', () => {
             id: 'item-1',
             productId: 'p1',
             productName: 'Gorro',
-            productPrice: 15.00,
+            productPrice: 15.0,
             optionValueId: null,
             optionValueName: null,
             quantity: 2,
@@ -607,8 +610,8 @@ describe('CartContext', () => {
       }
 
       localStorageMock.setStore({
-        'senocom_cart': JSON.stringify(storedCart),
-        'senocom_cart_session': 'test-session',
+        senocom_cart: JSON.stringify(storedCart),
+        senocom_cart_session: 'test-session',
       })
 
       // Mock GraphQL query to throw an error (simulating network failure)

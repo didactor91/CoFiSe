@@ -48,10 +48,10 @@ vi.mock('../../graphql/queries', () => ({
   EVENT_QUERY: '',
   useEventQuery: () => {
     return [
-      { 
-        data: eventData, 
-        fetching: fetchingState, 
-        error: errorState 
+      {
+        data: eventData,
+        fetching: fetchingState,
+        error: errorState,
       },
       (() => {}) as any,
     ] as const
@@ -88,7 +88,7 @@ describe('EventDetail Page', () => {
           <AuthProvider>
             <EventDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('⏳')).toBeInTheDocument()
@@ -106,7 +106,7 @@ describe('EventDetail Page', () => {
           <AuthProvider>
             <EventDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText(/no encontrado/i)).toBeInTheDocument()
@@ -121,7 +121,7 @@ describe('EventDetail Page', () => {
           <AuthProvider>
             <EventDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText(/no encontrado/i)).toBeInTheDocument()
@@ -138,7 +138,7 @@ describe('EventDetail Page', () => {
           <AuthProvider>
             <EventDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Check name
@@ -160,7 +160,7 @@ describe('EventDetail Page', () => {
           <AuthProvider>
             <EventDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Should show date and time range in Spanish format
@@ -181,7 +181,7 @@ describe('EventDetail Page', () => {
           <AuthProvider>
             <EventDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       const heading = screen.getByRole('heading', { level: 1 })
@@ -190,5 +190,5 @@ describe('EventDetail Page', () => {
     })
   })
 
-// Navigation is implicitly tested via the UI - back button renders and uses navigate(-1)
+  // Navigation is implicitly tested via the UI - back button renders and uses navigate(-1)
 })

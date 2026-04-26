@@ -35,10 +35,7 @@ let productsData: { products: Product[] } | null = null
 vi.mock('../../graphql/queries', () => ({
   PRODUCTS_QUERY: '',
   useProductsQuery: () => {
-    return [
-      { data: productsData, fetching: false, error: null },
-      (() => {}) as any,
-    ] as const
+    return [{ data: productsData, fetching: false, error: null }, (() => {}) as any] as const
   },
 }))
 
@@ -80,7 +77,7 @@ describe('Catalog Page', () => {
             <Catalog />
           </AuthProvider>
         </CartProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
   }
 

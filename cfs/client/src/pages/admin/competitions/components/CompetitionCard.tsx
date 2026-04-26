@@ -1,5 +1,5 @@
-import { Button } from '../../../../shared/ui/Button'
 import type { Competition } from '../../../../modules/competitions/api/queries'
+import { Button } from '../../../../shared/ui/Button'
 
 type CompetitionStatus = 'DRAFT' | 'ACTIVE' | 'COMPLETED'
 type MatchType = 'SINGLE_LEG' | 'HOME_AND_AWAY'

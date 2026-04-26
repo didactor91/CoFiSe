@@ -5,11 +5,30 @@ import EventsPage from '../../../pages/admin/EventsPage'
 import { AuthProvider } from '../../../context/AuthContext'
 
 // Mutable state for controlling mock user and data
-let mockUser: { id: string; email: string; role: 'ADMIN' | 'STAFF'; createdAt: string } | null = null
+let mockUser: { id: string; email: string; role: 'ADMIN' | 'STAFF'; createdAt: string } | null =
+  null
 let mockCan: string[] = []
 const mockEvents = [
-  { id: '1', name: 'Event 1', description: 'Description 1', location: 'Location 1', startTime: '2026-04-25T10:00:00Z', endTime: '2026-04-25T12:00:00Z', createdAt: '', updatedAt: '' },
-  { id: '2', name: 'Event 2', description: 'Description 2', location: 'Location 2', startTime: '2026-04-26T14:00:00Z', endTime: '2026-04-26T16:00:00Z', createdAt: '', updatedAt: '' },
+  {
+    id: '1',
+    name: 'Event 1',
+    description: 'Description 1',
+    location: 'Location 1',
+    startTime: '2026-04-25T10:00:00Z',
+    endTime: '2026-04-25T12:00:00Z',
+    createdAt: '',
+    updatedAt: '',
+  },
+  {
+    id: '2',
+    name: 'Event 2',
+    description: 'Description 2',
+    location: 'Location 2',
+    startTime: '2026-04-26T14:00:00Z',
+    endTime: '2026-04-26T16:00:00Z',
+    createdAt: '',
+    updatedAt: '',
+  },
 ]
 
 vi.mock('../../../context/AuthContext', () => ({
@@ -31,23 +50,19 @@ vi.mock('../../../graphql/queries', () => ({
 }))
 
 vi.mock('../../../graphql/mutations', () => ({
-  useCreateEventMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useUpdateEventMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useDeleteEventMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
+  useCreateEventMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useUpdateEventMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useDeleteEventMutation: () => [(() => {}) as any, { fetching: false, error: null }],
 }))
 
 describe('EventsPage', () => {
   beforeEach(() => {
-    mockUser = { id: '1', email: 'admin@test.com', role: 'ADMIN', createdAt: '2026-04-01T00:00:00Z' }
+    mockUser = {
+      id: '1',
+      email: 'admin@test.com',
+      role: 'ADMIN',
+      createdAt: '2026-04-01T00:00:00Z',
+    }
     mockCan = ['event.read', 'event.create', 'event.update', 'event.delete']
     vi.clearAllMocks()
   })
@@ -59,7 +74,7 @@ describe('EventsPage', () => {
           <AuthProvider>
             <EventsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByTestId('events-page')).toBeInTheDocument()
@@ -71,7 +86,7 @@ describe('EventsPage', () => {
           <AuthProvider>
             <EventsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('Event 1')).toBeInTheDocument()
@@ -84,7 +99,7 @@ describe('EventsPage', () => {
           <AuthProvider>
             <EventsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       const eventItems = screen.getAllByText(/Event \d/)
@@ -99,7 +114,7 @@ describe('EventsPage', () => {
           <AuthProvider>
             <EventsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('Añadir Evento')).toBeInTheDocument()
@@ -113,7 +128,7 @@ describe('EventsPage', () => {
           <AuthProvider>
             <EventsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.queryByText('Añadir Evento')).not.toBeInTheDocument()
@@ -125,7 +140,7 @@ describe('EventsPage', () => {
           <AuthProvider>
             <EventsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByTestId('edit-event-btn-1')).toBeInTheDocument()
@@ -139,7 +154,7 @@ describe('EventsPage', () => {
           <AuthProvider>
             <EventsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.queryByTestId('edit-event-btn-1')).not.toBeInTheDocument()
@@ -151,7 +166,7 @@ describe('EventsPage', () => {
           <AuthProvider>
             <EventsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByTestId('delete-event-btn-1')).toBeInTheDocument()
@@ -165,7 +180,7 @@ describe('EventsPage', () => {
           <AuthProvider>
             <EventsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.queryByTestId('delete-event-btn-1')).not.toBeInTheDocument()

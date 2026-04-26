@@ -18,7 +18,14 @@ vi.mock('../../theme', () => ({
       disabledText: '#888888',
     },
     typography: {
-      fontSize: { xs: '0.75rem', sm: '0.875rem', base: '1rem', lg: '1.25rem', xl: '1.5rem', '2xl': '2rem' },
+      fontSize: {
+        xs: '0.75rem',
+        sm: '0.875rem',
+        base: '1rem',
+        lg: '1.25rem',
+        xl: '1.5rem',
+        '2xl': '2rem',
+      },
       fontWeight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
     },
     spacing: { xs: '0.25rem', sm: '0.5rem', md: '1rem', lg: '1.5rem', xl: '2rem' },
@@ -28,10 +35,7 @@ vi.mock('../../theme', () => ({
 
 // Mock urql for mutations
 vi.mock('urql', () => ({
-  useMutation: vi.fn(() => [
-    vi.fn(),
-    { data: undefined, fetching: false, error: undefined },
-  ]),
+  useMutation: vi.fn(() => [vi.fn(), { data: undefined, fetching: false, error: undefined }]),
 }))
 
 import Verification from '../../pages/Verification'
@@ -43,27 +47,27 @@ describe('Verification Page', () => {
       // The Verification page receives a reservationId from URL
       // In a real scenario, the backend would tell us if the code is expired
       // For testing purposes, we'll need to mock the GraphQL query to return expired status
-      
+
       // For now, let's test that the verification page renders and shows the expected UI
       render(
         <MemoryRouter initialEntries={['/verification?reservationId=test-123']}>
           <Verification />
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Should show verification form
       await waitFor(() => {
         expect(screen.getByText('Verificación')).toBeInTheDocument()
       })
-      
+
       expect(screen.getByText('Tu código de verificación es:')).toBeInTheDocument()
-      
+
       // Demo code should be displayed
       expect(screen.getByTestId('demo-code')).toBeInTheDocument()
-      
+
       // Code input should be present
       expect(screen.getByTestId('code-input')).toBeInTheDocument()
-      
+
       // Attempts counter should show
       expect(screen.getByTestId('attempts-counter')).toBeInTheDocument()
     })
@@ -72,7 +76,7 @@ describe('Verification Page', () => {
       render(
         <MemoryRouter initialEntries={['/verification?reservationId=test-123']}>
           <Verification />
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       const codeInput = screen.getByTestId('code-input')
@@ -84,7 +88,7 @@ describe('Verification Page', () => {
       render(
         <MemoryRouter initialEntries={['/verification?reservationId=test-123']}>
           <Verification />
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -97,7 +101,7 @@ describe('Verification Page', () => {
       render(
         <MemoryRouter initialEntries={['/verification?reservationId=test-123']}>
           <Verification />
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -111,7 +115,7 @@ describe('Verification Page', () => {
       render(
         <MemoryRouter initialEntries={['/verification']}>
           <Verification />
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
