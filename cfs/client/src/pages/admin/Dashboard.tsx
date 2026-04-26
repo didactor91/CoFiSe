@@ -38,7 +38,10 @@ export default function Dashboard() {
 
   const news = newsResult.data?.allNews ?? []
   const products = productsResult.data?.products ?? []
-  const reservations = reservationsResult.data?.reservations ?? []
+  const reservations = useMemo(
+    () => reservationsResult.data?.reservations ?? [],
+    [reservationsResult.data?.reservations]
+  )
   const metrics = metricsResult.data?.reservationMetrics
 
   const filteredReservations = useMemo(() => {
