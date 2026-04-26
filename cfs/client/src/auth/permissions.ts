@@ -39,6 +39,13 @@ export type Permission =
   | 'event.delete'
   | 'event.manage'
 
+  // Competition permissions
+  | 'competition.read'
+  | 'competition.create'
+  | 'competition.update'
+  | 'competition.delete'
+  | 'competition.manage'
+
 // Role permissions
   | 'role.read'
   | 'role.create'
@@ -76,6 +83,11 @@ export const rolePermissions: Record<'ADMIN' | 'STAFF', Permission[]> = {
     'role.update',
     'role.delete',
     'role.manage',
+    'competition.read',
+    'competition.create',
+    'competition.update',
+    'competition.delete',
+    'competition.manage',
   ],
   STAFF: [
     'news.read',
@@ -95,6 +107,10 @@ export const rolePermissions: Record<'ADMIN' | 'STAFF', Permission[]> = {
     // NO event.delete - ADMIN only
     'role.read',
     // NO role.create, role.update, role.delete, role.manage - ADMIN only
+    'competition.read',
+    'competition.create',
+    'competition.update',
+    // NO competition.delete - ADMIN only
   ]
 }
 
