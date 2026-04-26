@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { ImageUpload } from '../../components/ImageUpload'
 import type { Event } from '../../graphql/generated-types'
 import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from '../../graphql/mutations'
 import { useAllEventsQuery } from '../../graphql/queries'
@@ -44,13 +45,13 @@ export default function EventsPage() {
   // Event form state
   const [showEventForm, setShowEventForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
-  const [eventForm, setEventForm] = useState({ name: '', description: '', location: '', startTime: '', endTime: '' })
+  const [eventForm, setEventForm] = useState({ name: '', description: '', location: '', startTime: '', endTime: '', imageUrl: '' })
   const [eventFormError, setEventFormError] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   const handleAddEvent = () => {
     setEditingEvent(null)
-    setEventForm({ name: '', description: '', location: '', startTime: '', endTime: '' })
+    setEventForm({ name: '', description: '', location: '', startTime: '', endTime: '', imageUrl: '' })
     setEventFormError(null)
     setShowEventForm(true)
   }
@@ -62,7 +63,8 @@ export default function EventsPage() {
       description: item.description || '',
       location: item.location,
       startTime: item.startTime.slice(0, 16),
-      endTime: item.endTime.slice(0, 16)
+      endTime: item.endTime.slice(0, 16),
+      imageUrl: item.imageUrl || ''
     })
     setEventFormError(null)
     setShowEventForm(true)
@@ -106,7 +108,8 @@ export default function EventsPage() {
             description: eventForm.description || undefined,
             location: eventForm.location,
             startTime: new Date(eventForm.startTime).toISOString(),
-            endTime: new Date(eventForm.endTime).toISOString()
+            endTime: new Date(eventForm.endTime).toISOString(),
+            imageUrl: eventForm.imageUrl || undefined
           }
         })
         if (result.error) {
@@ -120,7 +123,8 @@ export default function EventsPage() {
             description: eventForm.description || undefined,
             location: eventForm.location,
             startTime: new Date(eventForm.startTime).toISOString(),
-            endTime: new Date(eventForm.endTime).toISOString()
+            endTime: new Date(eventForm.endTime).toISOString(),
+            imageUrl: eventForm.imageUrl || undefined
           }
         })
         if (result.error) {
@@ -130,7 +134,7 @@ export default function EventsPage() {
       }
       setShowEventForm(false)
       setEditingEvent(null)
-      setEventForm({ name: '', description: '', location: '', startTime: '', endTime: '' })
+      setEventForm({ name: '', description: '', location: '', startTime: '', endTime: '', imageUrl: '' })
     } catch (err: unknown) {
       setEventFormError(toErrorMessage(err, 'Error al guardar'))
     }
@@ -270,6 +274,15 @@ export default function EventsPage() {
               />
             </div>
           </div>
+
+          {/* Image */}
+          <ImageUpload
+            entityType="EVENT"
+            entityId={editingEvent?.id}
+            currentImageUrl={eventForm.imageUrl}
+            onUploadComplete={(imageUrl) => setEventForm(prev => ({ ...prev, imageUrl }))}
+          />
+
           {eventFormError && (
             <p style={{ color: theme.colors.error, marginTop: theme.spacing.md, fontSize: theme.typography.fontSize.sm }}>
               {eventFormError}

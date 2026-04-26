@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { ImageUpload } from '../../components/ImageUpload'
 import type {
   CreateProductMutationResult,
   CreateProductOptionMutationResult,
@@ -406,27 +407,13 @@ export default function ProductsPage() {
             />
           </div>
 
-          {/* Image URL */}
-          <div style={{ marginTop: theme.spacing.md }}>
-            <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
-              URL de Imagen (opcional)
-            </label>
-            <input
-              type="text"
-              placeholder="https://..."
-              value={productForm.imageUrl}
-              onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
-              style={{
-                width: '100%',
-                padding: theme.spacing.sm,
-                background: theme.colors.background,
-                border: `1px solid ${theme.colors.border}`,
-                borderRadius: theme.borderRadius.sm,
-                color: theme.colors.text,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            />
-          </div>
+          {/* Image */}
+          <ImageUpload
+            entityType="PRODUCT"
+            entityId={editingProduct?.id}
+            currentImageUrl={productForm.imageUrl}
+            onUploadComplete={(imageUrl) => setProductForm(prev => ({ ...prev, imageUrl }))}
+          />
 
           {/* Stock section - only if no options */}
           {!productForm.hasOptions && (

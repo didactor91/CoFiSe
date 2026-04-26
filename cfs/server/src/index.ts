@@ -10,6 +10,7 @@ import mercurius from 'mercurius'
 import config from './config.js'
 import { resolvers } from './graphql/resolvers.js'
 import { typeDefs } from './graphql/schema.js'
+import { registerUploadRoutes } from './routes/upload.js'
 
 export async function buildServer(): Promise<FastifyInstance> {
   const server = Fastify({
@@ -107,6 +108,9 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   // Create executable schema for Mercurius
   const schema = makeExecutableSchema({ typeDefs, resolvers })
+
+  // Register upload routes before Mercurius
+  await registerUploadRoutes(server)
 
   // GraphQL endpoint with JWT verification in context
   await server.register(mercurius, {
