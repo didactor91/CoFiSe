@@ -1,6 +1,7 @@
 import { db } from '../../db/index.js'
 import { requirePermission, type Context } from '../shared/guards.js'
 import { competitionFromRow, participantFromRow, matchFromRow } from '../shared/mappers.js'
+import { shuffleWith, cryptoRandom } from '../shared/prng.js'
 
 export const competitionsResolvers = {
     Query: {
@@ -154,11 +155,8 @@ export const competitionsResolvers = {
                 throw new Error(`Not all participants added. Need ${competition.participant_count}, have ${participants.length}`)
             }
 
-            // Fisher-Yates shuffle
-            for (let i = participants.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [participants[i], participants[j]] = [participants[j], participants[i]]
-            }
+            // Fisher-Yates shuffle using crypto random (production-safe)
+            const shuffled = shuffleWith(participants, cryptoRandom())
 
             const n = participants.length
             let byeParticipant = null

@@ -67,25 +67,10 @@ function createTestDb(): Database.Database {
 
 // Simplified bracket generation logic extracted for testing
 // (mirrors what's in resolvers.ts)
-function fisherYatesShuffle<T>(array: T[], seed: number): T[] {
-  const arr = [...array]
-  let currentIndex = arr.length
-  let random: () => number
-  
-  // Simple seeded random number generator (LCG)
-  let state = seed
-  random = () => {
-    state = (state * 1664525 + 1013904223) % 4294967296
-    return state / 4294967296
-  }
+import { shuffleWith, seededRandom } from '../shared/prng.js'
 
-  while (currentIndex !== 0) {
-    const randomIndex = Math.floor(random() * currentIndex)
-    currentIndex--
-    ;[arr[currentIndex], arr[randomIndex]] = [arr[randomIndex], arr[currentIndex]]
-  }
-  
-  return arr
+function fisherYatesShuffle<T>(array: T[], seed: number): T[] {
+  return shuffleWith(array, seededRandom(seed))
 }
 
 function generateBracketParticipants(n: number): number[] {

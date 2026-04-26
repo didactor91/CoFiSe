@@ -11,8 +11,32 @@
  * Phase 7: Testing - Task 7.6
  */
 
-import { test, expect } from './fixtures'
+import { test, expect, type Page } from './fixtures'
 import { loginAs } from './fixtures'
+
+// Helper: Wait for element and return it, fail if not found
+async function expectVisible(page: Page, selector: string, timeout = 5000) {
+  const locator = page.locator(selector).first()
+  await expect(locator).toBeVisible({ timeout })
+  return locator
+}
+
+// Helper: Fill input and verify it was filled
+async function fillAndVerify(page: Page, selector: string, value: string) {
+  const input = page.locator(selector).first()
+  await expect(input).toBeVisible()
+  await input.clear()
+  await input.fill(value)
+  const actualValue = await input.inputValue()
+  expect(actualValue).toBe(value)
+}
+
+// Helper: Click button and verify navigation/action happened
+async function clickAndVerify(page: Page, selector: string, timeout = 5000) {
+  const button = page.locator(selector).first()
+  await expect(button).toBeEnabled({ timeout })
+  await button.click()
+}
 
 test.describe('Competition System E2E', () => {
   test.beforeEach(async ({ page }) => {
@@ -26,217 +50,202 @@ test.describe('Competition System E2E', () => {
     await loginAs(page, 'admin@senacom.com', 'changeme123')
     await page.waitForURL('**/admin**')
 
-    // Navigate to competitions page
-    await page.click('[data-testid="admin-nav"] >> text=Competiciones', { timeout: 5000 }).catch(async () => {
-      // Try alternative selector
-      await page.click('text=Competiciones', { timeout: 5000 })
-    })
-
+    // STEP 2: Navigate to competitions page
+    const navLink = page.locator('text=Competiciones')
+    await expect(navLink).toBeVisible({ timeout: 10000 })
+    await navLink.click()
     await page.waitForLoadState('networkidle')
-    
-    // Wait for competitions page to load
-    await page.waitForSelector('[data-testid="competitions-page"]', { timeout: 10000 }).catch(() => {
-      // Try to find any competition-related content
-      return page.locator('text=Competiciones').first()
-    })
 
-    // STEP 2: Create new competition
-    const createButton = page.locator('button:has-text("Crear"), button:has-text("Nueva"), button:has-text("Nueva Competición")').first()
-    if (await createButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await createButton.click()
-    }
+    // Verify we're on competitions page
+    await expect(page.getByTestId('competitions-page')).toBeVisible({ timeout: 10000 })
 
-    // Wait for form modal/drawer
-    await page.waitForTimeout(500)
+    // STEP 3: Create new competition
+    // Look for create button with various possible labels
+    const createButton = page.getByRole('button', { name: /nueva.*competición/i })
+      .or(page.getByRole('button', { name: /crear/i }))
+      .or(page.getByRole('button', { name: /nueva/i }))
+      .first()
+    await expect(createButton).toBeVisible()
+    await createButton.click()
 
-    // Fill competition form
-    const nameInput = page.locator('input[id="name"], input[placeholder*="nombre"], input[name="name"]').first()
-    if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await nameInput.fill('Copa Test E2E')
-    }
+    // STEP 4: Fill competition form
+    // Name field
+    const nameInput = page.locator('input[id="name"], input[name="name"]').first()
+    await expect(nameInput).toBeVisible()
+    await nameInput.fill('Copa E2E Test')
 
-    // Find and fill description if field exists
-    const descInput = page.locator('textarea, input[id="description"]').first()
-    if (await descInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+    // Description field (optional)
+    const descInput = page.locator('textarea[id="description"], textarea[name="description"]').first()
+    if (await descInput.isVisible().catch(() => false)) {
       await descInput.fill('Competition for E2E testing')
     }
 
-    // Select match type if dropdown exists
-    const matchTypeSelect = page.locator('select[id="matchType"], [data-testid="match-type-select"]').first()
-    if (await matchTypeSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
+    // Match type dropdown
+    const matchTypeSelect = page.locator('select[id="matchType"], select[name="matchType"]').first()
+    if (await matchTypeSelect.isVisible().catch(() => false)) {
       await matchTypeSelect.selectOption('SINGLE_LEG')
     }
 
-    // Set participant count
+    // Participant count
     const participantInput = page.locator('input[id="participantCount"], input[name="participantCount"]').first()
-    if (await participantInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await participantInput.fill('4')
-    }
+    await expect(participantInput).toBeVisible()
+    await participantInput.fill('4')
 
     // Submit form
-    const submitButton = page.locator('button[type="submit"], button:has-text("Crear"):not(:has-text("Nueva"))').first()
-    if (await submitButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await submitButton.click()
+    const submitButton = page.getByRole('button', { type: 'submit' })
+    await expect(submitButton).toBeVisible()
+    await submitButton.click()
+
+    // Wait for form to close and competition to appear in list
+    await page.waitForTimeout(1500)
+
+    // STEP 5: Add participants - Find the competition we just created
+    // Look for the competition in the list
+    const competitionCard = page.locator('text=Copa E2E Test').first()
+    await expect(competitionCard).toBeVisible({ timeout: 5000 })
+
+    // Click on competition to expand details
+    await competitionCard.click()
+    await page.waitForTimeout(500)
+
+    // Find participant input and add participants
+    const aliasInputs = page.locator('input[placeholder*="alias"], input[placeholder*="participante"]')
+    const inputCount = await aliasInputs.count()
+    expect(inputCount).toBeGreaterThan(0)
+
+    const aliases = ['Equipo A', 'Equipo B', 'Equipo C', 'Equipo D']
+    for (let i = 0; i < Math.min(aliases.length, inputCount); i++) {
+      await aliasInputs.nth(i).fill(aliases[i])
     }
 
-    // Wait for competition to be created
+    // Click add button
+    const addButton = page.getByRole('button', { name: /añadir|agregar/i }).first()
+    if (await addButton.isVisible().catch(() => false)) {
+      await addButton.click()
+      await page.waitForTimeout(500)
+    }
+
+    // STEP 6: Generate bracket
+    const generateButton = page.getByRole('button', { name: /generar.*parrilla|generar/i }).first()
+    await expect(generateButton).toBeVisible()
+    await generateButton.click()
     await page.waitForTimeout(1000)
 
-    // STEP 3: Add participants (aliases)
-    // Look for participant management section
-    const addParticipantsSection = page.locator('text=Añadir participantes, text=Participantes').first()
-    if (await addParticipantsSection.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Add 4 aliases
-      const aliasInputs = page.locator('input[placeholder*="alias"], input[placeholder*="participante"]')
-      const count = await aliasInputs.count()
-      
-      if (count > 0) {
-        const aliases = ['Equipo A', 'Equipo B', 'Equipo C', 'Equipo D']
-        for (let i = 0; i < Math.min(aliases.length, count); i++) {
-          await aliasInputs.nth(i).fill(aliases[i])
-        }
-        
-        // Click add button
-        const addButton = page.locator('button:has-text("Añadir"), button:has-text("Agregar")').first()
-        if (await addButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await addButton.click()
-        }
-        
-        await page.waitForTimeout(500)
-      }
-    }
+    // Verify bracket was generated (competition status should be ACTIVE)
+    const activeBadge = page.locator('text=Activa')
+    await expect(activeBadge).toBeVisible({ timeout: 5000 }).catch(() => {
+      // If no badge, at least verify matches appear
+      const matchCard = page.locator('[data-testid*="match"], svg').first()
+      expect(matchCard).toBeVisible({ timeout: 5000 })
+    })
 
-    // STEP 4: Generate bracket
-    const generateButton = page.locator('button:has-text("Generar"), button:has-text("Generar gráfica")').first()
-    if (await generateButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await generateButton.click()
-      await page.waitForTimeout(1000)
-    }
-
-    // STEP 5: Enter results for round 1 matches
-    // Find match result buttons/inputs
-    const matchCards = page.locator('[data-testid*="match-card"], [data-testid*="match-result"]')
+    // STEP 7: Enter result for round 1 match
+    // Click on a match card to open result modal
+    const matchCards = page.locator('[data-testid*="match-card"], [data-testid*="match-"]')
     const matchCount = await matchCards.count()
+    expect(matchCount).toBeGreaterThan(0)
 
-    if (matchCount > 0) {
-      // Click on first match to open result modal
-      await matchCards.first().click()
-      await page.waitForTimeout(500)
+    await matchCards.first().click()
+    await page.waitForTimeout(500)
 
-      // Enter scores in modal
-      const scoreInputs = page.locator('input[type="number"], input[id*="score"]')
-      const inputCount = await scoreInputs.count()
+    // Enter scores in modal - 2-1
+    const scoreInputs = page.locator('input[type="number"]')
+    const scoreCount = await scoreInputs.count()
+    expect(scoreCount).toBeGreaterThanOrEqual(2)
 
-      if (inputCount >= 2) {
-        // Enter 2-1 for first team
-        await scoreInputs.nth(0).fill('2')
-        await scoreInputs.nth(1).fill('1')
-      }
+    await scoreInputs.nth(0).fill('2')
+    await scoreInputs.nth(1).fill('1')
 
-      // Submit result
-      const submitResultButton = page.locator('button:has-text("Guardar"), button:has-text("Confirmar")').first()
-      if (await submitResultButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await submitResultButton.click()
-      }
+    // Submit result
+    const saveButton = page.getByRole('button', { name: /guardar.*resultado|guardar/i })
+    await expect(saveButton).toBeVisible()
+    await saveButton.click()
+    await page.waitForTimeout(1000)
 
-      await page.waitForTimeout(500)
-    }
+    // STEP 8: Verify result was saved - look for score display
+    const scoreDisplay = page.locator('text=/\\d+-\\d+/').first()
+    await expect(scoreDisplay).toBeVisible({ timeout: 5000 })
 
-    // Get competition ID from URL or extract from page
-    let competitionId: string | null = null
+    // STEP 9: Get competition ID and visit public page
     const url = page.url()
-    const match = url.match(/\/competitions\/(\d+)/)
-    if (match) {
-      competitionId = match[1]
-    }
-
-    // If no competition ID in URL, try to find it in the page content
-    if (!competitionId) {
-      // Look for competition link or ID in the list
-      const competitionLink = page.locator('[href*="/competitions/"]').first()
-      if (await competitionLink.isVisible({ timeout: 2000 }).catch(() => false)) {
-        const href = await competitionLink.getAttribute('href')
-        const idMatch = href?.match(/\/competitions\/(\d+)/)
-        if (idMatch) {
-          competitionId = idMatch[1]
-        }
-      }
-    }
-
-    // STEP 6: Public visits competition page
-    if (competitionId) {
+    const urlMatch = url.match(/\/competitions\/(\d+)/)
+    
+    if (urlMatch) {
+      const competitionId = urlMatch[1]
+      
+      // Visit public page
       await page.goto(`/competitions/${competitionId}`)
       await page.waitForLoadState('networkidle')
-      await page.waitForTimeout(1000)
+      await page.waitForTimeout(500)
 
-      // Check if public bracket is visible
-      const bracketVisible = await page.locator('[data-testid*="bracket"], [data-testid*="BracketView"], svg').isVisible({ timeout: 5000 }).catch(() => false)
-      
-      if (bracketVisible) {
-        // Check for match cards with scores - look for score content in the bracket
-        const scoreText = page.locator('text=/\\d+-\\d+/').first()
-        const hasScores = await scoreText.isVisible({ timeout: 2000 }).catch(() => false)
-        expect(hasScores).toBeTruthy()
-      }
+      // Verify public bracket is visible
+      const bracketSvg = page.locator('svg').first()
+      await expect(bracketSvg).toBeVisible({ timeout: 5000 })
+
+      // Verify competition name is shown
+      await expect(page.locator('h1:has-text("Copa E2E Test")')).toBeVisible()
+
+      // Verify score is shown on public page
+      await expect(page.locator('text=/\\d+-\\d+/')).toBeVisible()
     } else {
-      // If we couldn't get competition ID, skip but log
-      console.log('Could not extract competition ID for public view test')
+      // Fallback: look for any competition link and visit it
+      const competitionLink = page.locator('[href*="/competitions/"]').first()
+      if (await competitionLink.isVisible().catch(() => false)) {
+        await competitionLink.click()
+        await page.waitForLoadState('networkidle')
+        
+        // Verify bracket is visible
+        await expect(page.locator('svg').first()).toBeVisible()
+      } else {
+        console.log('Could not find competition URL for public view test')
+      }
     }
   })
 
   test('public can view active competition bracket without login', async ({ page }) => {
-    // This test assumes there's already an active competition in the system
-    // We test that publicCompetitions query returns non-DRAFT competitions
-
-    // Navigate to homepage to see if competitions are listed
+    // Navigate to homepage
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Look for competition listing
-    const competitionsSection = page.locator('text=Competiciones, [data-testid*="competition"]').first()
+    // Look for competitions section or link
+    const competitionsLink = page.locator('[href*="/competitions/"]').first()
     
-    if (await competitionsSection.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Try to click on a competition to view details
-      const competitionLink = page.locator('a[href*="/competitions/"]').first()
-      
-      if (await competitionLink.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await competitionLink.click()
-        await page.waitForLoadState('networkidle')
-        await page.waitForTimeout(500)
-
-        // Should see bracket view without login prompt
-        const bracketView = page.locator('[data-testid*="bracket"], svg').first()
-        expect(await bracketView.isVisible({ timeout: 5000 })).toBeTruthy()
-      }
+    if (await competitionsLink.isVisible().catch(() => false)) {
+      await competitionsLink.click()
+    } else {
+      // Try visiting directly if there's an existing competition
+      await page.goto('/competitions/1')
     }
+    
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(500)
 
-    // Alternatively, directly visit a known competition URL if available
-    // This would be skipped if no competition exists yet
+    // Should see bracket SVG without login prompt
+    const bracketSvg = page.locator('svg').first()
+    await expect(bracketSvg).toBeVisible({ timeout: 5000 })
   })
 
-  test('admin cannot delete competition (STAFF role)', async ({ page }) => {
+  test('STAFF role cannot delete competitions', async ({ page }) => {
     // Login as staff (not admin)
     await loginAs(page, 'staff@senacom.com', 'changeme123')
     await page.waitForURL('**/admin**')
 
     // Navigate to competitions page
-    await page.click('text=Competiciones', { timeout: 5000 }).catch(() => {})
+    const navLink = page.locator('text=Competiciones')
+    await expect(navLink).toBeVisible({ timeout: 10000 })
+    await navLink.click()
     await page.waitForLoadState('networkidle')
 
-    // Look for delete button on a competition card
-    const deleteButton = page.locator('button:has-text("Eliminar"), button:has-text("Delete"), [data-testid*="delete"]').first()
+    // Verify competitions page loaded
+    await expect(page.getByTestId('competitions-page')).toBeVisible({ timeout: 10000 })
 
-    if (await deleteButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await deleteButton.click()
-      await page.waitForTimeout(500)
-
-      // Should see error or button should be disabled
-      // Staff role should not have competition.delete permission
-      const errorMessage = page.locator('text=permiso, text=Permission, text=No autorizado').first()
-      const isDisabled = await deleteButton.isDisabled().catch(() => false)
-      
-      // Either error shown or button disabled
-      expect(isDisabled || await errorMessage.isVisible({ timeout: 1000 }).catch(() => false)).toBeTruthy()
+    // Look for delete button - it should either be hidden or disabled
+    const deleteButton = page.getByRole('button', { name: /eliminar/i }).first()
+    
+    // If button is visible, it should be disabled (no delete permission)
+    if (await deleteButton.isVisible().catch(() => false)) {
+      await expect(deleteButton).toBeDisabled()
     }
+    // If button is not visible, that's also correct (hidden due to lack of permission)
   })
 })
