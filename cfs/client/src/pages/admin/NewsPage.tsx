@@ -2,12 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import type { News } from '../../graphql/generated-types'
-import {
-  useUpdateNewsMutation,
-  usePublishNewsMutation,
-  useUnpublishNewsMutation,
-  useDeleteNewsMutation,
-} from '../../graphql/mutations'
+import { useDeleteNewsMutation } from '../../graphql/mutations'
 import { useAllNewsQuery } from '../../graphql/queries'
 import { useAuth } from '../../hooks/useAuth'
 import { Button } from '../../shared/ui/Button'
@@ -16,17 +11,10 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { Panel } from '../../shared/ui/Panel'
 import theme from '../../theme'
 
-function toErrorMessage(err: unknown, fallback: string): string {
-  return err instanceof Error ? err.message : fallback
-}
-
 export default function NewsPage() {
   const navigate = useNavigate()
   const { can } = useAuth()
   const [newsResult] = useAllNewsQuery()
-  const [, updateNewsMutation] = useUpdateNewsMutation()
-  const [, publishNewsMutation] = usePublishNewsMutation()
-  const [, unpublishNewsMutation] = useUnpublishNewsMutation()
   const [, deleteNewsMutation] = useDeleteNewsMutation()
 
   const news: News[] = newsResult.data?.allNews ?? []
@@ -43,76 +31,21 @@ export default function NewsPage() {
     : news
 
   const canCreate = can('news.create')
-  const canEdit = can('news.update')
   const canDelete = can('news.delete')
 
-  // News form state (edit only, create moved to /new)
-  const [editingNews, setEditingNews] = useState<News | null>(null)
-  const [newsForm, setNewsForm] = useState({ title: '', content: '', imageUrl: '' })
-  const [newsFormError, setNewsFormError] = useState<string | null>(null)
+  // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-
-  const handleEditNews = (item: News) => {
-    setEditingNews(item)
-    setNewsForm({ title: item.title, content: item.content, imageUrl: item.imageUrl || '' })
-    setNewsFormError(null)
-  }
-
-  const handleNewsFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setNewsFormError(null)
-
-    if (!editingNews) return
-
-    if (!newsForm.title.trim()) {
-      setNewsFormError('El título es requerido')
-      return
-    }
-    if (!newsForm.content.trim()) {
-      setNewsFormError('El contenido es requerido')
-      return
-    }
-
-    try {
-      const result = await updateNewsMutation({
-        id: editingNews.id,
-        input: { title: newsForm.title, content: newsForm.content, imageUrl: newsForm.imageUrl || undefined }
-      })
-      if (result.error) {
-        setNewsFormError(result.error.message)
-        return
-      }
-      setEditingNews(null)
-      setNewsForm({ title: '', content: '', imageUrl: '' })
-    } catch (err: unknown) {
-      setNewsFormError(toErrorMessage(err, 'Error al guardar'))
-    }
-  }
 
   const handleDeleteNewsClick = (id: string) => {
     setDeleteConfirm(id)
-  }
-
-  const handleTogglePublished = async (item: News) => {
-    try {
-      const result = item.published
-        ? await unpublishNewsMutation({ id: item.id })
-        : await publishNewsMutation({ id: item.id })
-
-      if (result.error) {
-        setNewsFormError(result.error.message)
-      }
-    } catch (err: unknown) {
-      setNewsFormError(toErrorMessage(err, 'Error al actualizar el estado de publicación'))
-    }
   }
 
   const handleConfirmDelete = async () => {
     if (!deleteConfirm) return
     try {
       await deleteNewsMutation({ id: deleteConfirm })
-    } catch (err: unknown) {
-      setNewsFormError(toErrorMessage(err, 'Error al eliminar'))
+    } catch (err) {
+      console.error('Error deleting news:', err)
     }
     setDeleteConfirm(null)
   }
@@ -123,71 +56,6 @@ export default function NewsPage() {
         title="Gestión de Noticias"
         action={canCreate ? <Button onClick={() => navigate('/admin/news/new')}>Añadir Noticia</Button> : undefined}
       />
-
-      {editingNews && (
-        <Panel style={{ padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
-        <form
-          onSubmit={handleNewsFormSubmit}
-          data-testid="news-form"
-          style={{}}
-        >
-          <div style={{ marginBottom: theme.spacing.md }}>
-            <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
-              Título *
-            </label>
-            <input
-              type="text"
-              value={newsForm.title}
-              onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })}
-              required
-              style={{
-                width: '100%',
-                padding: theme.spacing.sm,
-                background: theme.colors.background,
-                border: `1px solid ${theme.colors.border}`,
-                borderRadius: theme.borderRadius.sm,
-                color: theme.colors.text,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            />
-          </div>
-          <div style={{ marginBottom: theme.spacing.md }}>
-            <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
-              Contenido *
-            </label>
-            <textarea
-              value={newsForm.content}
-              onChange={(e) => setNewsForm({ ...newsForm, content: e.target.value })}
-              required
-              rows={4}
-              style={{
-                width: '100%',
-                padding: theme.spacing.sm,
-                background: theme.colors.background,
-                border: `1px solid ${theme.colors.border}`,
-                borderRadius: theme.borderRadius.sm,
-                color: theme.colors.text,
-                fontSize: theme.typography.fontSize.sm,
-                resize: 'vertical',
-              }}
-            />
-          </div>
-          {newsFormError && (
-            <p style={{ color: theme.colors.error, marginBottom: theme.spacing.md, fontSize: theme.typography.fontSize.sm }}>
-              {newsFormError}
-            </p>
-          )}
-          <div style={{ display: 'flex', gap: theme.spacing.sm }}>
-            <Button type="submit">
-              Actualizar
-            </Button>
-            <Button type="button" variant="secondary" onClick={() => { setEditingNews(null); }}>
-              Cancelar
-            </Button>
-          </div>
-        </form>
-        </Panel>
-      )}
 
       {deleteConfirm && (
         <ConfirmDialog
@@ -251,36 +119,6 @@ export default function NewsPage() {
                       {new Date(item.createdAt).toLocaleDateString('es-ES')}
                     </td>
                     <td className="admin-td text-right">
-                      {canEdit && (
-                        <Button
-                          data-testid={`toggle-news-published-btn-${item.id}`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            void handleTogglePublished(item)
-                          }}
-                          style={{
-                            marginRight: theme.spacing.xs,
-                            padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-                            background: item.published ? '#dc2626' : '#16a34a',
-                            borderColor: item.published ? '#dc2626' : '#16a34a',
-                            color: '#ffffff',
-                          }}
-                        >
-                          {item.published ? 'Despublicar' : 'Publicar'}
-                        </Button>
-                      )}
-                      {canEdit && (
-                        <Button
-                          data-testid={`edit-news-btn-${item.id}`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleEditNews(item)
-                          }}
-                          style={{ marginRight: theme.spacing.xs, padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
-                        >
-                          Editar
-                        </Button>
-                      )}
                       {canDelete && (
                         <Button
                           data-testid={`delete-news-btn-${item.id}`}

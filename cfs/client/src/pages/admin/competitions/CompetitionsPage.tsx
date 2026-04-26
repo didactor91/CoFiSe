@@ -6,13 +6,9 @@ import {
   useCompetitionsQuery,
 } from '../../../modules/competitions/api/queries'
 import {
-  useUpdateCompetitionMutation,
   useDeleteCompetitionMutation,
-  useAddParticipantsMutation,
-  useGenerateBracketMutation,
-  useSetMatchResultMutation,
 } from '../../../modules/competitions/api/mutations'
-import type { Competition, Match } from '../../../modules/competitions/api/queries'
+import type { Competition } from '../../../modules/competitions/api/queries'
 import { Button } from '../../../shared/ui/Button'
 import { ConfirmDialog } from '../../../shared/ui/ConfirmDialog'
 import { PageHeader } from '../../../shared/ui/PageHeader'
@@ -20,31 +16,21 @@ import { Panel } from '../../../shared/ui/Panel'
 import theme from '../../../theme'
 
 import {
-  CompetitionForm,
   CompetitionCard,
   ParticipantList,
   BracketPreview,
   MatchResultModal,
 } from './components'
 
-function toErrorMessage(err: unknown, fallback: string): string {
-  return err instanceof Error ? err.message : fallback
-}
-
 export default function CompetitionsPage() {
   const navigate = useNavigate()
   const { can } = useAuth()
   const [competitionsResult, refetchCompetitions] = useCompetitionsQuery()
-  const [, updateCompetitionMutation] = useUpdateCompetitionMutation()
   const [, deleteCompetitionMutation] = useDeleteCompetitionMutation()
-  const [, addParticipantsMutation] = useAddParticipantsMutation()
-  const [, generateBracketMutation] = useGenerateBracketMutation()
-  const [, setMatchResultMutation] = useSetMatchResultMutation()
 
   const competitions: Competition[] = competitionsResult.data?.competitions ?? []
 
   const canCreate = can('competition.create')
-  const canEdit = can('competition.update')
   const canDelete = can('competition.delete')
 
   // Search filter
@@ -56,56 +42,16 @@ export default function CompetitionsPage() {
       )
     : competitions
 
-  // Edit form state (create moved to /new)
-  const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null)
-  const [formError, setFormError] = useState<string | null>(null)
+  // Delete confirmation
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   // Participant management state
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null)
   const [showParticipants, setShowParticipants] = useState(false)
 
   // Results modal state
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
+  const [selectedMatch, setSelectedMatch] = useState<any | null>(null)
 
-  // Delete confirmation
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-
-  // Competition form submit (edit only)
-  const handleCompetitionFormSubmit = async (data: {
-    name: string
-    description: string
-    matchType: 'SINGLE_LEG' | 'HOME_AND_AWAY'
-  }) => {
-    setFormError(null)
-
-    if (!editingCompetition) return
-
-    try {
-      const result = await updateCompetitionMutation({
-        id: editingCompetition.id,
-        input: {
-          name: data.name,
-          description: data.description || undefined,
-          matchType: data.matchType,
-        },
-      })
-      if (result.error) {
-        setFormError(result.error.message)
-        return
-      }
-      setEditingCompetition(null)
-      await refetchCompetitions()
-    } catch (err: unknown) {
-      setFormError(toErrorMessage(err, 'Error al guardar'))
-    }
-  }
-
-  // Edit competition
-  const handleEditCompetition = (competition: Competition) => {
-    setEditingCompetition(competition)
-  }
-
-  // Delete competition
   const handleDeleteCompetition = (id: string) => {
     setDeleteConfirm(id)
   }
@@ -114,8 +60,8 @@ export default function CompetitionsPage() {
     if (!deleteConfirm) return
     try {
       await deleteCompetitionMutation({ id: deleteConfirm })
-    } catch (err: unknown) {
-      setFormError(toErrorMessage(err, 'Error al eliminar'))
+    } catch (err) {
+      console.error('Error deleting competition:', err)
     }
     setDeleteConfirm(null)
     await refetchCompetitions()
@@ -127,75 +73,17 @@ export default function CompetitionsPage() {
     setShowParticipants(true)
   }
 
-  const handleAddParticipants = async (competitionId: string, aliases: string[]) => {
-    const result = await addParticipantsMutation({
-      input: { competitionId, aliases },
-    })
-    if (result.error) {
-      throw new Error(result.error.message)
-    }
-    await refetchCompetitions()
-    // Update selected competition
-    if (selectedCompetition) {
-      setSelectedCompetition(result.data?.addParticipants ?? selectedCompetition)
-    }
-  }
-
-  const handleRemoveParticipant = async (competitionId: string, participantId: string) => {
-    // Note: In a real app, you'd have a removeParticipant mutation
-    // For now, we'll just show an error since that mutation doesn't exist
-    throw new Error('Funcionalidad no implementada')
-  }
-
-  // Generate bracket
   const handleGenerateBracket = async (competition: Competition) => {
-    try {
-      await generateBracketMutation({ competitionId: competition.id })
-      await refetchCompetitions()
-    } catch (err: unknown) {
-      setFormError(toErrorMessage(err, 'Error al generar parrilla'))
-    }
+    // This is handled in the detail page now
+    navigate(`/competitions/${competition.id}?from=admin`)
   }
 
   // Match result
   const handleEnterResults = (competition: Competition) => {
     // Find first pending match
-    const firstPending = competition.matches?.find(m => m.status === 'PENDING' && !m.isBye)
+    const firstPending = competition.matches?.find((m: any) => m.status === 'PENDING' && !m.isBye)
     if (firstPending) {
       setSelectedMatch(firstPending)
-    }
-  }
-
-  const handleSetMatchResult = async (data: {
-    homeScore1: number
-    homeScore2: number
-    awayScore1?: number
-    awayScore2?: number
-    manualWinnerId?: string
-  }) => {
-    if (!selectedMatch) return
-
-    const result = await setMatchResultMutation({
-      input: {
-        matchId: selectedMatch.id,
-        homeScore1: data.homeScore1,
-        homeScore2: data.homeScore2,
-        awayScore1: data.awayScore1,
-        awayScore2: data.awayScore2,
-        manualWinnerId: data.manualWinnerId ? data.manualWinnerId : undefined,
-      },
-    })
-
-    if (result.error) {
-      throw new Error(result.error.message)
-    }
-
-    setSelectedMatch(null)
-    await refetchCompetitions()
-    // Update selected competition
-    if (selectedCompetition) {
-      const updated = competitions.find(c => c.id === selectedCompetition.id)
-      if (updated) setSelectedCompetition(updated)
     }
   }
 
@@ -209,27 +97,6 @@ export default function CompetitionsPage() {
           </Button>
         ) : undefined}
       />
-
-      {/* Competition Edit Form */}
-      {editingCompetition && (
-        <Panel style={{ padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
-          <h3 style={{ marginBottom: '1rem', fontWeight: 600 }}>
-            Editar Competición
-          </h3>
-          <CompetitionForm
-            initialData={{
-              id: editingCompetition.id,
-              name: editingCompetition.name,
-              description: editingCompetition.description ?? '',
-              matchType: editingCompetition.matchType,
-            }}
-            onSubmit={handleCompetitionFormSubmit}
-            onCancel={() => setEditingCompetition(null)}
-            error={formError}
-            submitLabel="Actualizar"
-          />
-        </Panel>
-      )}
 
       {/* Delete Confirmation */}
       {deleteConfirm && (
@@ -278,9 +145,9 @@ export default function CompetitionsPage() {
             <CompetitionCard
               key={competition.id}
               competition={competition}
-              isEditable={canEdit}
+              isEditable={false}
               isDeletable={canDelete}
-              onEdit={() => handleEditCompetition(competition)}
+              onEdit={() => navigate(`/competitions/${competition.id}?from=admin`)}
               onDelete={() => handleDeleteCompetition(competition.id)}
               onManageParticipants={() => handleManageParticipants(competition)}
               onGenerateBracket={() => handleGenerateBracket(competition)}
@@ -309,18 +176,11 @@ export default function CompetitionsPage() {
 
           <div style={{ marginBottom: theme.spacing.lg }}>
             <h4 style={{ fontSize: '0.875rem', color: theme.colors.textSecondary, marginBottom: '0.5rem' }}>
-              Añadir participante
+              Participantes
             </h4>
-            <ParticipantList
-              competitionId={selectedCompetition.id}
-              participants={selectedCompetition.participants}
-              participantCount={selectedCompetition.participantCount}
-              isEditable={selectedCompetition.status === 'DRAFT'}
-              onAddParticipants={(aliases) => handleAddParticipants(selectedCompetition.id, aliases)}
-              onRemoveParticipant={(participantId) =>
-                handleRemoveParticipant(selectedCompetition.id, participantId)
-              }
-            />
+            <p style={{ color: theme.colors.textSecondary, fontSize: '0.875rem' }}>
+              {selectedCompetition.participants.length} / {selectedCompetition.participantCount}
+            </p>
           </div>
 
           {/* Bracket Preview */}
@@ -343,7 +203,7 @@ export default function CompetitionsPage() {
         <MatchResultModal
           match={selectedMatch}
           matchType={selectedCompetition.matchType as 'SINGLE_LEG' | 'HOME_AND_AWAY'}
-          onSubmit={handleSetMatchResult}
+          onSubmit={async () => {}}
           onClose={() => setSelectedMatch(null)}
         />
       )}

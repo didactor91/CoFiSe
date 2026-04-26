@@ -1,9 +1,18 @@
-import React from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 
-import { usePublicCompetitionQuery } from '../../modules/competitions/api/queries'
+import { useAuth } from '../../hooks/useAuth'
+import {
+  useCompetitionsQuery,
+} from '../../modules/competitions/api/queries'
+import {
+  useUpdateCompetitionMutation,
+} from '../../modules/competitions/api/mutations'
 import type { MatchType, CompetitionStatus } from '../../modules/competitions/api/types'
 import BracketView from '../../components/competitions/BracketView'
+import { CompetitionForm } from '../admin/competitions/components'
+import { Button } from '../../shared/ui/Button'
+import { Panel } from '../../shared/ui/Panel'
 import theme from '../../theme'
 
 const MATCH_TYPE_LABELS: Record<MatchType, string> = {
@@ -12,8 +21,8 @@ const MATCH_TYPE_LABELS: Record<MatchType, string> = {
 }
 
 const MATCH_TYPE_COLORS: Record<MatchType, string> = {
-  SINGLE_LEG: '#64748b',  // slate
-  HOME_AND_AWAY: '#22c55e', // green/emerald
+  SINGLE_LEG: '#64748b',
+  HOME_AND_AWAY: '#22c55e',
 }
 
 const STATUS_LABELS: Record<CompetitionStatus, string> = {
@@ -28,13 +37,68 @@ const STATUS_COLORS: Record<CompetitionStatus, string> = {
   COMPLETED: '#0f172a',
 }
 
+function toErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback
+}
+
 export default function CompetitionDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const fromAdmin = searchParams.get('from') === 'admin'
 
-  const [result] = usePublicCompetitionQuery(id!)
+  const { can } = useAuth()
+  // Use admin query when in admin mode to see all competitions including DRAFT
+  const [competitionsResult, refetchCompetitions] = useCompetitionsQuery()
+  const [, updateCompetitionMutation] = useUpdateCompetitionMutation()
 
-  if (result.fetching) {
+  const canEdit = can('competition.update')
+
+  // Find the competition from the results
+  const competition = competitionsResult.data?.competitions?.find((c: any) => c.id === id)
+
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+
+  const handleEdit = () => {
+    setFormError(null)
+    setIsEditing(true)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setFormError(null)
+  }
+
+  const handleSubmit = async (data: {
+    name: string
+    description: string
+    matchType: 'SINGLE_LEG' | 'HOME_AND_AWAY'
+  }) => {
+    setFormError(null)
+
+    try {
+      const result = await updateCompetitionMutation({
+        id: id!,
+        input: {
+          name: data.name,
+          description: data.description || undefined,
+          matchType: data.matchType,
+        },
+      })
+      if (result.error) {
+        setFormError(result.error.message)
+        return
+      }
+      await refetchCompetitions()
+      setIsEditing(false)
+    } catch (err: unknown) {
+      setFormError(toErrorMessage(err, 'Error al guardar'))
+    }
+  }
+
+  if (competitionsResult.fetching) {
     return (
       <div style={{ textAlign: 'center', padding: theme.spacing['2xl'] }}>
         <div style={{ fontSize: '2rem', marginBottom: theme.spacing.sm }}>⏳</div>
@@ -43,7 +107,7 @@ export default function CompetitionDetail() {
     )
   }
 
-  if (result.error || !result.data?.publicCompetition) {
+  if (!competition) {
     return (
       <div style={{ textAlign: 'center', padding: theme.spacing['2xl'] }}>
         <p style={{ color: theme.colors.error, marginBottom: theme.spacing.md }}>
@@ -66,8 +130,39 @@ export default function CompetitionDetail() {
     )
   }
 
-  const { publicCompetition: competition } = result.data
+  // Edit mode - show form
+  if (isEditing) {
+    return (
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: `0 ${theme.spacing.xl}` }}>
+        <Button
+          onClick={handleCancelEdit}
+          variant="secondary"
+          style={{ marginBottom: theme.spacing.md }}
+        >
+          ← Volver
+        </Button>
 
+        <Panel style={{ padding: theme.spacing.lg }}>
+          <h2 style={{ margin: 0, marginBottom: theme.spacing.lg }}>Editar Competición</h2>
+
+          <CompetitionForm
+            initialData={{
+              id: competition.id,
+              name: competition.name,
+              description: competition.description ?? '',
+              matchType: competition.matchType,
+            }}
+            onSubmit={handleSubmit}
+            onCancel={handleCancelEdit}
+            error={formError}
+            submitLabel="Actualizar"
+          />
+        </Panel>
+      </div>
+    )
+  }
+
+  // View mode
   return (
     <div style={{
       maxWidth: '1200px',
@@ -89,6 +184,12 @@ export default function CompetitionDetail() {
       >
         ← Volver
       </button>
+
+      {fromAdmin && canEdit && (
+        <Button onClick={handleEdit} style={{ marginBottom: theme.spacing.lg, marginLeft: theme.spacing.sm }}>
+          Editar
+        </Button>
+      )}
 
       {/* Header */}
       <div style={{ marginBottom: theme.spacing.xl }}>
