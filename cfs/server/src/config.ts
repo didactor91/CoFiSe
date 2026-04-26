@@ -5,7 +5,7 @@ import path from 'path'
 // All environment-based configuration should be accessed from here
 
 const isProduction = process.env.NODE_ENV === 'production'
-const DEFAULT_DEV_CORS_ORIGINS = 'http://localhost:3000,http://127.0.0.1:3000'
+const DEFAULT_DEV_CORS_ORIGINS = 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175'
 const DEFAULT_PROD_CORS_ORIGINS = 'https://seno.didtor.dev'
 
 function getIntEnv(name: string, fallback: number, min = 1): number {

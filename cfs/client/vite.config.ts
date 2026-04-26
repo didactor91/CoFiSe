@@ -13,15 +13,13 @@ const API_URL = env.VITE_API_URL || 'http://localhost:4000'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    port: 5173,
+    strictPort: true,
     proxy: {
       '/api': {
         target: API_URL,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
-      },
-      '/graphql': {
-        target: API_URL,
-        changeOrigin: true,
       },
     },
   },
