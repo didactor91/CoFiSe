@@ -5,9 +5,23 @@ import ProductsPage from '../../../pages/admin/ProductsPage'
 import { AuthProvider } from '../../../context/AuthContext'
 
 // Mutable state for controlling mock user and data
-let mockUser: { id: string; email: string; role: 'ADMIN' | 'STAFF'; createdAt: string } | null = null
+let mockUser: { id: string; email: string; role: 'ADMIN' | 'STAFF'; createdAt: string } | null =
+  null
 let mockCan: string[] = []
-const mockProducts = [{ id: '1', name: 'Test Product', description: 'Description', price: 99.99, stock: 10, imageUrl: null, createdAt: '', updatedAt: '', limitedStock: false, options: [] }]
+const mockProducts = [
+  {
+    id: '1',
+    name: 'Test Product',
+    description: 'Description',
+    price: 99.99,
+    stock: 10,
+    imageUrl: null,
+    createdAt: '',
+    updatedAt: '',
+    limitedStock: false,
+    options: [],
+  },
+]
 
 vi.mock('../../../context/AuthContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
@@ -32,35 +46,22 @@ vi.mock('../../../graphql/queries', () => ({
 }))
 
 vi.mock('../../../graphql/mutations', () => ({
-  useCreateProductMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useUpdateProductMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useDeleteProductMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useCreateProductOptionMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useAddOptionValuesMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useDeleteProductOptionMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
+  useCreateProductMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useUpdateProductMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useDeleteProductMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useCreateProductOptionMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useAddOptionValuesMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useDeleteProductOptionMutation: () => [(() => {}) as any, { fetching: false, error: null }],
 }))
 
 describe('ProductsPage', () => {
   beforeEach(() => {
-    mockUser = { id: '1', email: 'admin@test.com', role: 'ADMIN', createdAt: '2026-04-01T00:00:00Z' }
+    mockUser = {
+      id: '1',
+      email: 'admin@test.com',
+      role: 'ADMIN',
+      createdAt: '2026-04-01T00:00:00Z',
+    }
     mockCan = ['product.read', 'product.create', 'product.update', 'product.delete']
     vi.clearAllMocks()
   })
@@ -72,7 +73,7 @@ describe('ProductsPage', () => {
           <AuthProvider>
             <ProductsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByTestId('products-page')).toBeInTheDocument()
@@ -84,7 +85,7 @@ describe('ProductsPage', () => {
           <AuthProvider>
             <ProductsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('Test Product')).toBeInTheDocument()
@@ -98,7 +99,7 @@ describe('ProductsPage', () => {
           <AuthProvider>
             <ProductsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('Añadir Producto')).toBeInTheDocument()
@@ -112,7 +113,7 @@ describe('ProductsPage', () => {
           <AuthProvider>
             <ProductsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.queryByText('Añadir Producto')).not.toBeInTheDocument()
@@ -124,7 +125,7 @@ describe('ProductsPage', () => {
           <AuthProvider>
             <ProductsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByTestId('edit-product-btn-1')).toBeInTheDocument()
@@ -138,7 +139,7 @@ describe('ProductsPage', () => {
           <AuthProvider>
             <ProductsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.queryByTestId('edit-product-btn-1')).not.toBeInTheDocument()

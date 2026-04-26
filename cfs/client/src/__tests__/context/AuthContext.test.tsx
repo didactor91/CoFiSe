@@ -44,14 +44,14 @@ describe('AuthContext', () => {
   describe('Initial State', () => {
     it('should provide user as null and token as null initially', () => {
       const { result } = renderHook(() => useAuth(), { wrapper })
-      
+
       expect(result.current.user).toBeNull()
       expect(result.current.token).toBeNull()
     })
 
     it('should provide login, logout, and isAuthenticated functions', () => {
       const { result } = renderHook(() => useAuth(), { wrapper })
-      
+
       expect(result.current.login).toBeDefined()
       expect(result.current.logout).toBeDefined()
       expect(result.current.isAuthenticated).toBeDefined()
@@ -61,11 +61,11 @@ describe('AuthContext', () => {
   describe('login()', () => {
     it('should set user and token when login is called', async () => {
       const { result } = renderHook(() => useAuth(), { wrapper })
-      
+
       await act(async () => {
         await result.current.login('admin@senacom.com', 'changeme123')
       })
-      
+
       expect(result.current.user).toBeDefined()
       expect(result.current.user?.email).toBe('admin@senacom.com')
       expect(result.current.token).toBeDefined()
@@ -75,19 +75,19 @@ describe('AuthContext', () => {
   describe('logout()', () => {
     it('should clear user and token when logout is called', async () => {
       const { result } = renderHook(() => useAuth(), { wrapper })
-      
+
       // First login
       await act(async () => {
         await result.current.login('admin@senacom.com', 'changeme123')
       })
-      
+
       expect(result.current.user).toBeDefined()
-      
+
       // Then logout
       await act(async () => {
         result.current.logout()
       })
-      
+
       expect(result.current.user).toBeNull()
       expect(result.current.token).toBeNull()
     })
@@ -96,17 +96,17 @@ describe('AuthContext', () => {
   describe('isAuthenticated', () => {
     it('should return false when not logged in', () => {
       const { result } = renderHook(() => useAuth(), { wrapper })
-      
+
       expect(result.current.isAuthenticated).toBe(false)
     })
 
     it('should return true when logged in', async () => {
       const { result } = renderHook(() => useAuth(), { wrapper })
-      
+
       await act(async () => {
         await result.current.login('admin@senacom.com', 'changeme123')
       })
-      
+
       expect(result.current.isAuthenticated).toBe(true)
     })
   })

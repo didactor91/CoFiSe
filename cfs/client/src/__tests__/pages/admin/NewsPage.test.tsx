@@ -5,11 +5,28 @@ import NewsPage from '../../../pages/admin/NewsPage'
 import { AuthProvider } from '../../../context/AuthContext'
 
 // Mutable state for controlling mock user and data
-let mockUser: { id: string; email: string; role: 'ADMIN' | 'STAFF'; createdAt: string } | null = null
+let mockUser: { id: string; email: string; role: 'ADMIN' | 'STAFF'; createdAt: string } | null =
+  null
 let mockCan: string[] = []
 const mockNews = [
-  { id: '1', title: 'News 1', content: 'Content 1', imageUrl: null, published: true, createdAt: '', updatedAt: '' },
-  { id: '2', title: 'News 2', content: 'Content 2', imageUrl: null, published: false, createdAt: '', updatedAt: '' },
+  {
+    id: '1',
+    title: 'News 1',
+    content: 'Content 1',
+    imageUrl: null,
+    published: true,
+    createdAt: '',
+    updatedAt: '',
+  },
+  {
+    id: '2',
+    title: 'News 2',
+    content: 'Content 2',
+    imageUrl: null,
+    published: false,
+    createdAt: '',
+    updatedAt: '',
+  },
 ]
 
 vi.mock('../../../context/AuthContext', () => ({
@@ -31,31 +48,21 @@ vi.mock('../../../graphql/queries', () => ({
 }))
 
 vi.mock('../../../graphql/mutations', () => ({
-  useCreateNewsMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useUpdateNewsMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useDeleteNewsMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  usePublishNewsMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
-  useUnpublishNewsMutation: () => [
-    (() => {}) as any,
-    { fetching: false, error: null },
-  ],
+  useCreateNewsMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useUpdateNewsMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useDeleteNewsMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  usePublishNewsMutation: () => [(() => {}) as any, { fetching: false, error: null }],
+  useUnpublishNewsMutation: () => [(() => {}) as any, { fetching: false, error: null }],
 }))
 
 describe('NewsPage', () => {
   beforeEach(() => {
-    mockUser = { id: '1', email: 'admin@test.com', role: 'ADMIN', createdAt: '2026-04-01T00:00:00Z' }
+    mockUser = {
+      id: '1',
+      email: 'admin@test.com',
+      role: 'ADMIN',
+      createdAt: '2026-04-01T00:00:00Z',
+    }
     mockCan = ['news.read', 'news.create', 'news.update', 'news.delete']
     vi.clearAllMocks()
   })
@@ -67,7 +74,7 @@ describe('NewsPage', () => {
           <AuthProvider>
             <NewsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByTestId('news-page')).toBeInTheDocument()
@@ -79,7 +86,7 @@ describe('NewsPage', () => {
           <AuthProvider>
             <NewsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('News 1')).toBeInTheDocument()
@@ -92,7 +99,7 @@ describe('NewsPage', () => {
           <AuthProvider>
             <NewsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       const newsItems = screen.getAllByText(/News \d/)
@@ -107,7 +114,7 @@ describe('NewsPage', () => {
           <AuthProvider>
             <NewsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('Añadir Noticia')).toBeInTheDocument()
@@ -121,7 +128,7 @@ describe('NewsPage', () => {
           <AuthProvider>
             <NewsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.queryByText('Añadir Noticia')).not.toBeInTheDocument()
@@ -133,7 +140,7 @@ describe('NewsPage', () => {
           <AuthProvider>
             <NewsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByTestId('edit-news-btn-1')).toBeInTheDocument()
@@ -147,7 +154,7 @@ describe('NewsPage', () => {
           <AuthProvider>
             <NewsPage />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.queryByTestId('edit-news-btn-1')).not.toBeInTheDocument()

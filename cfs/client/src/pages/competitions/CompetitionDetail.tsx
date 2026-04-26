@@ -1,19 +1,19 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 
+import BracketView from '../../components/competitions/BracketView'
 import { useAuth } from '../../hooks/useAuth'
-import {
-  useCompetitionsQuery,
-} from '../../modules/competitions/api/queries'
 import {
   useUpdateCompetitionMutation,
 } from '../../modules/competitions/api/mutations'
+import {
+  useCompetitionsQuery,
+} from '../../modules/competitions/api/queries'
 import type { MatchType, CompetitionStatus } from '../../modules/competitions/api/types'
-import BracketView from '../../components/competitions/BracketView'
-import { CompetitionForm } from '../admin/competitions/components'
 import { Button } from '../../shared/ui/Button'
 import { Panel } from '../../shared/ui/Panel'
 import theme from '../../theme'
+import { CompetitionForm } from '../admin/competitions/components'
 
 const MATCH_TYPE_LABELS: Record<MatchType, string> = {
   SINGLE_LEG: 'Eliminatoria única',

@@ -21,10 +21,11 @@ const mockCreateReservation = vi.fn()
 
 vi.mock('../../graphql/mutations', () => ({
   CREATE_RESERVATION_MUTATION: '',
-  useCreateReservationMutation: () => [
-    { fetching: false, error: mutationError ? { message: mutationError } : null },
-    mockCreateReservation,
-  ] as const,
+  useCreateReservationMutation: () =>
+    [
+      { fetching: false, error: mutationError ? { message: mutationError } : null },
+      mockCreateReservation,
+    ] as const,
 }))
 
 import ReservationForm from '../../components/ReservationForm'
@@ -147,24 +148,26 @@ describe('ReservationForm Component', () => {
       const mockOnSuccess = vi.fn()
 
       // Mock the execute function to return a Promise that resolves with data
-      mockCreateReservation.mockImplementation(() => Promise.resolve({
-        data: {
-          createReservation: {
-            id: '1',
-            productId: '1',
-            quantity: 1,
-            name: 'Juan Pérez',
-            email: 'juan@example.com',
-            phone: '12345678901234',
-            notes: null,
-            status: 'PENDING',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            product: mockProduct,
+      mockCreateReservation.mockImplementation(() =>
+        Promise.resolve({
+          data: {
+            createReservation: {
+              id: '1',
+              productId: '1',
+              quantity: 1,
+              name: 'Juan Pérez',
+              email: 'juan@example.com',
+              phone: '12345678901234',
+              notes: null,
+              status: 'PENDING',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              product: mockProduct,
+            },
           },
-        },
-        error: null,
-      }))
+          error: null,
+        }),
+      )
 
       render(<ReservationForm product={mockProduct} onSuccess={mockOnSuccess} />)
 

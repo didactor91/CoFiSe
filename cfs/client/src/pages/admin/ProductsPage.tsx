@@ -32,7 +32,6 @@ export default function ProductsPage() {
 
   // Permissions
   const canCreate = can('product.create')
-  const canDelete = can('product.delete')
 
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)

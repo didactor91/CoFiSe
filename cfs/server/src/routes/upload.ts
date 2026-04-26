@@ -2,11 +2,11 @@ import multipart from '@fastify/multipart'
 import { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify'
 
 import { hasPermission, type Permission } from '../auth/permissions.js'
-import { db } from '../db/index.js'
 import config from '../config.js'
+import { db } from '../db/index.js'
+import { eventFromRow, productFromRow, newsFromRow } from '../modules/shared/mappers.js'
 import { store } from '../modules/shared/storage.js'
 import { validateFile } from '../modules/shared/upload.js'
-import { eventFromRow, productFromRow, newsFromRow } from '../modules/shared/mappers.js'
 
 type EntityType = 'PRODUCT' | 'NEWS' | 'EVENT'
 

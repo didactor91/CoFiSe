@@ -11,8 +11,7 @@
  * Phase 7: Testing - Task 7.6
  */
 
-import { test, expect, type Page } from './fixtures'
-import { loginAs } from './fixtures'
+import { loginAs, test, expect, type Page } from './fixtures'
 
 // Helper: Wait for element and return it, fail if not found
 async function expectVisible(page: Page, selector: string, timeout = 5000) {

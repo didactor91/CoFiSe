@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { useLoginMutation, useCreateReservationMutation, useCreateNewsMutation, useUpdateNewsMutation, useDeleteNewsMutation } from '../../graphql/mutations'
+import {
+  useLoginMutation,
+  useCreateReservationMutation,
+  useCreateNewsMutation,
+  useUpdateNewsMutation,
+  useDeleteNewsMutation,
+} from '../../graphql/mutations'
 
 describe('GraphQL Mutations', () => {
   describe('useLoginMutation', () => {

@@ -5,34 +5,116 @@ import Dashboard from '../../../pages/admin/Dashboard'
 import { AuthProvider } from '../../../context/AuthContext'
 
 // Mock user
-const mockUser = { id: '1', email: 'admin@test.com', role: 'ADMIN' as const, createdAt: '2026-04-01T00:00:00Z' }
+const mockUser = {
+  id: '1',
+  email: 'admin@test.com',
+  role: 'ADMIN' as const,
+  createdAt: '2026-04-01T00:00:00Z',
+}
 
 // Mock data
 const mockNews = [
-  { id: '1', title: 'News 1', content: 'Content 1', imageUrl: null, published: true, createdAt: '', updatedAt: '' },
-  { id: '2', title: 'News 2', content: 'Content 2', imageUrl: null, published: false, createdAt: '', updatedAt: '' },
+  {
+    id: '1',
+    title: 'News 1',
+    content: 'Content 1',
+    imageUrl: null,
+    published: true,
+    createdAt: '',
+    updatedAt: '',
+  },
+  {
+    id: '2',
+    title: 'News 2',
+    content: 'Content 2',
+    imageUrl: null,
+    published: false,
+    createdAt: '',
+    updatedAt: '',
+  },
 ]
 const mockProducts = [
-  { id: '1', name: 'Product 1', description: 'Desc 1', price: 10, stock: 5, imageUrl: null, createdAt: '', updatedAt: '', limitedStock: true, options: [] },
+  {
+    id: '1',
+    name: 'Product 1',
+    description: 'Desc 1',
+    price: 10,
+    stock: 5,
+    imageUrl: null,
+    createdAt: '',
+    updatedAt: '',
+    limitedStock: true,
+    options: [],
+  },
 ]
 const mockReservations = [
   {
-    id: '1', productId: '1', quantity: 2, name: 'Customer 1', email: 'c1@test.com',
-    phone: '123', notes: null, status: 'PENDING' as const,
-    createdAt: '2026-04-01T10:00:00Z', updatedAt: '',
+    id: '1',
+    productId: '1',
+    quantity: 2,
+    name: 'Customer 1',
+    email: 'c1@test.com',
+    phone: '123',
+    notes: null,
+    status: 'PENDING' as const,
+    createdAt: '2026-04-01T10:00:00Z',
+    updatedAt: '',
     items: [
-      { id: 'item-1', reservationId: '1', productId: '1', productName: 'Product 1', optionValueId: null, optionValue: null, quantity: 2, unitPrice: 10 },
+      {
+        id: 'item-1',
+        reservationId: '1',
+        productId: '1',
+        productName: 'Product 1',
+        optionValueId: null,
+        optionValue: null,
+        quantity: 2,
+        unitPrice: 10,
+      },
     ],
-    product: { id: '1', name: 'Product 1', description: '', price: 10, stock: 5, imageUrl: null, createdAt: '', updatedAt: '' },
+    product: {
+      id: '1',
+      name: 'Product 1',
+      description: '',
+      price: 10,
+      stock: 5,
+      imageUrl: null,
+      createdAt: '',
+      updatedAt: '',
+    },
   },
   {
-    id: '2', productId: '1', quantity: 1, name: 'Customer 2', email: 'c2@test.com',
-    phone: '456', notes: null, status: 'CONFIRMED' as const,
-    createdAt: '2026-04-02T10:00:00Z', updatedAt: '',
+    id: '2',
+    productId: '1',
+    quantity: 1,
+    name: 'Customer 2',
+    email: 'c2@test.com',
+    phone: '456',
+    notes: null,
+    status: 'CONFIRMED' as const,
+    createdAt: '2026-04-02T10:00:00Z',
+    updatedAt: '',
     items: [
-      { id: 'item-2', reservationId: '2', productId: '1', productName: 'Product 1', optionValueId: null, optionValue: null, quantity: 1, unitPrice: 10 },
+      {
+        id: 'item-2',
+        reservationId: '2',
+        productId: '1',
+        productName: 'Product 1',
+        optionValueId: null,
+        optionValue: null,
+        quantity: 1,
+        unitPrice: 10,
+      },
     ],
-    product: { id: '1', name: 'Product 1', description: '', price: 10, stock: 5, imageUrl: null, createdAt: '', updatedAt: '' },
+    product: {
+      id: '1',
+      name: 'Product 1',
+      description: '',
+      price: 10,
+      stock: 5,
+      imageUrl: null,
+      createdAt: '',
+      updatedAt: '',
+    },
   },
 ]
 
@@ -61,16 +143,19 @@ vi.mock('../../../graphql/queries', () => ({
     (() => {}) as any,
   ],
   useReservationMetricsQuery: () => [
-    { data: { reservationMetrics: { totalReservations: 2, totalUnits: 3, byProduct: [], bySize: [] } }, fetching: false, error: null },
+    {
+      data: {
+        reservationMetrics: { totalReservations: 2, totalUnits: 3, byProduct: [], bySize: [] },
+      },
+      fetching: false,
+      error: null,
+    },
     (() => {}) as any,
   ],
 }))
 
 vi.mock('../../../graphql/mutations', () => ({
-  useUpdateReservationStatusMutation: () => [
-    { fetching: false, error: null },
-    (() => {}) as any,
-  ],
+  useUpdateReservationStatusMutation: () => [{ fetching: false, error: null }, (() => {}) as any],
 }))
 
 describe('Dashboard', () => {
@@ -84,7 +169,7 @@ describe('Dashboard', () => {
         <AuthProvider>
           <Dashboard />
         </AuthProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     expect(screen.getByTestId('dashboard-page')).toBeInTheDocument()
@@ -96,7 +181,7 @@ describe('Dashboard', () => {
         <AuthProvider>
           <Dashboard />
         </AuthProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     expect(screen.getByTestId('stat-news-count')).toBeInTheDocument()
@@ -110,7 +195,7 @@ describe('Dashboard', () => {
         <AuthProvider>
           <Dashboard />
         </AuthProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     expect(screen.getByTestId('reservation-filter-pending')).toBeInTheDocument()
@@ -124,7 +209,7 @@ describe('Dashboard', () => {
         <AuthProvider>
           <Dashboard />
         </AuthProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     expect(screen.getByText('Noticias recientes')).toBeInTheDocument()
@@ -137,7 +222,7 @@ describe('Dashboard', () => {
         <AuthProvider>
           <Dashboard />
         </AuthProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     // News count is 2 (mockNews has 2 items)
@@ -150,7 +235,7 @@ describe('Dashboard', () => {
         <AuthProvider>
           <Dashboard />
         </AuthProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     // Products count is 1 (mockProducts has 1 item)
@@ -163,7 +248,7 @@ describe('Dashboard', () => {
         <AuthProvider>
           <Dashboard />
         </AuthProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     // Pending count is 1 (mockReservations has 1 PENDING out of 2 total)
@@ -176,7 +261,7 @@ describe('Dashboard', () => {
         <AuthProvider>
           <Dashboard />
         </AuthProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     )
 
     // Both customers should be visible

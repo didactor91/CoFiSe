@@ -47,10 +47,10 @@ vi.mock('../../graphql/queries', () => ({
   NEWS_ITEM_QUERY: '',
   useNewsItemQuery: () => {
     return [
-      { 
-        data: newsItemData, 
-        fetching: fetchingState, 
-        error: errorState 
+      {
+        data: newsItemData,
+        fetching: fetchingState,
+        error: errorState,
       },
       (() => {}) as any,
     ] as const
@@ -86,7 +86,7 @@ describe('NewsDetail Page', () => {
           <AuthProvider>
             <NewsDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('⏳')).toBeInTheDocument()
@@ -104,7 +104,7 @@ describe('NewsDetail Page', () => {
           <AuthProvider>
             <NewsDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText(/no encontrada/i)).toBeInTheDocument()
@@ -119,7 +119,7 @@ describe('NewsDetail Page', () => {
           <AuthProvider>
             <NewsDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText(/no encontrada/i)).toBeInTheDocument()
@@ -136,12 +136,12 @@ describe('NewsDetail Page', () => {
           <AuthProvider>
             <NewsDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       const heading = screen.getByRole('heading', { level: 1 })
       expect(heading).toHaveTextContent('Nueva-noticia')
-      
+
       expect(screen.getByText(/Contenido de prueba con varias líneas/i)).toBeInTheDocument()
     })
 
@@ -157,7 +157,7 @@ describe('NewsDetail Page', () => {
           <AuthProvider>
             <NewsDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       const img = screen.getByRole('img')
@@ -172,7 +172,7 @@ describe('NewsDetail Page', () => {
           <AuthProvider>
             <NewsDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Date should be formatted in Spanish
@@ -180,5 +180,5 @@ describe('NewsDetail Page', () => {
     })
   })
 
-// Navigation is implicitly tested via the UI - back button renders and uses navigate(-1)
+  // Navigation is implicitly tested via the UI - back button renders and uses navigate(-1)
 })

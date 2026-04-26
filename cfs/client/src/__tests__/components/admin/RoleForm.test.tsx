@@ -11,9 +11,7 @@ describe('RoleForm', () => {
   })
 
   it('should render the form with all resource sections', () => {
-    render(
-      <RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />
-    )
+    render(<RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />)
 
     // Check form title
     expect(screen.getByText('Nombre del Rol *')).toBeInTheDocument()
@@ -29,18 +27,14 @@ describe('RoleForm', () => {
   })
 
   it('should show Save and Cancel buttons', () => {
-    render(
-      <RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />
-    )
+    render(<RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />)
 
     expect(screen.getByText('Crear')).toBeInTheDocument()
     expect(screen.getByText('Cancelar')).toBeInTheDocument()
   })
 
   it('should call onCancel when cancel button is clicked', () => {
-    render(
-      <RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />
-    )
+    render(<RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />)
 
     fireEvent.click(screen.getByText('Cancelar'))
     expect(mockOnCancel).toHaveBeenCalled()
@@ -53,9 +47,7 @@ describe('RoleForm', () => {
       permissions: ['news.read', 'product.read'],
     }
 
-    render(
-      <RoleForm editingRole={editingRole} onSave={mockOnSave} onCancel={mockOnCancel} />
-    )
+    render(<RoleForm editingRole={editingRole} onSave={mockOnSave} onCancel={mockOnCancel} />)
 
     const nameInput = screen.getByDisplayValue('CustomRole')
     expect(nameInput).toBeInTheDocument()
@@ -68,9 +60,7 @@ describe('RoleForm', () => {
       permissions: ['news.read'],
     }
 
-    render(
-      <RoleForm editingRole={editingRole} onSave={mockOnSave} onCancel={mockOnCancel} />
-    )
+    render(<RoleForm editingRole={editingRole} onSave={mockOnSave} onCancel={mockOnCancel} />)
 
     expect(screen.getByText('Actualizar')).toBeInTheDocument()
   })
@@ -81,7 +71,7 @@ describe('RoleForm', () => {
         editingRole={{ id: '1', name: 'ADMIN', permissions: ['*'] }}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
-      />
+      />,
     )
 
     const input = screen.getByDisplayValue('ADMIN') as HTMLInputElement
@@ -94,7 +84,7 @@ describe('RoleForm', () => {
         editingRole={{ id: '2', name: 'STAFF', permissions: ['product.read'] }}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
-      />
+      />,
     )
 
     const input = screen.getByDisplayValue('STAFF') as HTMLInputElement
@@ -107,7 +97,7 @@ describe('RoleForm', () => {
         editingRole={{ id: '3', name: 'CustomRole', permissions: ['news.read'] }}
         onSave={mockOnSave}
         onCancel={mockOnCancel}
-      />
+      />,
     )
 
     const input = screen.getByDisplayValue('CustomRole') as HTMLInputElement
@@ -118,9 +108,7 @@ describe('RoleForm', () => {
     const alertMock = vi.fn()
     window.alert = alertMock
 
-    render(
-      <RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />
-    )
+    render(<RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />)
 
     // Submit without filling anything
     fireEvent.click(screen.getByText('Crear'))
@@ -133,9 +121,7 @@ describe('RoleForm', () => {
     const alertMock = vi.fn()
     window.alert = alertMock
 
-    render(
-      <RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />
-    )
+    render(<RoleForm onSave={mockOnSave} onCancel={mockOnCancel} />)
 
     // Fill name only
     const nameInput = screen.getByRole('textbox') as HTMLInputElement
