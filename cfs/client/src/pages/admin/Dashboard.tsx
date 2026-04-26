@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 
 import { ReservationStatus } from '../../graphql/generated-types'
+import { useUpdateReservationStatusMutation } from '../../graphql/mutations'
 import {
   useAllNewsQuery,
   useProductsQuery,
   useReservationMetricsQuery,
   useReservationsQuery,
 } from '../../graphql/queries'
-import { useUpdateReservationStatusMutation } from '../../graphql/mutations'
 
 interface StatCardProps {
   title: string

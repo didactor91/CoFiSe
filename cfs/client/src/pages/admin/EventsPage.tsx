@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { ImageUpload } from '../../components/ImageUpload'
 import type { Event } from '../../graphql/generated-types'
 import { useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from '../../graphql/mutations'
 import { useAllEventsQuery } from '../../graphql/queries'
@@ -9,7 +10,6 @@ import { Button } from '../../shared/ui/Button'
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { Panel } from '../../shared/ui/Panel'
-import { ImageUpload } from '../../components/ImageUpload'
 import theme from '../../theme'
 
 function toErrorMessage(err: unknown, fallback: string): string {

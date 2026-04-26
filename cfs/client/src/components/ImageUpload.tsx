@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+
 import { Button } from '../shared/ui/Button'
 import theme from '../theme'
 
@@ -78,8 +79,8 @@ export function ImageUpload({ entityType, entityId, currentImageUrl, onUploadCom
             setPreview(data.imageUrl)
             setUploadState('success')
             onUploadComplete?.(data.imageUrl)
-        } catch (err: any) {
-            setError(err.message || 'Error al subir la imagen')
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Error al subir la imagen')
             setUploadState('error')
         } finally {
             setIsUploading(false)
