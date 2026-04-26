@@ -25,6 +25,18 @@ export default function EventsPage() {
 
   const events: Event[] = eventsResult.data?.allEvents ?? []
 
+  // Search filter state
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Filter events based on search query
+  const filteredEvents = searchQuery.trim()
+    ? events.filter(e =>
+        e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.location.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : events
+
   const canCreate = can('event.create')
   const canEdit = can('event.update')
   const canDelete = can('event.delete') // ADMIN only
@@ -285,9 +297,29 @@ export default function EventsPage() {
       )}
 
       <Panel style={{ overflow: 'hidden' }}>
-        {events.length === 0 ? (
+        {/* Search input */}
+        <div style={{ padding: theme.spacing.md, borderBottom: `1px solid ${theme.colors.border}` }}>
+          <input
+            type="text"
+            placeholder="Buscar eventos por nombre, descripción o lugar..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            data-testid="event-search-input"
+            style={{
+              width: '100%',
+              padding: theme.spacing.sm,
+              background: theme.colors.background,
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.borderRadius.sm,
+              color: theme.colors.text,
+              fontSize: theme.typography.fontSize.sm,
+            }}
+          />
+        </div>
+
+        {filteredEvents.length === 0 ? (
           <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
-            No hay eventos. Haz clic en 'Añadir Evento' para crear uno.
+            {searchQuery ? 'No hay eventos que coincidan con la búsqueda' : 'No hay eventos. Haz clic en \'Añadir Evento\' para crear uno.'}
           </p>
         ) : (
           <div className="table-scroll">
@@ -301,7 +333,7 @@ export default function EventsPage() {
                 </tr>
               </thead>
               <tbody>
-                {events.map((event) => (
+                {filteredEvents.map((event) => (
                   <tr key={event.id} onClick={() => navigate(`/events/${event.id}?from=admin`)} className="admin-row cursor-pointer">
                     <td className="admin-td font-medium text-slate-800">{event.name}</td>
                     <td className="admin-td text-xs text-slate-500">{event.location}</td>

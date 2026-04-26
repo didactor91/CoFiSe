@@ -104,7 +104,7 @@ describe('CartDrawer', () => {
       )
 
       await waitFor(() => {
-        expect(screen.getByText('Tu Carrito')).toBeInTheDocument()
+        expect(screen.getByText('Tu carrito')).toBeInTheDocument()
       })
     })
 
