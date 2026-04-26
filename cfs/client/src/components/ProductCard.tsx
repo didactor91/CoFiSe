@@ -3,11 +3,21 @@ import type { Product } from '../graphql/generated-types'
 interface ProductCardProps {
   product: Product
   onClick?: () => void
+  onAddToCart?: () => void
+  showAddToCart?: boolean
+  variant?: 'default' | 'compact'
 }
 
-export default function ProductCard({ product, onClick }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onClick,
+  onAddToCart,
+  showAddToCart = false,
+  variant = 'default',
+}: ProductCardProps) {
   const stockStatus = product.stock > 0 ? 'En stock' : 'Sin stock'
   const stockColor = product.stock > 0 ? 'text-emerald-600' : 'text-rose-600'
+  const imageHeight = variant === 'compact' ? 'h-32' : 'h-40'
 
   return (
     <article
@@ -20,7 +30,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
         <img
           src={product.imageUrl}
           alt={product.name}
-          className="h-40 w-full rounded-xl object-cover"
+          className={`mb-2 w-full rounded-xl object-cover ${imageHeight}`}
         />
       )}
       <h3 className="m-0 text-base font-semibold text-slate-900">{product.name}</h3>
@@ -29,6 +39,18 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
         <span className="text-lg font-semibold text-slate-900">{product.price.toFixed(2)}€</span>
         <span className={`text-xs font-medium ${stockColor}`}>{stockStatus}</span>
       </div>
+      {onAddToCart && showAddToCart && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onAddToCart()
+          }}
+          className="btn-primary mt-2 text-xs"
+          type="button"
+        >
+          Añadir
+        </button>
+      )}
     </article>
   )
 }
