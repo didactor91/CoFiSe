@@ -52,7 +52,7 @@ describe('AdminLayout', () => {
       )
 
       expect(screen.getByTestId('admin-layout-nav')).toBeInTheDocument()
-      expect(screen.getByText('Panel de Control')).toBeInTheDocument()
+      expect(screen.getByText('Panel de control')).toBeInTheDocument()
     })
 
     it('should render logout button', () => {
@@ -67,7 +67,7 @@ describe('AdminLayout', () => {
       )
 
       expect(screen.getByTestId('logout-button')).toBeInTheDocument()
-      expect(screen.getByText('Cerrar Sesión')).toBeInTheDocument()
+      expect(screen.getByText('Cerrar sesión')).toBeInTheDocument()
     })
   })
 

@@ -19,14 +19,20 @@ const mockReservations = [
   {
     id: '1', productId: '1', quantity: 2, name: 'Customer 1', email: 'c1@test.com',
     phone: '123', notes: null, status: 'PENDING' as const,
-    createdAt: '', updatedAt: '',
-    product: { id: '1', name: 'Product 1', description: '', price: 10, stock: 5, imageUrl: null, createdAt: '', updatedAt: '' }
+    createdAt: '2026-04-01T10:00:00Z', updatedAt: '',
+    items: [
+      { id: 'item-1', reservationId: '1', productId: '1', productName: 'Product 1', optionValueId: null, optionValue: null, quantity: 2, unitPrice: 10 },
+    ],
+    product: { id: '1', name: 'Product 1', description: '', price: 10, stock: 5, imageUrl: null, createdAt: '', updatedAt: '' },
   },
   {
     id: '2', productId: '1', quantity: 1, name: 'Customer 2', email: 'c2@test.com',
     phone: '456', notes: null, status: 'CONFIRMED' as const,
-    createdAt: '', updatedAt: '',
-    product: { id: '1', name: 'Product 1', description: '', price: 10, stock: 5, imageUrl: null, createdAt: '', updatedAt: '' }
+    createdAt: '2026-04-02T10:00:00Z', updatedAt: '',
+    items: [
+      { id: 'item-2', reservationId: '2', productId: '1', productName: 'Product 1', optionValueId: null, optionValue: null, quantity: 1, unitPrice: 10 },
+    ],
+    product: { id: '1', name: 'Product 1', description: '', price: 10, stock: 5, imageUrl: null, createdAt: '', updatedAt: '' },
   },
 ]
 
@@ -52,6 +58,17 @@ vi.mock('../../../graphql/queries', () => ({
   ],
   useReservationsQuery: () => [
     { data: { reservations: mockReservations }, fetching: false, error: null },
+    (() => {}) as any,
+  ],
+  useReservationMetricsQuery: () => [
+    { data: { reservationMetrics: { totalReservations: 2, totalUnits: 3, byProduct: [], bySize: [] } }, fetching: false, error: null },
+    (() => {}) as any,
+  ],
+}))
+
+vi.mock('../../../graphql/mutations', () => ({
+  useUpdateReservationStatusMutation: () => [
+    { fetching: false, error: null },
     (() => {}) as any,
   ],
 }))
@@ -110,8 +127,8 @@ describe('Dashboard', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText('Noticias Recientes')).toBeInTheDocument()
-    expect(screen.getByText('Reservas Recientes')).toBeInTheDocument()
+    expect(screen.getByText('Noticias recientes')).toBeInTheDocument()
+    expect(screen.getByText('Gestión de reservas')).toBeInTheDocument()
   })
 
   it('should display news count from query data', () => {

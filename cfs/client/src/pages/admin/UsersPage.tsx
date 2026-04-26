@@ -32,6 +32,14 @@ export default function UsersPage() {
   const users: User[] = usersResult.data?.users ?? []
   const roles: RoleItem[] = rolesResult.data?.roles ?? []
 
+  // Search filter state
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Filter users based on search query
+  const filteredUsers = searchQuery.trim()
+    ? users.filter(u => u.email.toLowerCase().includes(searchQuery.toLowerCase()))
+    : users
+
   // Permissions
   const canManageUsers = can('user.create') && can('user.delete')
   const canManageRoles = can('role.create') && can('role.delete')
@@ -229,10 +237,31 @@ export default function UsersPage() {
           </Panel>
         )}
 
+        {/* Users Table */}
         <Panel style={{ overflow: 'hidden' }}>
-          {users.length === 0 ? (
+          {/* Search input */}
+          <div style={{ padding: theme.spacing.md, borderBottom: `1px solid ${theme.colors.border}` }}>
+            <input
+              type="text"
+              placeholder="Buscar usuarios por email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              data-testid="user-search-input"
+              style={{
+                width: '100%',
+                padding: theme.spacing.sm,
+                background: theme.colors.background,
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.borderRadius.sm,
+                color: theme.colors.text,
+                fontSize: theme.typography.fontSize.sm,
+              }}
+            />
+          </div>
+
+          {filteredUsers.length === 0 ? (
             <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
-              No hay usuarios
+              {searchQuery ? 'No hay usuarios que coincidan con la búsqueda' : 'No hay usuarios'}
             </p>
           ) : (
             <div className="table-scroll">
@@ -246,7 +275,7 @@ export default function UsersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
+                  {filteredUsers.map((u) => (
                     <tr key={u.id} className="admin-row">
                       <td className="admin-td font-medium text-slate-800">{u.email}</td>
                       <td className="admin-td">

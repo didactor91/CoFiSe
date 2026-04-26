@@ -33,6 +33,17 @@ export default function NewsPage() {
 
   const news: News[] = newsResult.data?.allNews ?? []
 
+  // Search filter state
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Filter news based on search query
+  const filteredNews = searchQuery.trim()
+    ? news.filter(item =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : news
+
   const canCreate = can('news.create')
   const canEdit = can('news.update')
   const canDelete = can('news.delete')
@@ -228,9 +239,29 @@ export default function NewsPage() {
       )}
 
       <Panel style={{ overflow: 'hidden' }}>
-        {news.length === 0 ? (
+        {/* Search input */}
+        <div style={{ padding: theme.spacing.md, borderBottom: `1px solid ${theme.colors.border}` }}>
+          <input
+            type="text"
+            placeholder="Buscar noticias por título o contenido..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            data-testid="news-search-input"
+            style={{
+              width: '100%',
+              padding: theme.spacing.sm,
+              background: theme.colors.background,
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.borderRadius.sm,
+              color: theme.colors.text,
+              fontSize: theme.typography.fontSize.sm,
+            }}
+          />
+        </div>
+
+        {filteredNews.length === 0 ? (
           <p style={{ color: theme.colors.textSecondary, padding: theme.spacing.md, textAlign: 'center' }}>
-            No hay noticias. Haz clic en 'Añadir Noticia' para crear una.
+            {searchQuery ? 'No hay noticias que coincidan con la búsqueda' : 'No hay noticias. Haz clic en \'Añadir Noticia\' para crear una.'}
           </p>
         ) : (
           <div className="table-scroll">
@@ -245,7 +276,7 @@ export default function NewsPage() {
                 </tr>
               </thead>
               <tbody>
-                {news.map((item) => (
+                {filteredNews.map((item) => (
                   <tr key={item.id} onClick={() => navigate(`/news/${item.id}?from=admin`)} className="admin-row cursor-pointer">
                     <td className="admin-td font-medium text-slate-800">{item.title}</td>
                     <td className="admin-td max-w-[240px] truncate text-xs text-slate-500">
