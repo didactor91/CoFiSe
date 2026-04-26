@@ -20,7 +20,7 @@ export interface MigrationRecord {
 }
 
 // In-memory migration registry (can be extended to store in DB)
-const migrations: Migration[] = [
+export const migrations: Migration[] = [
   {
     version: 1,
     name: 'initial_schema',
@@ -330,6 +330,34 @@ export class MigrationManager {
   }
 
   /**
+   * Apply a specific migration (sync version for module initialization)
+   */
+  upSync(version: number): void {
+    const migration = migrations.find(m => m.version === version)
+    if (!migration) {
+      throw new Error(`Migration version ${version} not found`)
+    }
+
+    if (this.isApplied(version)) {
+      console.log(`Migration ${version} already applied`)
+      return
+    }
+
+    console.log(`Applying migration ${version}: ${migration.name}`)
+    
+    // Execute migration in transaction
+    const transaction = this.db.transaction(() => {
+      this.db.exec(migration.up)
+      this.db.prepare(
+        `INSERT INTO ${this.tableName} (version, name) VALUES (?, ?)`
+      ).run(version, migration.name)
+    })
+    
+    transaction()
+    console.log(`Migration ${version} applied successfully`)
+  }
+
+  /**
    * Rollback a specific migration
    */
   async down(version: number): Promise<void> {
@@ -370,6 +398,27 @@ export class MigrationManager {
     
     for (let v = currentVersion + 1; v <= latestVersion; v++) {
       await this.up(v)
+    }
+    
+    console.log('Migration complete')
+  }
+
+  /**
+   * Migrate to latest version (sync version for module initialization)
+   */
+  migrateToLatestSync(): void {
+    const currentVersion = this.getCurrentVersion()
+    const latestVersion = Math.max(...migrations.map(m => m.version))
+    
+    if (currentVersion >= latestVersion) {
+      console.log(`Already at latest version (${currentVersion})`)
+      return
+    }
+
+    console.log(`Migrating from version ${currentVersion} to ${latestVersion}`)
+    
+    for (let v = currentVersion + 1; v <= latestVersion; v++) {
+      this.upSync(v)
     }
     
     console.log('Migration complete')
