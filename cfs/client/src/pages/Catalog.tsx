@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import CartDrawer from '../components/CartDrawer'
+import Layout from '../components/layout/Layout'
 import OptionSelector, { type ProductOption } from '../components/OptionSelector'
 import ProductCard from '../components/ProductCard'
 import { useCart } from '../context/CartContext'
@@ -13,6 +15,7 @@ interface OptionState {
 }
 
 export default function Catalog() {
+  const navigate = useNavigate()
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [optionState, setOptionState] = useState<OptionState | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
@@ -36,7 +39,7 @@ export default function Catalog() {
 
   const handleAddToCart = (product: Product) => {
     const options = mockOptions[product.id] || []
-    
+
     if (options.length > 0) {
       // Show option selector
       setOptionState({ product, options })
@@ -94,47 +97,50 @@ export default function Catalog() {
 
   if (selectedProduct) {
     return (
-      <div className="app-shell min-h-svh">
-        <button
-          onClick={() => setSelectedProduct(null)}
-          className="btn-secondary mb-8"
-        >
-          ← Volver al catálogo
-        </button>
-        <div className="card text-slate-600">
-          Reservas directas deshabilitadas durante desarrollo del carrito
+      <Layout>
+        <div className="app-shell min-h-svh">
+          <button
+            onClick={() => setSelectedProduct(null)}
+            className="btn-secondary mb-8"
+          >
+            ← Volver al catálogo
+          </button>
+          <div className="card text-slate-600">
+            Reservas directas deshabilitadas durante desarrollo del carrito
+          </div>
         </div>
-      </div>
+      </Layout>
     )
   }
 
   return (
-    <main data-testid="catalog-page" className="app-shell min-h-svh">
-      <h1 className="mb-8 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Catálogo</h1>
+    <Layout>
+      <div className="app-shell min-h-svh">
+        <button
+          onClick={() => navigate('/')}
+          className="btn-secondary mb-6"
+        >
+          ← Inicio
+        </button>
 
-      {products.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-300 p-12 text-center text-sm italic text-slate-500">No hay productos disponibles</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {products.map((product) => (
-            <div key={product.id} className="relative">
+        <h1 className="mb-8 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Catálogo</h1>
+
+        {products.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-slate-300 p-12 text-center text-sm italic text-slate-500">No hay productos disponibles</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {products.map((product) => (
               <ProductCard
+                key={product.id}
                 product={product}
                 onClick={() => handleProductClick(product)}
+                onAddToCart={() => handleAddToCart(product)}
+                showAddToCart={true}
               />
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleAddToCart(product)
-                }}
-                className="btn-primary absolute right-4 bottom-4 px-3 py-2 text-xs sm:text-sm"
-              >
-                Añadir al carrito
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Cart button (floating) */}
       <button
@@ -185,6 +191,6 @@ export default function Catalog() {
 
       {/* Cart Drawer */}
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
-    </main>
+    </Layout>
   )
 }
