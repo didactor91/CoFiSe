@@ -238,6 +238,9 @@ export const typeDefs = gql`
     updateEvent(id: ID!, input: UpdateEventInput!): Event!
     deleteEvent(id: ID!): Boolean!
 
+    # Images (Staff or Admin)
+    uploadImage(entityType: EntityType!, entityId: ID!): ImageUploadResult!
+
     # Competitions (Staff or Admin)
     createCompetition(input: CreateCompetitionInput!): Competition!
     updateCompetition(id: ID!, input: UpdateCompetitionInput!): Competition!
