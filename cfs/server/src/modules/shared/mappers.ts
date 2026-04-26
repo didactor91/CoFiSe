@@ -101,3 +101,44 @@ export function optionValueFromRow(row: any) {
         stock: row.stock,
     }
 }
+
+export function competitionFromRow(row: any) {
+    return {
+        id: row.id.toString(),
+        name: row.name,
+        description: row.description,
+        matchType: row.match_type,
+        status: row.status,
+        participantCount: row.participant_count,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+    }
+}
+
+export function participantFromRow(row: any) {
+    return {
+        id: row.id.toString(),
+        competitionId: row.competition_id?.toString(),
+        alias: row.alias,
+        createdAt: row.created_at,
+    }
+}
+
+export function matchFromRow(row: any) {
+    return {
+        id: row.id.toString(),
+        competitionId: row.competition_id.toString(),
+        round: row.round,
+        position: row.position,
+        participant1Id: row.participant1_id?.toString(),
+        participant2Id: row.participant2_id?.toString(),
+        homeScore1: row.home_score1,
+        homeScore2: row.home_score2,
+        awayScore1: row.away_score1,
+        awayScore2: row.away_score2,
+        winnerId: row.winner_id?.toString(),
+        status: row.status,
+        isBye: !!row.is_bye,
+        createdAt: row.created_at,
+    }
+}

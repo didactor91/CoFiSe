@@ -3,7 +3,7 @@
  * 
  * Permissions follow the format: resource.action
  * 
- * Resources: news, product, reservation, user, event
+ * Resources: news, product, reservation, user, event, competition
  * Actions: create, read, update, delete, manage (all permissions)
  */
 
@@ -47,6 +47,13 @@ export type Permission =
   | 'role.update'
   | 'role.delete'
   | 'role.manage'
+
+  // Competition permissions
+  | 'competition.read'
+  | 'competition.create'
+  | 'competition.update'
+  | 'competition.delete'
+  | 'competition.manage'
 
 // Role definition with assigned permissions
 export interface Role {
@@ -97,6 +104,13 @@ export const roles: Record<'ADMIN' | 'STAFF', Role> = {
       'role.update',
       'role.delete',
       'role.manage',
+
+      // All competitions (full management)
+      'competition.read',
+      'competition.create',
+      'competition.update',
+      'competition.delete',
+      'competition.manage',
     ]
   },
   STAFF: {
@@ -127,6 +141,12 @@ export const roles: Record<'ADMIN' | 'STAFF', Role> = {
       'event.create',
       'event.update',
       // NO event.delete, event.manage - ADMIN only
+
+      // Competitions (CRUD except delete - ADMIN only)
+      'competition.read',
+      'competition.create',
+      'competition.update',
+      // NO competition.delete, competition.manage - ADMIN only
     ]
   }
 }

@@ -53,10 +53,63 @@ export const typeDefs = gql`
     updatedAt: DateTime!
   }
 
+  type Competition {
+    id: ID!
+    name: String!
+    description: String
+    matchType: MatchType!
+    status: CompetitionStatus!
+    participantCount: Int!
+    participants: [Participant!]!
+    matches: [Match!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  type Participant {
+    id: ID!
+    competitionId: ID!
+    alias: String!
+    createdAt: DateTime!
+  }
+
+  type Match {
+    id: ID!
+    competitionId: ID!
+    round: Int!
+    position: Int!
+    participant1: Participant
+    participant2: Participant
+    homeScore1: Int
+    homeScore2: Int
+    awayScore1: Int
+    awayScore2: Int
+    winner: Participant
+    status: MatchStatus!
+    isBye: Boolean!
+    createdAt: DateTime!
+  }
+
   enum EntityType {
     PRODUCT
     NEWS
     EVENT
+  }
+
+  enum MatchType {
+    SINGLE_LEG
+    HOME_AND_AWAY
+  }
+
+  enum CompetitionStatus {
+    DRAFT
+    ACTIVE
+    COMPLETED
+  }
+
+  enum MatchStatus {
+    PENDING
+    COMPLETED
   }
 
   type Reservation {
@@ -142,6 +195,14 @@ export const typeDefs = gql`
     events: [Event!]!
     event(id: ID!): Event
 
+    # Competitions (Public)
+    publicCompetitions: [Competition!]!
+    publicCompetition(id: ID!): Competition
+
+    # Competitions (Staff/Admin - includes DRAFT)
+    competitions: [Competition!]!
+    competition(id: ID!): Competition
+
     # Authenticated
     me: User
 
@@ -176,6 +237,14 @@ export const typeDefs = gql`
     createEvent(input: CreateEventInput!): Event!
     updateEvent(id: ID!, input: UpdateEventInput!): Event!
     deleteEvent(id: ID!): Boolean!
+
+    # Competitions (Staff or Admin)
+    createCompetition(input: CreateCompetitionInput!): Competition!
+    updateCompetition(id: ID!, input: UpdateCompetitionInput!): Competition!
+    deleteCompetition(id: ID!): Boolean!
+    addParticipants(input: AddParticipantsInput!): Competition!
+    generateBracket(competitionId: ID!): Competition!
+    setMatchResult(input: SetMatchResultInput!): Match!
 
     # Products (Staff or Admin)
     createProduct(input: CreateProductInput!): Product!
@@ -291,6 +360,34 @@ export const typeDefs = gql`
     startTime: DateTime
     endTime: DateTime
     imageUrl: String
+  }
+
+  input CreateCompetitionInput {
+    name: String!
+    description: String
+    matchType: MatchType!
+    participantCount: Int!
+  }
+
+  input UpdateCompetitionInput {
+    name: String
+    description: String
+    matchType: MatchType
+    status: CompetitionStatus
+  }
+
+  input AddParticipantsInput {
+    competitionId: ID!
+    aliases: [String!]!
+  }
+
+  input SetMatchResultInput {
+    matchId: ID!
+    homeScore1: Int
+    homeScore2: Int
+    awayScore1: Int
+    awayScore2: Int
+    manualWinnerId: ID
   }
 
   input CreateProductOptionInput {

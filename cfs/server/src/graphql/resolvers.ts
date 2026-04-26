@@ -1,4 +1,5 @@
 import { authResolvers } from '../modules/auth/resolvers.js'
+import { competitionsResolvers } from '../modules/competitions/resolvers.js'
 import { eventsResolvers } from '../modules/events/resolvers.js'
 import { newsResolvers } from '../modules/news/resolvers.js'
 import { productsResolvers } from '../modules/products/resolvers.js'
@@ -11,6 +12,7 @@ export const resolvers = {
   DateTime: dateTimeScalar,
   Query: {
     ...authResolvers.Query,
+    ...competitionsResolvers.Query,
     ...newsResolvers.Query,
     ...eventsResolvers.Query,
     ...productsResolvers.Query,
@@ -19,6 +21,7 @@ export const resolvers = {
   },
   Mutation: {
     ...authResolvers.Mutation,
+    ...competitionsResolvers.Mutation,
     ...newsResolvers.Mutation,
     ...eventsResolvers.Mutation,
     ...productsResolvers.Mutation,
@@ -44,6 +47,12 @@ export const resolvers = {
       if (obj.title) return 'News'
       return 'Product'
     },
+  },
+  Competition: {
+    ...competitionsResolvers.Competition,
+  },
+  Match: {
+    ...competitionsResolvers.Match,
   },
 }
 
