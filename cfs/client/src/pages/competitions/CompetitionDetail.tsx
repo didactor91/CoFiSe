@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 
 import { usePublicCompetitionQuery } from '../../modules/competitions/api/queries'
 import type { MatchType, CompetitionStatus } from '../../modules/competitions/api/types'
-import BracketView from '../components/competitions/BracketView'
+import BracketView from '../../components/competitions/BracketView'
 import theme from '../../theme'
 
 const MATCH_TYPE_LABELS: Record<MatchType, string> = {

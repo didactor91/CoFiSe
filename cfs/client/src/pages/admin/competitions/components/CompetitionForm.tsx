@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { MatchType } from '../../../modules/competitions/api/queries'
+import type { MatchType } from '../../../../modules/competitions/api/queries'
 
 interface CompetitionFormProps {
   initialData?: {

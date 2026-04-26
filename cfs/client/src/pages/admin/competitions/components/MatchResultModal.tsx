@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
-import { Button } from '../../../shared/ui/Button'
-import { Panel } from '../../../shared/ui/Panel'
+import { Button } from '../../../../shared/ui/Button'
+import { Panel } from '../../../../shared/ui/Panel'
 
 interface Match {
   id: string
