@@ -5,6 +5,7 @@ import { productsResolvers } from '../modules/products/resolvers.js'
 import { reservationsResolvers } from '../modules/reservations/resolvers.js'
 import { dateTimeScalar } from '../modules/shared/scalars.js'
 import { usersResolvers } from '../modules/users/resolvers.js'
+import { uploadImageResolver } from '../routes/upload.js'
 
 export const resolvers = {
   DateTime: dateTimeScalar,
@@ -23,6 +24,7 @@ export const resolvers = {
     ...productsResolvers.Mutation,
     ...reservationsResolvers.Mutation,
     ...usersResolvers.Mutation,
+    ...uploadImageResolver,
   },
   Product: {
     ...productsResolvers.Product,
@@ -32,6 +34,16 @@ export const resolvers = {
   },
   Role: {
     ...usersResolvers.Role,
+  },
+  ImageUploadResult: {
+    __resolveType(obj: any) {
+      if (obj.name && obj.description !== undefined) {
+        if (obj.price !== undefined) return 'Product'
+        if (obj.startTime !== undefined) return 'Event'
+      }
+      if (obj.title) return 'News'
+      return 'Product'
+    },
   },
 }
 

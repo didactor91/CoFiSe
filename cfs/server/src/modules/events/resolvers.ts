@@ -24,7 +24,7 @@ export const eventsResolvers = {
     Mutation: {
         createEvent: (_: any, args: { input: any }, ctx: Context) => {
             requirePermission(ctx, 'event.create')
-            const { name, description, location, startTime, endTime } = args.input
+            const { name, description, location, startTime, endTime, imageUrl } = args.input
 
             if (!name || name.trim() === '') throw new Error('Name is required')
             if (name.length > 200) throw new Error('Name must be 200 characters or less')
@@ -36,9 +36,9 @@ export const eventsResolvers = {
 
             const now = new Date().toISOString()
             const result = db.prepare(`
-        INSERT INTO events (name, description, location, start_time, end_time, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(name, description || null, location, startTime, endTime, now, now)
+        INSERT INTO events (name, description, location, start_time, end_time, image_url, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(name, description || null, location, startTime, endTime, imageUrl || null, now, now)
 
             return {
                 id: result.lastInsertRowid.toString(),
@@ -47,6 +47,7 @@ export const eventsResolvers = {
                 location,
                 startTime,
                 endTime,
+                imageUrl: imageUrl || null,
                 createdAt: now,
                 updatedAt: now,
             }
@@ -57,7 +58,7 @@ export const eventsResolvers = {
             const existing = db.prepare(`SELECT * FROM events WHERE id = ?`).get(args.id) as any
             if (!existing) throw new Error('Event not found')
 
-            const { name, description, location, startTime, endTime } = args.input
+            const { name, description, location, startTime, endTime, imageUrl } = args.input
             if (name !== undefined) {
                 if (name.trim() === '') throw new Error('Name is required')
                 if (name.length > 200) throw new Error('Name must be 200 characters or less')
@@ -76,11 +77,12 @@ export const eventsResolvers = {
             const updateLocation = location ?? existing.location
             const updateStartTime = startTime ?? existing.start_time
             const updateEndTime = endTime ?? existing.end_time
+            const updateImageUrl = imageUrl ?? existing.image_url
 
             db.prepare(`
-        UPDATE events SET name = ?, description = ?, location = ?, start_time = ?, end_time = ?, updated_at = ?
+        UPDATE events SET name = ?, description = ?, location = ?, start_time = ?, end_time = ?, image_url = ?, updated_at = ?
         WHERE id = ?
-      `).run(updateName, updateDescription, updateLocation, updateStartTime, updateEndTime, now, args.id)
+      `).run(updateName, updateDescription, updateLocation, updateStartTime, updateEndTime, updateImageUrl, now, args.id)
 
             return {
                 id: args.id,
@@ -89,6 +91,7 @@ export const eventsResolvers = {
                 location: updateLocation,
                 startTime: updateStartTime,
                 endTime: updateEndTime,
+                imageUrl: updateImageUrl,
                 createdAt: existing.created_at,
                 updatedAt: now,
             }

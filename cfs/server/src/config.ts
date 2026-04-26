@@ -97,12 +97,19 @@ export const config = {
       timeWindow: process.env.RATE_LIMIT_WINDOW || '1 minute',
     },
     // Request limits
-    bodyLimit: getIntEnv('BODY_LIMIT', 1048576), // 1MB default
+    bodyLimit: getIntEnv('BODY_LIMIT', 5242880), // 5MB default for file uploads
     requestTimeout: getIntEnv('REQUEST_TIMEOUT', 30000), // 30s default
     connectionTimeout: getIntEnv('CONNECTION_TIMEOUT', 30000), // 30s default
     trustProxy: getBooleanEnv('TRUST_PROXY', isProduction),
     enableGraphqlIntrospection: getBooleanEnv('ENABLE_GRAPHQL_INTROSPECTION', !isProduction),
     graphqlQueryDepth: getIntEnv('GRAPHQL_QUERY_DEPTH', 8),
+  },
+
+  // Upload Configuration
+  uploads: {
+    dir: process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads'),
+    maxSize: 5 * 1024 * 1024, // 5MB
+    allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   },
 
   // Environment

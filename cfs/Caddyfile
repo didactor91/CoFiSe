@@ -1,4 +1,12 @@
 seno.didtor.dev {
+    handle /uploads/* {
+        file_server {
+            root ./uploads
+        }
+        cache {
+            max_age 31536000
+        }
+    }
     reverse_proxy /api/* localhost:4000
     reverse_proxy /* localhost:3000
     tls {

@@ -72,6 +72,7 @@ export function eventFromRow(row: any) {
         location: row.location,
         startTime: row.start_time,
         endTime: row.end_time,
+        imageUrl: row.image_url,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     }

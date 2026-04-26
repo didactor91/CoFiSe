@@ -15,6 +15,7 @@ import { Button } from '../../shared/ui/Button'
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { Panel } from '../../shared/ui/Panel'
+import { ImageUpload } from '../../components/ImageUpload'
 import theme from '../../theme'
 
 function toErrorMessage(err: unknown, fallback: string): string {
@@ -192,26 +193,13 @@ export default function NewsPage() {
               }}
             />
           </div>
-          <div style={{ marginBottom: theme.spacing.md }}>
-            <label style={{ display: 'block', color: theme.colors.textSecondary, fontSize: theme.typography.fontSize.xs, marginBottom: theme.spacing.xs }}>
-              URL de Imagen (opcional)
-            </label>
-            <input
-              type="text"
-              placeholder="https://..."
-              value={newsForm.imageUrl}
-              onChange={(e) => setNewsForm({ ...newsForm, imageUrl: e.target.value })}
-              style={{
-                width: '100%',
-                padding: theme.spacing.sm,
-                background: theme.colors.background,
-                border: `1px solid ${theme.colors.border}`,
-                borderRadius: theme.borderRadius.sm,
-                color: theme.colors.text,
-                fontSize: theme.typography.fontSize.sm,
-              }}
-            />
-          </div>
+          {/* Image */}
+          <ImageUpload
+            entityType="NEWS"
+            entityId={editingNews?.id}
+            currentImageUrl={newsForm.imageUrl}
+            onUploadComplete={(imageUrl) => setNewsForm(prev => ({ ...prev, imageUrl }))}
+          />
           {newsFormError && (
             <p style={{ color: theme.colors.error, marginBottom: theme.spacing.md, fontSize: theme.typography.fontSize.sm }}>
               {newsFormError}

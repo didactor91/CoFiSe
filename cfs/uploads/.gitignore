@@ -1,0 +1,7 @@
+# Uploaded images
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+!

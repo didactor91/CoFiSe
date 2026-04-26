@@ -48,8 +48,15 @@ export const typeDefs = gql`
     location: String!
     startTime: DateTime!
     endTime: DateTime!
+    imageUrl: String
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  enum EntityType {
+    PRODUCT
+    NEWS
+    EVENT
   }
 
   type Reservation {
@@ -196,6 +203,8 @@ export const typeDefs = gql`
     deleteRole(id: ID!): Boolean!
   }
 
+  union ImageUploadResult = Product | News | Event
+
   input CreateReservationInput {
     productId: ID!
     quantity: Int!
@@ -222,13 +231,11 @@ export const typeDefs = gql`
   input CreateNewsInput {
     title: String!
     content: String!
-    imageUrl: String
   }
 
   input UpdateNewsInput {
     title: String
     content: String
-    imageUrl: String
   }
 
   input CreateProductInput {
@@ -237,7 +244,6 @@ export const typeDefs = gql`
     price: Float!
     stock: Int!
     limitedStock: Boolean!
-    imageUrl: String
   }
 
   input UpdateProductInput {
@@ -246,7 +252,6 @@ export const typeDefs = gql`
     price: Float
     stock: Int
     limitedStock: Boolean
-    imageUrl: String
   }
 
   input CreateUserInput {
@@ -276,6 +281,7 @@ export const typeDefs = gql`
     location: String!
     startTime: DateTime!
     endTime: DateTime!
+    imageUrl: String
   }
 
   input UpdateEventInput {
@@ -284,6 +290,7 @@ export const typeDefs = gql`
     location: String
     startTime: DateTime
     endTime: DateTime
+    imageUrl: String
   }
 
   input CreateProductOptionInput {
