@@ -66,6 +66,15 @@ export default function AdminLayout() {
             </NavLink>
           )}
 
+          {can('competition.read') && (
+            <NavLink
+              to="/admin/competitions"
+              className={navClass}
+            >
+              Competiciones
+            </NavLink>
+          )}
+
           {can('user.read') && (
             <NavLink
               to="/admin/users"

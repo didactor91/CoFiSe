@@ -192,6 +192,59 @@ const migrations: Migration[] = [
       DROP TABLE news;
       ALTER TABLE news_old RENAME TO news;
     `
+  },
+  {
+    version: 4,
+    name: 'competition_system',
+    up: `
+      CREATE TABLE IF NOT EXISTS competitions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          match_type TEXT NOT NULL CHECK(match_type IN ('SINGLE_LEG', 'HOME_AND_AWAY')),
+          status TEXT NOT NULL DEFAULT 'DRAFT' CHECK(status IN ('DRAFT', 'ACTIVE', 'COMPLETED')),
+          participant_count INTEGER NOT NULL DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS participants (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          competition_id INTEGER REFERENCES competitions(id),
+          alias TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS matches (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          competition_id INTEGER REFERENCES competitions(id),
+          round INTEGER NOT NULL,
+          position INTEGER NOT NULL,
+          participant1_id INTEGER REFERENCES participants(id),
+          participant2_id INTEGER REFERENCES participants(id),
+          home_score1 INTEGER,
+          home_score2 INTEGER,
+          away_score1 INTEGER,
+          away_score2 INTEGER,
+          winner_id INTEGER REFERENCES participants(id),
+          status TEXT NOT NULL DEFAULT 'PENDING' CHECK(status IN ('PENDING', 'COMPLETED')),
+          is_bye INTEGER DEFAULT 0
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_participants_competition ON participants(competition_id);
+      CREATE INDEX IF NOT EXISTS idx_matches_competition ON matches(competition_id);
+      CREATE INDEX IF NOT EXISTS idx_matches_round_position ON matches(competition_id, round, position);
+      CREATE INDEX IF NOT EXISTS idx_matches_winner ON matches(winner_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS matches;
+      DROP TABLE IF EXISTS participants;
+      DROP TABLE IF EXISTS competitions;
+      DROP INDEX IF EXISTS idx_participants_competition;
+      DROP INDEX IF EXISTS idx_matches_competition;
+      DROP INDEX IF EXISTS idx_matches_round_position;
+      DROP INDEX IF EXISTS idx_matches_winner;
+    `
   }
 ]
 
@@ -331,6 +384,9 @@ export class MigrationManager {
     const transaction = this.db.transaction(() => {
       // Drop all tables (order matters for FK constraints)
       this.db.exec(`
+        DROP TABLE IF EXISTS matches;
+        DROP TABLE IF EXISTS participants;
+        DROP TABLE IF EXISTS competitions;
         DROP TABLE IF EXISTS reservation_items;
         DROP TABLE IF EXISTS verification_codes;
         DROP TABLE IF EXISTS cart_items;

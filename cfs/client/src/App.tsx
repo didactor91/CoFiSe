@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { useAuth } from './hooks/useAuth'
 import AdminLayout from './pages/admin/AdminLayout'
+import CompetitionsPage from './pages/admin/competitions/CompetitionsPage'
 import Dashboard from './pages/admin/Dashboard'
 import EventsPage from './pages/admin/EventsPage'
 import NewsPage from './pages/admin/NewsPage'
@@ -13,6 +14,7 @@ import ProductsPage from './pages/admin/ProductsPage'
 import UsersPage from './pages/admin/UsersPage'
 import Catalog from './pages/Catalog'
 import Checkout from './pages/Checkout'
+import CompetitionDetail from './pages/competitions/CompetitionDetail'
 import EventDetail from './pages/EventDetail'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
@@ -46,6 +48,7 @@ export function AppRoutes() {
       <Route path="/news/:id" element={<NewsDetail />} />
       <Route path="/events/:id" element={<EventDetail />} />
       <Route path="/products/:id" element={<ProductDetail />} />
+      <Route path="/competitions/:id" element={<CompetitionDetail />} />
       <Route
         path="/admin"
         element={
@@ -61,6 +64,7 @@ export function AppRoutes() {
         </Route>
         <Route path="news" element={<NewsPage />} />
         <Route path="events" element={<EventsPage />} />
+        <Route path="competitions" element={<CompetitionsPage />} />
         <Route path="users" element={<UsersPage />} />
       </Route>
     </Routes>
