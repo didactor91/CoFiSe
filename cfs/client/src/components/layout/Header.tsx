@@ -21,6 +21,15 @@ export default function Header() {
           <Link to="/" className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
             Inicio
           </Link>
+          <Link to="/news" className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
+            Noticias
+          </Link>
+          <Link to="/events" className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
+            Eventos
+          </Link>
+          <Link to="/competitions" className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
+            Competiciones
+          </Link>
           <Link to="/catalog" className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
             Catálogo
           </Link>
