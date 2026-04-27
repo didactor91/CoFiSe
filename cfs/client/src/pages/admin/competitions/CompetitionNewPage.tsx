@@ -1,16 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { CompetitionForm } from './components'
+import { useAuth } from '../../../hooks/useAuth'
 import {
   useCreateCompetitionMutation,
 } from '../../../modules/competitions/api/mutations'
 import { useCompetitionsQuery } from '../../../modules/competitions/api/queries'
-import { useAuth } from '../../../hooks/useAuth'
-import { Button } from '../../../shared/ui/Button'
 import { Panel } from '../../../shared/ui/Panel'
 import theme from '../../../theme'
-
-import { CompetitionForm } from './components'
 
 function toErrorMessage(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message : fallback
@@ -24,7 +22,6 @@ export default function CompetitionNewPage() {
 
   const canCreate = can('competition.create')
   const [formError, setFormError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (data: {
     name: string

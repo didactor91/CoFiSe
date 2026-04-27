@@ -35,22 +35,13 @@ vi.mock('../../graphql/queries', () => ({
   PRODUCTS_QUERY: '',
   EVENTS_QUERY: '',
   useNewsQuery: () => {
-    return [
-      { data: newsData, fetching: false, error: null },
-      (() => {}) as any,
-    ] as const
+    return [{ data: newsData, fetching: false, error: null }, (() => {}) as any] as const
   },
   useProductsQuery: () => {
-    return [
-      { data: productsData, fetching: false, error: null },
-      (() => {}) as any,
-    ] as const
+    return [{ data: productsData, fetching: false, error: null }, (() => {}) as any] as const
   },
   useEventsQuery: () => {
-    return [
-      { data: eventsData, fetching: false, error: null },
-      (() => {}) as any,
-    ] as const
+    return [{ data: eventsData, fetching: false, error: null }, (() => {}) as any] as const
   },
 }))
 
@@ -118,7 +109,7 @@ describe('Landing Page', () => {
           <AuthProvider>
             <Landing />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Check for news items - component should render them
@@ -137,7 +128,7 @@ describe('Landing Page', () => {
           <AuthProvider>
             <Landing />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Verify order - first news card should have the newest title
@@ -154,7 +145,7 @@ describe('Landing Page', () => {
           <AuthProvider>
             <Landing />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('No hay noticias todavía')).toBeInTheDocument()
@@ -182,7 +173,7 @@ describe('Landing Page', () => {
           <AuthProvider>
             <Landing />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Should only show 6 products (check by product names)

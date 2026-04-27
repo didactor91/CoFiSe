@@ -1,26 +1,24 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { useAuth } from '../../../hooks/useAuth'
 import {
-  useCompetitionsQuery,
-} from '../../../modules/competitions/api/queries'
+  CompetitionCard,
+  BracketPreview,
+  MatchResultModal,
+} from './components'
+import { useAuth } from '../../../hooks/useAuth'
 import {
   useDeleteCompetitionMutation,
 } from '../../../modules/competitions/api/mutations'
-import type { Competition } from '../../../modules/competitions/api/queries'
+import {
+  useCompetitionsQuery,
+type  Competition } from '../../../modules/competitions/api/queries'
 import { Button } from '../../../shared/ui/Button'
 import { ConfirmDialog } from '../../../shared/ui/ConfirmDialog'
 import { PageHeader } from '../../../shared/ui/PageHeader'
 import { Panel } from '../../../shared/ui/Panel'
 import theme from '../../../theme'
 
-import {
-  CompetitionCard,
-  ParticipantList,
-  BracketPreview,
-  MatchResultModal,
-} from './components'
 
 export default function CompetitionsPage() {
   const navigate = useNavigate()

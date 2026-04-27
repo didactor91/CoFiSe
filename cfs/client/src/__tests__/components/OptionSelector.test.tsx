@@ -54,19 +54,13 @@ describe('OptionSelector', () => {
   // Helper to find button by value (stock suffix varies)
   const getButtonByValue = (value: string) => {
     const buttons = screen.getAllByRole('button')
-    return buttons.find(btn => btn.textContent?.startsWith(value + ''))!
+    return buttons.find((btn) => btn.textContent?.startsWith(value + ''))!
   }
 
   describe('Rendering', () => {
     it('should render SIZE option as chips/buttons', () => {
       const onSelect = vi.fn()
-      render(
-        <OptionSelector
-          productId="p1"
-          options={[sizeOption]}
-          onSelect={onSelect}
-        />
-      )
+      render(<OptionSelector productId="p1" options={[sizeOption]} onSelect={onSelect} />)
 
       // SIZE chips should be rendered
       expect(getButtonByValue('S')).toBeInTheDocument()
@@ -77,13 +71,7 @@ describe('OptionSelector', () => {
 
     it('should render COLOR option with color names', () => {
       const onSelect = vi.fn()
-      render(
-        <OptionSelector
-          productId="p1"
-          options={[colorOption]}
-          onSelect={onSelect}
-        />
-      )
+      render(<OptionSelector productId="p1" options={[colorOption]} onSelect={onSelect} />)
 
       expect(getButtonByValue('Rojo')).toBeInTheDocument()
       expect(getButtonByValue('Verde')).toBeInTheDocument()
@@ -92,13 +80,7 @@ describe('OptionSelector', () => {
 
     it('should display option name as label', () => {
       const onSelect = vi.fn()
-      render(
-        <OptionSelector
-          productId="p1"
-          options={[sizeOption]}
-          onSelect={onSelect}
-        />
-      )
+      render(<OptionSelector productId="p1" options={[sizeOption]} onSelect={onSelect} />)
 
       expect(screen.getByText('Talla')).toBeInTheDocument()
     })
@@ -107,13 +89,7 @@ describe('OptionSelector', () => {
   describe('Stock display', () => {
     it('should show "∞" symbol for NULL stock', () => {
       const onSelect = vi.fn()
-      render(
-        <OptionSelector
-          productId="p1"
-          options={[sizeOption]}
-          onSelect={onSelect}
-        />
-      )
+      render(<OptionSelector productId="p1" options={[sizeOption]} onSelect={onSelect} />)
 
       // S has NULL stock - button should contain ∞ symbol
       const sButton = getButtonByValue('S')
@@ -122,13 +98,7 @@ describe('OptionSelector', () => {
 
     it('should show number for finite stock', () => {
       const onSelect = vi.fn()
-      render(
-        <OptionSelector
-          productId="p1"
-          options={[sizeOption]}
-          onSelect={onSelect}
-        />
-      )
+      render(<OptionSelector productId="p1" options={[sizeOption]} onSelect={onSelect} />)
 
       // M has stock of 10
       const mButton = getButtonByValue('M')
@@ -137,13 +107,7 @@ describe('OptionSelector', () => {
 
     it('should show "Sin stock" for zero stock', () => {
       const onSelect = vi.fn()
-      render(
-        <OptionSelector
-          productId="p1"
-          options={[sizeOption]}
-          onSelect={onSelect}
-        />
-      )
+      render(<OptionSelector productId="p1" options={[sizeOption]} onSelect={onSelect} />)
 
       // XL has stock of 0 - should show Sin stock
       const xlButton = getButtonByValue('XL')
@@ -154,13 +118,7 @@ describe('OptionSelector', () => {
   describe('Selection behavior', () => {
     it('should call onSelect with optionId and valueId when a chip is clicked', () => {
       const onSelect = vi.fn()
-      render(
-        <OptionSelector
-          productId="p1"
-          options={[sizeOption]}
-          onSelect={onSelect}
-        />
-      )
+      render(<OptionSelector productId="p1" options={[sizeOption]} onSelect={onSelect} />)
 
       fireEvent.click(getButtonByValue('M'))
 
@@ -175,7 +133,7 @@ describe('OptionSelector', () => {
           options={[sizeOption]}
           onSelect={onSelect}
           selectedValueId="ov2"
-        />
+        />,
       )
 
       const mButton = getButtonByValue('M')
@@ -186,13 +144,7 @@ describe('OptionSelector', () => {
   describe('Disabled state for out-of-stock', () => {
     it('should disable chips with stock = 0', () => {
       const onSelect = vi.fn()
-      render(
-        <OptionSelector
-          productId="p1"
-          options={[sizeOption]}
-          onSelect={onSelect}
-        />
-      )
+      render(<OptionSelector productId="p1" options={[sizeOption]} onSelect={onSelect} />)
 
       const xlButton = getButtonByValue('XL')
       expect(xlButton).toBeDisabled()
@@ -200,13 +152,7 @@ describe('OptionSelector', () => {
 
     it('should allow clicks on available stock chips', () => {
       const onSelect = vi.fn()
-      render(
-        <OptionSelector
-          productId="p1"
-          options={[sizeOption]}
-          onSelect={onSelect}
-        />
-      )
+      render(<OptionSelector productId="p1" options={[sizeOption]} onSelect={onSelect} />)
 
       fireEvent.click(getButtonByValue('M'))
       expect(onSelect).toHaveBeenCalled()
@@ -222,7 +168,7 @@ describe('OptionSelector', () => {
           options={[sizeOption]}
           onSelect={onSelect}
           selectedValueId="ov2"
-        />
+        />,
       )
 
       expect(screen.queryByText('Selecciona una talla')).not.toBeInTheDocument()
@@ -237,7 +183,7 @@ describe('OptionSelector', () => {
           onSelect={onSelect}
           selectedValueId={undefined}
           error="Selecciona una talla"
-        />
+        />,
       )
 
       expect(screen.queryByText('Selecciona una talla')).toBeInTheDocument()
@@ -252,7 +198,7 @@ describe('OptionSelector', () => {
           onSelect={onSelect}
           selectedValueId={undefined}
           error="Selecciona una talla"
-        />
+        />,
       )
 
       expect(screen.getByText('Selecciona una talla')).toBeInTheDocument()
@@ -266,7 +212,7 @@ describe('OptionSelector', () => {
           options={[colorOption]}
           onSelect={onSelect}
           selectedValueId={undefined}
-        />
+        />,
       )
 
       // No error should be shown for non-required option
@@ -278,11 +224,7 @@ describe('OptionSelector', () => {
     it('should render multiple option groups', () => {
       const onSelect = vi.fn()
       render(
-        <OptionSelector
-          productId="p1"
-          options={[sizeOption, colorOption]}
-          onSelect={onSelect}
-        />
+        <OptionSelector productId="p1" options={[sizeOption, colorOption]} onSelect={onSelect} />,
       )
 
       // Both options should be visible

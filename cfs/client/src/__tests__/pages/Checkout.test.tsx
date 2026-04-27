@@ -8,11 +8,19 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {
     getItem: vi.fn((key: string) => store[key] ?? null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value }),
-    removeItem: vi.fn((key: string) => { delete store[key] }),
-    clear: vi.fn(() => { store = {} }),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key]
+    }),
+    clear: vi.fn(() => {
+      store = {}
+    }),
     getStore: () => store,
-    setStore: (s: Record<string, string>) => { store = s },
+    setStore: (s: Record<string, string>) => {
+      store = s
+    },
   }
 })()
 
@@ -51,7 +59,14 @@ vi.mock('../../theme', () => ({
       disabledText: '#888888',
     },
     typography: {
-      fontSize: { xs: '0.75rem', sm: '0.875rem', base: '1rem', lg: '1.25rem', xl: '1.5rem', '2xl': '2rem' },
+      fontSize: {
+        xs: '0.75rem',
+        sm: '0.875rem',
+        base: '1rem',
+        lg: '1.25rem',
+        xl: '1.5rem',
+        '2xl': '2rem',
+      },
       fontWeight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
     },
     spacing: { xs: '0.25rem', sm: '0.5rem', md: '1rem', lg: '1.5rem', xl: '2rem' },
@@ -81,18 +96,20 @@ const preloadEmptyCart = () => {
 }
 
 // Preload cart with items
-const preloadCartWithItems = (items: Array<{
-  id: string
-  productId: string
-  productName: string
-  productPrice: number
-  optionValueId: string | null
-  optionValueName: string | null
-  quantity: number
-}>) => {
-  const productIds = [...new Set(items.map(i => i.productId))]
+const preloadCartWithItems = (
+  items: Array<{
+    id: string
+    productId: string
+    productName: string
+    productPrice: number
+    optionValueId: string | null
+    optionValueName: string | null
+    quantity: number
+  }>,
+) => {
+  const productIds = [...new Set(items.map((i) => i.productId))]
   mockToPromise.mockResolvedValue({
-    data: { products: productIds.map(id => ({ id })) },
+    data: { products: productIds.map((id) => ({ id })) },
     error: undefined,
   })
   localStorageMock.setStore({
@@ -129,7 +146,7 @@ describe('Checkout Page', () => {
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -145,7 +162,7 @@ describe('Checkout Page', () => {
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -163,7 +180,7 @@ describe('Checkout Page', () => {
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -174,22 +191,24 @@ describe('Checkout Page', () => {
 
   describe('Cart review step', () => {
     it('should display cart items with product name and option', async () => {
-      preloadCartWithItems([{
-        id: 'item-1',
-        productId: 'p1',
-        productName: 'Corbata',
-        productPrice: 25.00,
-        optionValueId: 'ov1',
-        optionValueName: 'Rojo',
-        quantity: 1,
-      }])
+      preloadCartWithItems([
+        {
+          id: 'item-1',
+          productId: 'p1',
+          productName: 'Corbata',
+          productPrice: 25.0,
+          optionValueId: 'ov1',
+          optionValueName: 'Rojo',
+          quantity: 1,
+        },
+      ])
 
       render(
         <MemoryRouter>
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -199,22 +218,24 @@ describe('Checkout Page', () => {
     })
 
     it('should display quantity controls', async () => {
-      preloadCartWithItems([{
-        id: 'item-1',
-        productId: 'p1',
-        productName: 'Gorro',
-        productPrice: 15.00,
-        optionValueId: null,
-        optionValueName: null,
-        quantity: 1,
-      }])
+      preloadCartWithItems([
+        {
+          id: 'item-1',
+          productId: 'p1',
+          productName: 'Gorro',
+          productPrice: 15.0,
+          optionValueId: null,
+          optionValueName: null,
+          quantity: 1,
+        },
+      ])
 
       render(
         <MemoryRouter>
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -224,22 +245,24 @@ describe('Checkout Page', () => {
     })
 
     it('should display delete button for each item', async () => {
-      preloadCartWithItems([{
-        id: 'item-1',
-        productId: 'p1',
-        productName: 'Gorro',
-        productPrice: 15.00,
-        optionValueId: null,
-        optionValueName: null,
-        quantity: 1,
-      }])
+      preloadCartWithItems([
+        {
+          id: 'item-1',
+          productId: 'p1',
+          productName: 'Gorro',
+          productPrice: 15.0,
+          optionValueId: null,
+          optionValueName: null,
+          quantity: 1,
+        },
+      ])
 
       render(
         <MemoryRouter>
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -248,22 +271,24 @@ describe('Checkout Page', () => {
     })
 
     it('should show total price', async () => {
-      preloadCartWithItems([{
-        id: 'item-1',
-        productId: 'p1',
-        productName: 'Gorro',
-        productPrice: 15.00,
-        optionValueId: null,
-        optionValueName: null,
-        quantity: 2,
-      }])
+      preloadCartWithItems([
+        {
+          id: 'item-1',
+          productId: 'p1',
+          productName: 'Gorro',
+          productPrice: 15.0,
+          optionValueId: null,
+          optionValueName: null,
+          quantity: 2,
+        },
+      ])
 
       render(
         <MemoryRouter>
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -272,22 +297,24 @@ describe('Checkout Page', () => {
     })
 
     it('should continue to contact form step', async () => {
-      preloadCartWithItems([{
-        id: 'item-1',
-        productId: 'p1',
-        productName: 'Gorro',
-        productPrice: 15.00,
-        optionValueId: null,
-        optionValueName: null,
-        quantity: 1,
-      }])
+      preloadCartWithItems([
+        {
+          id: 'item-1',
+          productId: 'p1',
+          productName: 'Gorro',
+          productPrice: 15.0,
+          optionValueId: null,
+          optionValueName: null,
+          quantity: 1,
+        },
+      ])
 
       render(
         <MemoryRouter>
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       await waitFor(() => {
@@ -304,22 +331,24 @@ describe('Checkout Page', () => {
 
   describe('Contact form anti-fraud (5.6 RED + 5.7 GREEN)', () => {
     it('should show bot detection message when honeypot field is filled', async () => {
-      preloadCartWithItems([{
-        id: 'item-1',
-        productId: 'p1',
-        productName: 'Test Product',
-        productPrice: 25.00,
-        optionValueId: null,
-        optionValueName: null,
-        quantity: 1,
-      }])
+      preloadCartWithItems([
+        {
+          id: 'item-1',
+          productId: 'p1',
+          productName: 'Test Product',
+          productPrice: 25.0,
+          optionValueId: null,
+          optionValueName: null,
+          quantity: 1,
+        },
+      ])
 
       render(
         <MemoryRouter initialEntries={['/checkout']}>
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Wait for cart review to appear
@@ -347,7 +376,7 @@ describe('Checkout Page', () => {
       // Find and fill the honeypot field (the hidden website input)
       const honeypotInput = document.querySelector('input[name="website"]') as HTMLInputElement
       expect(honeypotInput).not.toBeNull()
-      
+
       // Simulate bot filling the honeypot field
       fireEvent.change(honeypotInput, { target: { value: 'bot@example.com' } })
 
@@ -356,27 +385,31 @@ describe('Checkout Page', () => {
 
       // Should show bot detection message
       await waitFor(() => {
-        expect(screen.getByText('Por favor, completa el formulario correctamente')).toBeInTheDocument()
+        expect(
+          screen.getByText('Por favor, completa el formulario correctamente'),
+        ).toBeInTheDocument()
       })
     })
 
     it('should reject fast submission (timing check)', async () => {
-      preloadCartWithItems([{
-        id: 'item-1',
-        productId: 'p1',
-        productName: 'Test Product',
-        productPrice: 25.00,
-        optionValueId: null,
-        optionValueName: null,
-        quantity: 1,
-      }])
+      preloadCartWithItems([
+        {
+          id: 'item-1',
+          productId: 'p1',
+          productName: 'Test Product',
+          productPrice: 25.0,
+          optionValueId: null,
+          optionValueName: null,
+          quantity: 1,
+        },
+      ])
 
       render(
         <MemoryRouter initialEntries={['/checkout']}>
           <CartProvider>
             <Checkout />
           </CartProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Wait for cart review to appear
@@ -406,7 +439,9 @@ describe('Checkout Page', () => {
 
       // Should show timing check error
       await waitFor(() => {
-        expect(screen.getByText('Por favor, revisa el formulario antes de enviar')).toBeInTheDocument()
+        expect(
+          screen.getByText('Por favor, revisa el formulario antes de enviar'),
+        ).toBeInTheDocument()
       })
     })
   })

@@ -1,10 +1,43 @@
-node_modules
-dist
-build
-coverage
-playwright-report
-test-results
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+*.d.ts
+
+# Generated
 client/src/graphql/generated-types.ts
-packages/types/generated
+packages/types/generated/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Uploads
+uploads/
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Database
 *.db
 *.db-journal
+*.db-wal
+*.db-shm

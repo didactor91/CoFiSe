@@ -1,5 +1,5 @@
-import type { Match, Competition } from '../../modules/competitions/api/types'
 import MatchCard from './MatchCard'
+import type { Match, Competition } from '../../modules/competitions/api/types'
 import theme from '../../theme'
 
 interface BracketViewProps {
@@ -15,29 +15,38 @@ const MATCH_HEIGHT = 80
 const GAP = 20
 const PADDING = 40
 
-export default function BracketView({ competition, variant = 'public', onMatchClick }: BracketViewProps) {
+export default function BracketView({
+  competition,
+  variant = 'public',
+  onMatchClick,
+}: BracketViewProps) {
   const { matches, matchType } = competition
 
   if (!matches || matches.length === 0) {
     return (
-      <div style={{
-        textAlign: 'center',
-        padding: theme.spacing['2xl'],
-        color: theme.colors.textSecondary,
-      }}>
+      <div
+        style={{
+          textAlign: 'center',
+          padding: theme.spacing['2xl'],
+          color: theme.colors.textSecondary,
+        }}
+      >
         No hay partidos disponibles
       </div>
     )
   }
 
   // Calculate number of rounds
-  const maxRound = Math.max(...matches.map(m => m.round))
+  const maxRound = Math.max(...matches.map((m) => m.round))
   const rounds = maxRound
 
   // Group matches by round
   const matchesByRound: Map<number, Match[]> = new Map()
   for (let round = 1; round <= rounds; round++) {
-    matchesByRound.set(round, matches.filter(m => m.round === round))
+    matchesByRound.set(
+      round,
+      matches.filter((m) => m.round === round),
+    )
   }
 
   // Calculate container dimensions
@@ -90,7 +99,7 @@ export default function BracketView({ competition, variant = 'public', onMatchCl
               stroke={theme.colors.border}
               strokeWidth={2}
               fill="none"
-            />
+            />,
           )
         }
       })
@@ -136,7 +145,9 @@ export default function BracketView({ competition, variant = 'public', onMatchCl
                 match={match}
                 variant={variant}
                 matchType={matchType === 'HOME_AND_AWAY' ? 'HOME_AND_AWAY' : 'SINGLE_LEG'}
-                onClick={variant === 'admin' && onMatchClick ? () => onMatchClick(match) : undefined}
+                onClick={
+                  variant === 'admin' && onMatchClick ? () => onMatchClick(match) : undefined
+                }
               />
             </foreignObject>
           )
@@ -146,10 +157,12 @@ export default function BracketView({ competition, variant = 'public', onMatchCl
   }
 
   return (
-    <div style={{
-      overflowX: 'auto',
-      padding: theme.spacing.md,
-    }}>
+    <div
+      style={{
+        overflowX: 'auto',
+        padding: theme.spacing.md,
+      }}
+    >
       <svg
         width={containerWidth}
         height={containerHeight}

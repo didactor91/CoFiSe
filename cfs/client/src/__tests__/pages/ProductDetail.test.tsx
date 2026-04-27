@@ -56,10 +56,10 @@ vi.mock('../../graphql/queries', () => ({
   PRODUCT_QUERY: '',
   useProductQuery: () => {
     return [
-      { 
-        data: productData, 
-        fetching: fetchingState, 
-        error: errorState 
+      {
+        data: productData,
+        fetching: fetchingState,
+        error: errorState,
       },
       (() => {}) as any,
     ] as const
@@ -72,7 +72,7 @@ const mockProduct: Product = {
   id: '1',
   name: 'Ceramic Vase',
   description: 'Handmade ceramic vase with traditional patterns',
-  price: 45.00,
+  price: 45.0,
   stock: 15,
   limitedStock: true,
   imageUrl: null,
@@ -96,7 +96,7 @@ describe('ProductDetail Page', () => {
           <AuthProvider>
             <ProductDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('⏳')).toBeInTheDocument()
@@ -114,7 +114,7 @@ describe('ProductDetail Page', () => {
           <AuthProvider>
             <ProductDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText(/no encontrado/i)).toBeInTheDocument()
@@ -129,7 +129,7 @@ describe('ProductDetail Page', () => {
           <AuthProvider>
             <ProductDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText(/no encontrado/i)).toBeInTheDocument()
@@ -146,7 +146,7 @@ describe('ProductDetail Page', () => {
           <AuthProvider>
             <ProductDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Check name
@@ -168,7 +168,7 @@ describe('ProductDetail Page', () => {
           <AuthProvider>
             <ProductDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('En stock')).toBeInTheDocument()
@@ -186,7 +186,7 @@ describe('ProductDetail Page', () => {
           <AuthProvider>
             <ProductDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('Sin stock')).toBeInTheDocument()
@@ -204,7 +204,7 @@ describe('ProductDetail Page', () => {
           <AuthProvider>
             <ProductDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       expect(screen.getByText('Stock infinito')).toBeInTheDocument()
@@ -236,7 +236,7 @@ describe('ProductDetail Page', () => {
           <AuthProvider>
             <ProductDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Check option name is displayed
@@ -260,7 +260,7 @@ describe('ProductDetail Page', () => {
           <AuthProvider>
             <ProductDetail />
           </AuthProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       )
 
       // Should not show any option-related content
@@ -268,5 +268,5 @@ describe('ProductDetail Page', () => {
     })
   })
 
-// Navigation is implicitly tested via the UI - back button renders and uses navigate(-1)
+  // Navigation is implicitly tested via the UI - back button renders and uses navigate(-1)
 })

@@ -1,0 +1,22 @@
+#!/bin/sh
+# CFS Pre-push Hook
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+echo "${GREEN}✓ Running pre-push checks...${NC}"
+
+BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+# Only run type checks on main branches before push
+if [ "$BRANCH_NAME" = "main" ] || [ "$BRANCH_NAME" = "master" ]; then
+  echo "${YELLOW}⚠ About to push to $BRANCH_NAME - running type checks...${NC}"
+  
+  if [ -f "cfs/node_modules/typescript/package.json" ]; then
+    echo "Running TypeScript checks..."
+    cd cfs && pnpm typecheck
+  fi
+fi
+
+echo "${GREEN}✓ Pre-push checks passed${NC}"

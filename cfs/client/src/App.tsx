@@ -12,8 +12,8 @@ import EventsPage from './pages/admin/EventsPage'
 import NewsNewPage from './pages/admin/news/NewsNewPage'
 import NewsPage from './pages/admin/NewsPage'
 import ProductReservationsPage from './pages/admin/ProductReservationsPage'
-import ProductsLayoutPage from './pages/admin/ProductsLayoutPage'
 import ProductNewPage from './pages/admin/products/ProductNewPage'
+import ProductsLayoutPage from './pages/admin/ProductsLayoutPage'
 import ProductsPage from './pages/admin/ProductsPage'
 import UsersPage from './pages/admin/UsersPage'
 import Catalog from './pages/Catalog'
@@ -31,16 +31,16 @@ import Verification from './pages/Verification'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
-  
+
   if (isLoading) {
     // During auth initialization, don't redirect - wait for result
     return null
   }
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
-  
+
   return <>{children}</>
 }
 
