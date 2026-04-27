@@ -28,6 +28,7 @@ export default function CompetitionNewPage() {
     name: string
     description: string
     matchType: 'SINGLE_LEG' | 'HOME_AND_AWAY'
+    participantCount: number
   }) => {
     setFormError(null)
 
@@ -44,7 +45,7 @@ export default function CompetitionNewPage() {
           name: data.name,
           description: data.description || undefined,
           matchType: data.matchType,
-          participantCount: 8, // default
+          participantCount: data.participantCount,
         },
       })
       if (result.error) {

@@ -8,8 +8,9 @@ interface CompetitionFormProps {
     name: string
     description: string
     matchType: MatchType
+    participantCount?: number
   }
-  onSubmit: (data: { name: string; description: string; matchType: MatchType }) => Promise<void>
+  onSubmit: (data: { name: string; description: string; matchType: MatchType; participantCount: number }) => Promise<void>
   onCancel: () => void
   error?: string | null
   submitLabel?: string
@@ -25,6 +26,7 @@ export function CompetitionForm({
   const [name, setName] = useState(initialData?.name ?? '')
   const [description, setDescription] = useState(initialData?.description ?? '')
   const [matchType, setMatchType] = useState<MatchType>(initialData?.matchType ?? 'SINGLE_LEG')
+  const [participantCount, setParticipantCount] = useState(initialData?.participantCount ?? 8)
   const [localError, setLocalError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +42,7 @@ export function CompetitionForm({
       return
     }
 
-    await onSubmit({ name: name.trim(), description: description.trim(), matchType })
+    await onSubmit({ name: name.trim(), description: description.trim(), matchType, participantCount })
   }
 
   return (
@@ -124,6 +126,38 @@ export function CompetitionForm({
           <option value="SINGLE_LEG">Eliminatoria única</option>
           <option value="HOME_AND_AWAY">Ida y Vuelta</option>
         </select>
+      </div>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{
+          display: 'block',
+          color: '#64748b',
+          fontSize: '0.75rem',
+          marginBottom: '0.25rem',
+        }}>
+          Número de participantes *
+        </label>
+        <select
+          value={participantCount}
+          onChange={(e) => setParticipantCount(Number(e.target.value))}
+          required
+          style={{
+            width: '100%',
+            padding: '0.5rem',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '4px',
+            color: '#0f172a',
+            fontSize: '0.875rem',
+          }}
+        >
+          <option value={4}>4</option>
+          <option value={8}>8</option>
+          <option value={16}>16</option>
+        </select>
+        <p style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+          Debe ser potencia de 2 (4, 8, 16)
+        </p>
       </div>
 
       {(error || localError) && (

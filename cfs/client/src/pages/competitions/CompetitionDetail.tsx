@@ -75,6 +75,7 @@ export default function CompetitionDetail() {
     name: string
     description: string
     matchType: 'SINGLE_LEG' | 'HOME_AND_AWAY'
+    participantCount: number
   }) => {
     setFormError(null)
 
@@ -151,6 +152,7 @@ export default function CompetitionDetail() {
               name: competition.name,
               description: competition.description ?? '',
               matchType: competition.matchType,
+              participantCount: competition.participantCount,
             }}
             onSubmit={handleSubmit}
             onCancel={handleCancelEdit}
