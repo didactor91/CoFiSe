@@ -44,7 +44,7 @@ export const competitionsResolvers = {
             if (!matchType) throw new Error('Match type is required')
             if (!['SINGLE_LEG', 'HOME_AND_AWAY'].includes(matchType)) throw new Error('Invalid match type')
             if (!participantCount) throw new Error('Participant count is required')
-            if (participantCount < 2 || participantCount > 16) throw new Error('Participant count must be between 2 and 16')
+            if (participantCount < 2 || participantCount > 32) throw new Error('Participant count must be between 2 and 32')
 
             const now = new Date().toISOString()
             const result = db.prepare(`

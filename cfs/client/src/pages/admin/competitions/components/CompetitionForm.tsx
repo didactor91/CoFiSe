@@ -151,12 +151,12 @@ export function CompetitionForm({
             fontSize: '0.875rem',
           }}
         >
-          <option value={4}>4</option>
-          <option value={8}>8</option>
-          <option value={16}>16</option>
+          {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32].map(n => (
+            <option key={n} value={n}>{n}</option>
+          ))}
         </select>
         <p style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: '0.25rem' }}>
-          Debe ser potencia de 2 (4, 8, 16)
+          Debe ser potencia de 2 para usar eliminación directa
         </p>
       </div>
 
