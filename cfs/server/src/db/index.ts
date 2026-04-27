@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3'
 
-import { MigrationManager } from '../../../database/migrations.js'
+import { MigrationManager } from '../../../database/migrations.ts'
 import { config } from '../config.js'
 
 console.log('[CFS DB] Opening database at:', config.database.path)
