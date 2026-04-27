@@ -21,6 +21,7 @@ export default function CompetitionNewPage() {
   const [, createCompetitionMutation] = useCreateCompetitionMutation()
 
   const canCreate = can('competition.create')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
   const handleSubmit = async (data: {
