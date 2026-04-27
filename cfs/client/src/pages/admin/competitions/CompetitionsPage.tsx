@@ -5,10 +5,12 @@ import {
   CompetitionCard,
   BracketPreview,
   MatchResultModal,
+  ParticipantList,
 } from './components'
 import { useAuth } from '../../../hooks/useAuth'
 import {
   useDeleteCompetitionMutation,
+  useAddParticipantsMutation,
 } from '../../../modules/competitions/api/mutations'
 import {
   useCompetitionsQuery,
@@ -25,6 +27,7 @@ export default function CompetitionsPage() {
   const { can } = useAuth()
   const [competitionsResult, refetchCompetitions] = useCompetitionsQuery()
   const [, deleteCompetitionMutation] = useDeleteCompetitionMutation()
+  const [, addParticipantsMutation] = useAddParticipantsMutation()
 
   const competitions: Competition[] = competitionsResult.data?.competitions ?? []
 
@@ -69,6 +72,22 @@ export default function CompetitionsPage() {
   const handleManageParticipants = (competition: Competition) => {
     setSelectedCompetition(competition)
     setShowParticipants(true)
+  }
+
+  const handleAddParticipants = async (aliases: string[]) => {
+    if (!selectedCompetition) return
+    await addParticipantsMutation({
+      input: {
+        competitionId: selectedCompetition.id,
+        aliases,
+      },
+    })
+    await refetchCompetitions()
+  }
+
+  const handleRemoveParticipant = async (participantId: string) => {
+    // TODO: implement remove participant mutation
+    console.log('Remove participant:', participantId)
   }
 
   const handleGenerateBracket = async (competition: Competition) => {
@@ -172,18 +191,18 @@ export default function CompetitionsPage() {
             </Button>
           </div>
 
-          <div style={{ marginBottom: theme.spacing.lg }}>
-            <h4 style={{ fontSize: '0.875rem', color: theme.colors.textSecondary, marginBottom: '0.5rem' }}>
-              Participantes
-            </h4>
-            <p style={{ color: theme.colors.textSecondary, fontSize: '0.875rem' }}>
-              {selectedCompetition.participants.length} / {selectedCompetition.participantCount}
-            </p>
-          </div>
+          <ParticipantList
+            competitionId={selectedCompetition.id}
+            participants={selectedCompetition.participants}
+            participantCount={selectedCompetition.participantCount}
+            isEditable={selectedCompetition.status === 'DRAFT'}
+            onAddParticipants={handleAddParticipants}
+            onRemoveParticipant={handleRemoveParticipant}
+          />
 
           {/* Bracket Preview */}
           {selectedCompetition.matches && selectedCompetition.matches.length > 0 && (
-            <div>
+            <div style={{ marginTop: theme.spacing.lg }}>
               <h4 style={{ fontSize: '0.875rem', color: theme.colors.textSecondary, marginBottom: '0.5rem' }}>
                 Parrilla
               </h4>
