@@ -19,10 +19,13 @@ import UsersPage from './pages/admin/UsersPage'
 import Catalog from './pages/Catalog'
 import Checkout from './pages/Checkout'
 import CompetitionDetail from './pages/competitions/CompetitionDetail'
+import CompetitionsList from './pages/competitions/CompetitionsList'
 import EventDetail from './pages/EventDetail'
+import EventsList from './pages/events/EventsList'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import NewsDetail from './pages/NewsDetail'
+import NewsList from './pages/news/NewsList'
 import ProductDetail from './pages/ProductDetail'
 import Verification from './pages/Verification'
 
@@ -45,6 +48,9 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/news" element={<NewsList />} />
+      <Route path="/events" element={<EventsList />} />
+      <Route path="/competitions" element={<CompetitionsList />} />
       <Route path="/catalog" element={<Catalog />} />
       <Route path="/login" element={<Login />} />
       <Route path="/checkout" element={<Checkout />} />
