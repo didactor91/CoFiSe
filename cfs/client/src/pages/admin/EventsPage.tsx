@@ -49,6 +49,7 @@ export default function EventsPage() {
       console.error('Error deleting event:', err)
     }
     setDeleteConfirm(null)
+    eventsResult.refetch({ requestPolicy: 'network-only' })
   }
 
   return (

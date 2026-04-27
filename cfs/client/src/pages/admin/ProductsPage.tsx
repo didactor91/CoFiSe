@@ -49,6 +49,7 @@ export default function ProductsPage() {
       console.error('Error deleting product:', err)
     }
     setDeleteConfirm(null)
+    productsResult.refetch({ requestPolicy: 'network-only' })
   }
 
   return (

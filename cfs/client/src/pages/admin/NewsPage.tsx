@@ -48,6 +48,7 @@ export default function NewsPage() {
       console.error('Error deleting news:', err)
     }
     setDeleteConfirm(null)
+    newsResult.refetch({ requestPolicy: 'network-only' })
   }
 
   return (

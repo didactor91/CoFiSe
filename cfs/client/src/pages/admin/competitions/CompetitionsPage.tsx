@@ -65,7 +65,7 @@ export default function CompetitionsPage() {
       console.error('Error deleting competition:', err)
     }
     setDeleteConfirm(null)
-    await refetchCompetitions()
+    refetchCompetitions({ requestPolicy: 'network-only' })
   }
 
   // Participant management
@@ -82,7 +82,7 @@ export default function CompetitionsPage() {
         aliases,
       },
     })
-    await refetchCompetitions()
+    refetchCompetitions({ requestPolicy: 'network-only' })
   }
 
   const handleRemoveParticipant = async (participantId: string) => {
