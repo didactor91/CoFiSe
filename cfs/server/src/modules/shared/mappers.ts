@@ -1,144 +1,161 @@
 export function newsFromRow(row: any) {
-    return {
-        id: row.id.toString(),
-        title: row.title,
-        content: row.content,
-        imageUrl: row.image_url,
-        published: !!row.is_published,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-    }
+  return {
+    id: row.id.toString(),
+    title: row.title,
+    content: row.content,
+    imageUrl: row.image_url,
+    published: !!row.is_published,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 export function productFromRow(row: any) {
-    return {
-        id: row.id.toString(),
-        name: row.name,
-        description: row.description,
-        price: row.price,
-        stock: row.stock,
-        limitedStock: !!row.limited_stock,
-        imageUrl: row.image_url,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-    }
+  return {
+    id: row.id.toString(),
+    name: row.name,
+    description: row.description,
+    price: row.price,
+    stock: row.stock,
+    limitedStock: !!row.limited_stock,
+    imageUrl: row.image_url,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 export function userFromRow(row: any) {
-    return {
-        id: row.id.toString(),
-        email: row.email,
-        role: row.role.toUpperCase(),
-        createdAt: row.created_at,
-    }
+  return {
+    id: row.id.toString(),
+    email: row.email,
+    role: row.role.toUpperCase(),
+    createdAt: row.created_at,
+  }
 }
 
 export function reservationFromRow(row: any, includeProduct = true) {
-    const reservation: any = {
-        id: row.id.toString(),
-        productId: row.product_id.toString(),
-        quantity: row.quantity,
-        name: row.name,
-        email: row.email,
-        phone: row.phone,
-        notes: row.notes,
-        status: row.status.toUpperCase(),
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        product: undefined,
-    }
+  const reservation: any = {
+    id: row.id.toString(),
+    productId: row.product_id.toString(),
+    quantity: row.quantity,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    notes: row.notes,
+    status: row.status.toUpperCase(),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    product: undefined,
+  }
 
-    if (includeProduct && row.product_name) {
-        reservation.product = {
-            id: row.product_id.toString(),
-            name: row.product_name,
-            description: row.product_description,
-            price: row.product_price,
-            stock: row.product_stock,
-            imageUrl: row.product_image_url,
-            createdAt: row.product_created_at,
-            updatedAt: row.product_updated_at,
-        }
+  if (includeProduct && row.product_name) {
+    reservation.product = {
+      id: row.product_id.toString(),
+      name: row.product_name,
+      description: row.product_description,
+      price: row.product_price,
+      stock: row.product_stock,
+      imageUrl: row.product_image_url,
+      createdAt: row.product_created_at,
+      updatedAt: row.product_updated_at,
     }
+  }
 
-    return reservation
+  return reservation
 }
 
 export function eventFromRow(row: any) {
-    return {
-        id: row.id.toString(),
-        name: row.name,
-        description: row.description,
-        location: row.location,
-        startTime: row.start_time,
-        endTime: row.end_time,
-        imageUrl: row.image_url,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-    }
+  return {
+    id: row.id.toString(),
+    name: row.name,
+    description: row.description,
+    location: row.location,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    imageUrl: row.image_url,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 export function productOptionFromRow(row: any) {
-    return {
-        id: row.id.toString(),
-        productId: row.product_id.toString(),
-        name: row.name,
-        required: !!row.required,
-    }
+  return {
+    id: row.id.toString(),
+    productId: row.product_id.toString(),
+    name: row.name,
+    required: !!row.required,
+  }
 }
 
 export function productOptionTypeFromName(name: string): string {
-    const lower = name.toLowerCase()
-    if (lower.includes('color') || lower.includes('colour')) return 'COLOR'
-    return 'SIZE'
+  const lower = name.toLowerCase()
+  if (lower.includes('color') || lower.includes('colour')) return 'COLOR'
+  return 'SIZE'
 }
 
 export function optionValueFromRow(row: any) {
-    return {
-        id: row.id.toString(),
-        optionId: row.option_id.toString(),
-        value: row.value,
-        stock: row.stock,
-    }
+  return {
+    id: row.id.toString(),
+    optionId: row.option_id.toString(),
+    value: row.value,
+    stock: row.stock,
+  }
 }
 
 export function competitionFromRow(row: any) {
-    return {
-        id: row.id.toString(),
-        name: row.name,
-        description: row.description,
-        matchType: row.match_type,
-        status: row.status,
-        participantCount: row.participant_count,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-    }
+  return {
+    id: row.id.toString(),
+    name: row.name,
+    description: row.description,
+    matchType: row.match_type,
+    status: row.status,
+    participantCount: row.participant_count,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
 }
 
 export function participantFromRow(row: any) {
-    return {
-        id: row.id.toString(),
-        competitionId: row.competition_id?.toString(),
-        alias: row.alias,
-        createdAt: row.created_at,
-    }
+  return {
+    id: row.id.toString(),
+    competitionId: row.competition_id?.toString(),
+    alias: row.alias,
+    createdAt: row.created_at,
+  }
 }
 
 export function matchFromRow(row: any) {
-    return {
-        id: row.id.toString(),
-        competitionId: row.competition_id.toString(),
-        round: row.round,
-        position: row.position,
-        participant1Id: row.participant1_id?.toString(),
-        participant2Id: row.participant2_id?.toString(),
-        homeScore1: row.home_score1,
-        homeScore2: row.home_score2,
-        awayScore1: row.away_score1,
-        awayScore2: row.away_score2,
-        winnerId: row.winner_id?.toString(),
-        status: row.status,
-        isBye: !!row.is_bye,
-        createdAt: row.created_at,
-    }
+  return {
+    id: row.id.toString(),
+    competitionId: row.competition_id.toString(),
+    round: row.round,
+    position: row.position,
+    participant1Id: row.participant1_id?.toString(),
+    participant2Id: row.participant2_id?.toString(),
+    homeScore1: row.home_score1,
+    homeScore2: row.home_score2,
+    awayScore1: row.away_score1,
+    awayScore2: row.away_score2,
+    winnerId: row.winner_id?.toString(),
+    status: row.status,
+    isBye: !!row.is_bye,
+    nodeId: row.node_id?.toString(),
+    createdAt: row.created_at,
+  }
+}
+
+export function bracketNodeFromRow(row: any) {
+  return {
+    id: row.id.toString(),
+    competitionId: row.competition_id.toString(),
+    round: row.round,
+    position: row.position,
+    teamAName: row.team_a_name,
+    teamBName: row.team_b_name,
+    nextNodeId: row.next_node_id?.toString(),
+    nextSlot: row.next_slot,
+    bracketLabel: row.bracket_label,
+    isBye: !!row.is_bye,
+    createdAt: row.created_at,
+  }
 }

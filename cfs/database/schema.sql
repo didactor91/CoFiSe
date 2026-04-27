@@ -142,6 +142,69 @@ CREATE TABLE IF NOT EXISTS reservation_items (
     unit_price REAL NOT NULL
 );
 
+-- Tournaments / Competitions
+CREATE TABLE IF NOT EXISTS competitions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT,
+    match_type TEXT NOT NULL CHECK(match_type IN ('SINGLE_LEG', 'HOME_AND_AWAY')),
+    status TEXT NOT NULL DEFAULT 'DRAFT' CHECK(status IN ('DRAFT', 'ACTIVE', 'COMPLETED')),
+    participant_count INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Participants within a competition
+CREATE TABLE IF NOT EXISTS participants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    competition_id INTEGER NOT NULL REFERENCES competitions(id),
+    alias TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Matches within a competition
+CREATE TABLE IF NOT EXISTS matches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    competition_id INTEGER NOT NULL REFERENCES competitions(id),
+    round INTEGER NOT NULL,
+    position INTEGER NOT NULL,
+    participant1_id INTEGER REFERENCES participants(id),
+    participant2_id INTEGER REFERENCES participants(id),
+    home_score1 INTEGER,
+    home_score2 INTEGER,
+    away_score1 INTEGER,
+    away_score2 INTEGER,
+    winner_id INTEGER REFERENCES participants(id),
+    status TEXT NOT NULL DEFAULT 'PENDING' CHECK(status IN ('PENDING', 'COMPLETED')),
+    is_bye INTEGER DEFAULT 0,
+    node_id INTEGER REFERENCES bracket_nodes(id),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Bracket nodes for tournament bracket visualization
+CREATE TABLE IF NOT EXISTS bracket_nodes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    competition_id INTEGER NOT NULL REFERENCES competitions(id),
+    round INTEGER NOT NULL,
+    position INTEGER NOT NULL,
+    team_a_name TEXT,
+    team_b_name TEXT,
+    next_node_id INTEGER REFERENCES bracket_nodes(id),
+    next_slot TEXT CHECK(next_slot IN ('A', 'B')),
+    bracket_label TEXT CHECK(bracket_label IN ('WINNERS', 'LOSERS', 'GRAND_FINAL')),
+    is_bye INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for competitions
+CREATE INDEX IF NOT EXISTS idx_competitions_status ON competitions(status);
+CREATE INDEX IF NOT EXISTS idx_participants_competition ON participants(competition_id);
+CREATE INDEX IF NOT EXISTS idx_matches_competition ON matches(competition_id);
+CREATE INDEX IF NOT EXISTS idx_matches_round_position ON matches(competition_id, round, position);
+CREATE INDEX IF NOT EXISTS idx_bracket_nodes_competition ON bracket_nodes(competition_id);
+CREATE INDEX IF NOT EXISTS idx_bracket_nodes_round_position ON bracket_nodes(competition_id, round, position);
+CREATE INDEX IF NOT EXISTS idx_bracket_nodes_next ON bracket_nodes(next_node_id);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_reservations_product_id ON reservations(product_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_status ON reservations(status);
