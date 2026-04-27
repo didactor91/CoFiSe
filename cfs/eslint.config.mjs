@@ -81,11 +81,7 @@ export default tseslint.config(
       'import/order': [
         'error',
         {
-          groups: [
-            ['builtin', 'external'],
-            ['internal'],
-            ['parent', 'sibling', 'index'],
-          ],
+          groups: [['builtin', 'external'], ['internal'], ['parent', 'sibling', 'index']],
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
@@ -170,12 +166,14 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
       'import/order': 'off',
       'import/no-duplicates': 'off',
       'prefer-const': 'off',
       'no-empty': 'off',
       'no-console': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
+      'no-sync': 'off',
     },
   },
 
@@ -187,5 +185,5 @@ export default tseslint.config(
     },
   },
 
-  eslintConfigPrettier
+  eslintConfigPrettier,
 )

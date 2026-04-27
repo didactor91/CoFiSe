@@ -62,6 +62,7 @@ export const typeDefs = gql`
     participantCount: Int!
     participants: [Participant!]!
     matches: [Match!]!
+    bracketNodes: [BracketNode!]!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -87,6 +88,22 @@ export const typeDefs = gql`
     winner: Participant
     status: MatchStatus!
     isBye: Boolean!
+    nodeId: ID
+    createdAt: DateTime!
+  }
+
+  type BracketNode {
+    id: ID!
+    competitionId: ID!
+    round: Int!
+    position: Int!
+    teamAName: String
+    teamBName: String
+    nextNodeId: ID
+    nextSlot: BracketSlot
+    bracketLabel: BracketLabel
+    isBye: Boolean!
+    match: Match
     createdAt: DateTime!
   }
 
@@ -99,6 +116,25 @@ export const typeDefs = gql`
   enum MatchType {
     SINGLE_LEG
     HOME_AND_AWAY
+  }
+
+  enum TournamentFormat {
+    FREE
+    SINGLE_ELIMINATION
+    HOME_AWAY
+    DOUBLE_ELIMINATION
+    ROUND_ROBIN
+  }
+
+  enum BracketLabel {
+    WINNERS
+    LOSERS
+    GRAND_FINAL
+  }
+
+  enum BracketSlot {
+    A
+    B
   }
 
   enum CompetitionStatus {
@@ -370,6 +406,7 @@ export const typeDefs = gql`
     description: String
     matchType: MatchType!
     participantCount: Int!
+    format: TournamentFormat
   }
 
   input UpdateCompetitionInput {
